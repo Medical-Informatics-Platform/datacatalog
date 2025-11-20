@@ -23,7 +23,6 @@ import {ConfirmationDialogComponent} from "./confirmation-dialog/confirmation-di
   standalone: true
 })
 export class FederationsPageComponent implements OnInit, OnDestroy {
-  filters = ['All', 'Public', 'Accessed', 'Request Access', 'Pathology'];
   selectedFilter = 'All';
   federations: Federation[] = [];
   filteredFederations: Federation[] = [];

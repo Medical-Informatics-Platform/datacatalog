@@ -4,12 +4,13 @@ import {
   OnChanges,
   SimpleChanges,
   ElementRef,
+  HostListener,
   OnInit,
 } from '@angular/core';
 import { createTidyTree } from './tidy-tree';
 import { FormsModule } from '@angular/forms';
 import { ErrorService } from '../services/error.service';
-import { NgForOf, NgIf } from '@angular/common';
+import { NgForOf, NgIf, NgClass } from '@angular/common';
 import { BreadcrumbComponent } from './breadcrumb/breadcrumb.component';
 import { SearchBarComponent } from './search-bar/search-bar.component';
 
@@ -18,7 +19,7 @@ import { SearchBarComponent } from './search-bar/search-bar.component';
   templateUrl: './visualization.component.html',
   styleUrls: ['./visualization.component.css'],
   standalone: true,
-  imports: [NgForOf, NgIf, FormsModule, BreadcrumbComponent, SearchBarComponent],
+  imports: [NgForOf, NgIf, NgClass, FormsModule, BreadcrumbComponent, SearchBarComponent],
 })
 export class VisualizationComponent implements OnInit, OnChanges {
   @Input() dataModelHierarchy: any;
@@ -28,6 +29,9 @@ export class VisualizationComponent implements OnInit, OnChanges {
   maxDepth = 1;
   newAvailableDepths = 5;
   isZoomEnabled = false;
+  isFullscreen = false;
+  private shouldForcePortrait = false;
+  private orientationLocked = false;
   private originalData: any;
 
   constructor(
@@ -169,5 +173,69 @@ export class VisualizationComponent implements OnInit, OnChanges {
       maxDepth,
       this.isZoomEnabled
     );
+  }
+
+  toggleFullscreen(): void {
+    const chartContainer = this.elementRef.nativeElement.querySelector('#chart-container') as HTMLElement;
+    if (!chartContainer) return;
+
+    const doc: any = document;
+    if (!doc.fullscreenElement) {
+      this.shouldForcePortrait = this.isMobileViewport();
+      const request =
+        chartContainer.requestFullscreen?.bind(chartContainer) ||
+        (chartContainer as any).webkitRequestFullscreen?.bind(chartContainer) ||
+        (chartContainer as any).msRequestFullscreen?.bind(chartContainer);
+      request?.();
+    } else {
+      this.shouldForcePortrait = false;
+      const exit =
+        doc.exitFullscreen?.bind(doc) ||
+        (doc as any).webkitExitFullscreen?.bind(doc) ||
+        (doc as any).msExitFullscreen?.bind(doc);
+      exit?.();
+    }
+  }
+
+  @HostListener('document:fullscreenchange')
+  onFullscreenChange(): void {
+    this.isFullscreen = !!document.fullscreenElement;
+    if (this.isFullscreen && this.shouldForcePortrait) {
+      void this.lockPortraitOrientation();
+    }
+
+    if (!this.isFullscreen && this.orientationLocked) {
+      void this.unlockOrientation();
+      this.shouldForcePortrait = false;
+    }
+  }
+
+  private isMobileViewport(): boolean {
+    return window.matchMedia('(max-width: 768px)').matches;
+  }
+
+  private async lockPortraitOrientation(): Promise<void> {
+    const arte: any = screen;
+    const orientation = arte?.orientation;
+    if (orientation?.lock) {
+      try {
+        await orientation.lock('portrait-primary');
+        this.orientationLocked = true;
+      } catch {
+        this.orientationLocked = false;
+      }
+    }
+  }
+
+  private async unlockOrientation(): Promise<void> {
+    const arte: any = screen;
+    const orientation = arte?.orientation;
+    if (this.orientationLocked && orientation?.unlock) {
+      try {
+        await orientation.unlock();
+      } finally {
+        this.orientationLocked = false;
+      }
+    }
   }
 }

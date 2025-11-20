@@ -13,21 +13,51 @@ export function createTidyTree(
 ): void {
   const originalData = JSON.parse(JSON.stringify(data)); // Save the original data
 
-  const tooltip = d3
-    .select("body") // Append to body to avoid SVG clipping
-    .append("div")
-    .attr("id", "tooltip")
-    .style("position", "absolute")
-    .style("visibility", "hidden")
-    .style("background-color", "rgba(0, 0, 0, 0.7)")
-    .style("color", "white")
-    .style("padding", "8px")
-    .style("border-radius", "4px")
-    .style("pointer-events", "none")
-    .style("z-index", "1000");
+  let tooltip: d3.Selection<HTMLDivElement, unknown, null, undefined> | null = null;
+
+  const createTooltipElement = () => {
+    tooltip?.remove();
+    tooltip = d3
+      .select(container)
+      .append('div')
+      .attr('class', 'chart-tooltip')
+      .style('position', 'absolute')
+      .style('visibility', 'hidden')
+      .style('pointer-events', 'none')
+      .style('z-index', '1000');
+  };
+
+  const ensureTooltip = () => {
+    if (!tooltip) {
+      createTooltipElement();
+    }
+  };
+
+  const positionTooltip = (_event: MouseEvent) => {
+    if (!tooltip) return;
+    const tooltipNode = tooltip.node() as HTMLDivElement;
+    if (!tooltipNode) return;
+    const containerRect = container.getBoundingClientRect();
+    const tooltipRect = tooltipNode.getBoundingClientRect();
+
+    let left = _event.clientX - containerRect.left + 12;
+    let top = _event.clientY - containerRect.top + 12;
+
+    if (left + tooltipRect.width + 12 > containerRect.width) {
+      left = Math.max(8, containerRect.width - tooltipRect.width - 12);
+    }
+    if (top + tooltipRect.height + 12 > containerRect.height) {
+      top = Math.max(8, containerRect.height - tooltipRect.height - 12);
+    }
+
+    tooltip
+      .style("left", `${left}px`)
+      .style("top", `${top}px`);
+  };
 
   const showTooltip = (_event: MouseEvent, d: any) => {
-    tooltip
+    ensureTooltip();
+    tooltip!
       .html(() => {
         let tooltipContent = `<strong>Name:</strong> ${d.data.name || "N/A"}`;
         tooltipContent += d.data.code ? `<br><strong>Code:</strong> ${d.data.code}` : "";
@@ -64,14 +94,12 @@ export function createTidyTree(
 
         return tooltipContent;
       })
-      .style("visibility", "visible")
-      .style("top", `${_event.pageY + 10}px`)
-      .style("left", `${_event.pageX + 20}px`);
+      .style("visibility", "visible");
+    positionTooltip(_event);
   };
 
   const hideTooltip = () => {
-    console.log('Tooltip hidden');
-    tooltip.style("visibility", "hidden");
+    tooltip?.style('visibility', 'hidden');
   };
 
   const pruneTreeToDepth = (node: any, depth: number, maxDepth: number | null): void => {
@@ -133,8 +161,14 @@ export function createTidyTree(
 
   // Zoom and pan functionalities
 
+  const tooltipWrapper = () => {
+    container.style.position = 'relative';
+    createTooltipElement();
+  };
+
   const renderTree = (rootData: any, maxDepth: number | null) => {
     container.innerHTML = ''; // Clear existing visualization
+    tooltipWrapper();
 
     const baseWidth = 2500;
     const baseHeight = 940;
@@ -238,7 +272,7 @@ export function createTidyTree(
           .attr("stroke-width", 3);
       })
       .on("dblclick", (_event, d) => {
-        tooltip.style("visibility", "hidden");
+        tooltip?.style("visibility", "hidden");
 
         if (originalData === d.data) {
           console.log("Double-clicked node is already the current root, doing nothing.");

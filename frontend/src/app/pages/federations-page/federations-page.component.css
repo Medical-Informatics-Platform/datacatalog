@@ -1,3 +1,9 @@
+/* Ensure page content is pushed below the fixed header */
+:host {
+  display: block;
+  padding-top: 80px;
+}
+
 /* General Page Styling */
 body {
   font-family: "Roboto", sans-serif;

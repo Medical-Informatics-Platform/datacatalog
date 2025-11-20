@@ -14,6 +14,12 @@ import {filter} from "rxjs";
 })
 export class HeaderComponent implements OnInit {
   currentRoute: string | undefined;
+  menuOpen = false;
+
+  toggleMobileMenu() {
+    this.menuOpen = !this.menuOpen;
+  }
+
   constructor(private router: Router, public authService: AuthService) {}
 
   ngOnInit(): void {

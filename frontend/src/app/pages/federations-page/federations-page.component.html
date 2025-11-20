@@ -1,9 +1,3 @@
-<app-filter
-  [filters]="filters"
-  [selectedFilter]="selectedFilter"
-  (filterChange)="selectFilter($event)"
-></app-filter>
-
 @if (!isChildRouteActive()){
   @if (isAdmin){
     <app-add-federation-card (addNew)="goToAddFederation()"></app-add-federation-card>

@@ -62,3 +62,16 @@ input:required:valid, textarea:required:valid, select:required:valid {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   z-index: 1000;
 }
+
+.chart-tooltip {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  padding: 8px;
+  border-radius: 4px;
+  max-width: 320px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  pointer-events: none;
+  z-index: 10000;
+}

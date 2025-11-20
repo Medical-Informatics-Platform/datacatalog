@@ -30,6 +30,11 @@
         [dataModelHierarchy]="dataModelHierarchy"
         (searchResultSelected)="onSearchResult($event)"
       ></app-search-bar>
+      <div aria-label="Toggle fullscreen">
+        <div class="fullscreen-btn" (click)="toggleFullscreen()">
+          <i class="fas" [ngClass]="isFullscreen ? 'fa-compress' : 'fa-expand'"></i>
+        </div>
+      </div>
     </div>
   </div>
 

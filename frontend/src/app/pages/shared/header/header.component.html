@@ -7,16 +7,20 @@
     </div>
   </div>
 
-  <!-- Navigation Bar in the middle/right -->
+  <!-- Desktop Navigation -->
   <div class="navbar-wrapper">
     <app-navbar></app-navbar>
   </div>
 
-  <!-- User icon for login/logout (separate from the navbar, far right) -->
+  <!-- Mobile hamburger button -->
+  <button class="mobile-menu-btn" (click)="toggleMobileMenu()">
+    ☰
+  </button>
+
+  <!-- User icon for login/logout -->
   <div class="user-icon">
     @if (isLoggedIn()) {
       <button class="sign-in-btn" [routerLink]="['/account']">
-        <!-- Show the user’s picture when logged in -->
         <img src="assets/user-icon.png" alt="User Picture" class="account-picture">
       </button>
     } @else {
@@ -26,3 +30,8 @@
     }
   </div>
 </header>
+
+<!-- Mobile slide-down menu -->
+<div class="mobile-menu" [class.open]="menuOpen">
+  <app-navbar></app-navbar>
+</div>

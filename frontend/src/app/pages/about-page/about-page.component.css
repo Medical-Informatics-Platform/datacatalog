@@ -1,3 +1,9 @@
+/* Host padding ensures content sits below fixed header */
+:host {
+  display: block;
+  padding-top: 80px;
+}
+
 /* Container Styling */
 .about-container {
   max-width: 900px;

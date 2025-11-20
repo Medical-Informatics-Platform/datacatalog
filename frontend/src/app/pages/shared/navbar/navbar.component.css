@@ -1,4 +1,7 @@
-/* Navbar Styling (align closer to the right and compact layout) */
+/* =============================== */
+/* DESKTOP NAVBAR */
+/* =============================== */
+
 .navbar {
   margin-left: auto;
   display: flex;
@@ -14,13 +17,13 @@
 }
 
 .navbar ul li {
-  margin-left: 10px; /* Reduced space between navbar items */
+  margin-left: 15px;
 }
 
 .navbar ul li a {
   color: #c0c0c0;
   text-decoration: none;
-  font-size: 0.8em; /* Increase for better readability */
+  font-size: 0.85em;
   transition: color 0.3s ease;
   display: flex;
   flex-direction: column;
@@ -30,45 +33,60 @@
 }
 
 .navbar ul li a:hover {
-  color: #18a2b8; /* Blue accent on hover */
+  color: #18a2b8;
 }
 
 .navbar ul li a i {
-  font-size: 1.8em; /* Adjust icon size */
-  margin-bottom: 2px;
+  font-size: 1.7em;
+  margin-bottom: 3px;
 }
 
 .navbar ul li a.active {
-  color: #18a2b8; /* Change color to highlight the active route */
+  color: #18a2b8;
   font-weight: bold;
 }
 
-/* Responsive Design */
+/* =============================== */
+/* TABLET (768px–1024px) */
+/* =============================== */
+
 @media (max-width: 1024px) {
+  .navbar ul {
+    margin: 15px;
+  }
+
   .navbar ul li a {
-    font-size: 1em; /* Consistent font size for tablet */
+    font-size: 0.95em;
   }
 
   .navbar ul li a i {
-    font-size: 1.4em; /* Smaller icons for tablet */
+    font-size: 1.5em;
   }
 }
 
-@media (max-width: 768px) {
-  .navbar ul {
-    flex-direction: column;
-    align-items: center;
-  }
+/* =============================== */
+/* MOBILE MENU — CENTERED */
+/* =============================== */
 
-  .navbar ul li {
-    margin-bottom: 10px;
-  }
+.mobile-menu .navbar ul {
+  flex-direction: column !important;
+  align-items: center !important;
+  margin: 0;
+  padding: 15px 0;
+}
 
-  .navbar ul li a {
-    font-size: 1em;
-  }
+.mobile-menu .navbar ul li {
+  margin: 12px 0;
+}
 
-  .navbar ul li a i {
-    font-size: 1.4em;
-  }
+.mobile-menu .navbar ul li a {
+  flex-direction: column !important;
+  align-items: center !important;
+  font-size: 1.05em;
+  text-align: center !important;
+}
+
+.mobile-menu .navbar ul li a i {
+  font-size: 1.8em;
+  margin-bottom: 6px;
 }
