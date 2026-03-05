@@ -1,22 +1,20 @@
-# Data Quality Tool and Frontend Setup
+# Data Quality Tool Setup
 
-This project consists of a backend service (`data_quality_tool`) and a frontend service (`frontend`). The backend provides an API for Excel and JSON conversion and validation, while the frontend provides a user interface to interact with these features.
+This project provides a backend API for Excel and JSON conversion and validation.
 
 ## Prerequisites
 
 - Docker
-- Docker Compose
 
 ## Installation Instructions
 
-### Step 1: Install Docker and Docker Compose
+### Step 1: Install Docker
 
 #### Windows and macOS
 - Download and install Docker Desktop from [Docker's official website](https://www.docker.com/products/docker-desktop).
 
 #### Linux
 - Follow the instructions on the [Docker website](https://docs.docker.com/engine/install/) to install Docker.
-- Install Docker Compose by following the instructions [here](https://docs.docker.com/compose/install/).
 
 ### Step 2: Clone the Repository
 
@@ -24,39 +22,32 @@ Clone this repository to your local machine:
 
 ```sh
 git clone https://github.com/madgik/datacatalog.git
-cd datacatalog/data-quality-tool
+cd datacatalog/data_quality_tool
 ```
 
-### Step 3: Build and Run the Services
+### Step 3: Build and Run the Service
 
-1. Build the services:
-
-    ```sh
-    docker-compose build
-    ```
-
-2. Start the services:
+1. Build the image:
 
     ```sh
-    docker-compose up -d
+    docker build -t data-quality-tool .
     ```
 
-### Step 4: Access the Application
+2. Start the container:
 
-- The backend service will be available at [http://localhost:8000](http://localhost:8000).
-- The frontend service will be available at [http://localhost:8080](http://localhost:8080).
+    ```sh
+    docker run --rm -p 8000:8000 data-quality-tool
+    ```
 
-You can now interact with the frontend to use the backend's functionality.
+### Step 4: Access the API
 
-### Stopping the Services
+- The API will be available at [http://localhost:8000](http://localhost:8000).
 
-To stop the services, run:
+### Stopping the Container
 
-```sh
-docker-compose down
-```
+To stop the container, press `Ctrl+C` in the running terminal.
 
 ## Additional Information
 
-- To rebuild the images after making changes to the code, run `docker-compose build` again.
-- To view logs for debugging, use `docker-compose logs -f`.
+- To rebuild the image after making changes, run `docker build -t data-quality-tool .` again.
+- For shell access, run `docker run --rm -it data-quality-tool /bin/bash`.
