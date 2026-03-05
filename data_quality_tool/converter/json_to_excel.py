@@ -1,9 +1,8 @@
-"""Standalone script for converting a CDEs Metadata Schema of the Medical Informatics Platform (MIP) from JSON format back to EXCEL format."""
+"""Convert a CDE metadata schema JSON document to the Excel representation."""
 
 import pandas as pd
 
 from common_entities import EXCEL_JSON_FIELDS_MAP, EXCEL_COLUMNS, InvalidDataModelError
-
 
 def extract_values(variable):
     enumerations = variable.get("enumerations")
@@ -36,7 +35,10 @@ def parse_variables(variable, concept_path):
         if excel_field == "values":
             value = extract_values(variable)
         elif json_key == "conceptPath":
-            concept_path_str = "/".join(concept_path + [variable.get("code", "")])
+            variable_code = variable.get("code", "")
+            if variable_code is None:
+                variable_code = ""
+            concept_path_str = "/".join(concept_path + [str(variable_code)])
             value = concept_path_str
         else:
             value = variable.get(json_key, "")
@@ -44,7 +46,7 @@ def parse_variables(variable, concept_path):
     return data_row
 
 
-def recursive_parse_json(json_data, concept_path=[]):
+def recursive_parse_json(json_data, concept_path=None):
     """Recursively parses JSON data to extract variables and their details.
 
     Args:
@@ -55,12 +57,14 @@ def recursive_parse_json(json_data, concept_path=[]):
         list: A list of parsed variables with their details.
     """
     data = []
+    if concept_path is None:
+        concept_path = []
 
     if isinstance(json_data, dict):
         # Extract the concept path for the current level
-        label = json_data.get("label", json_data.get("code", ""))
-        if label:  # Update concept path only if label or code is present
-            concept_path.append(label)
+        segment = json_data.get("label", json_data.get("code", ""))
+        if segment:
+            concept_path.append(segment)
 
         # Process variables at the current level
         for variable in json_data.get("variables") or []:
@@ -70,7 +74,7 @@ def recursive_parse_json(json_data, concept_path=[]):
         for group in json_data.get("groups") or []:
             data.extend(recursive_parse_json(group, concept_path.copy()))
 
-        if label:  # Ensure concept path is not permanently altered
+        if segment:  # Ensure concept path is not permanently altered
             concept_path.pop()
     return data
 
@@ -83,5 +87,4 @@ def convert_json_to_excel(cdes_data):
     # and "methodology keys that can be used to create a pandas
     # dataframe
     result = recursive_parse_json(cdes_data)
-    # Create a pandas dataframe from the list of dict items
     return pd.DataFrame(result, columns=EXCEL_COLUMNS)

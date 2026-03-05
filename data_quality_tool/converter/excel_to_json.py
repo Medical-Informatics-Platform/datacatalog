@@ -1,5 +1,6 @@
 import pandas as pd
 import json
+import re
 
 from common_entities import (
     EXCEL_TYPE_2_SQL_TYPE_ISCATEGORICAL_MAP,
@@ -38,6 +39,16 @@ def process_enumerations(values):
             + values
             + "."
         )
+
+    if not isinstance(enumerations, list) or any(
+        not isinstance(item, dict) for item in enumerations
+    ):
+        raise InvalidDataModelError(
+            'Nominal values format error: \'{"code", "label"}, {"code", "label"}\' expected but got '
+            + str(values)
+            + "."
+        )
+
     return [
         {"code": list(item.keys())[0], "label": list(item.values())[0]}
         for item in enumerations
@@ -50,16 +61,23 @@ def insert_variable_into_structure(root, variable, path):
     """
     # The last path element of the list is always the variable.
     for part in path[:-1]:
+        group_code = part
+
         # Find or create the group at the current level
         found = False
         for group in root["groups"]:
-            if group["code"] == part:
+            if group["code"] == group_code:
                 root = group
                 found = True
                 break
 
         if not found:
-            new_group = {"code": part, "label": part, "groups": [], "variables": []}
+            new_group = {
+                "code": group_code,
+                "label": group_code,
+                "groups": [],
+                "variables": [],
+            }
             root["groups"].append(new_group)
             root = new_group
 
@@ -79,6 +97,7 @@ def process_values_based_on_type(row, variable):
     variable_type = row.get("type")
 
     if variable_type in ["real", "integer"] and values:
+        values = str(values)
         # Split on the last hyphen only
         parts = values.rsplit("-", 1)
         if len(parts) != 2:
@@ -107,8 +126,8 @@ def process_values_based_on_type(row, variable):
             variable["minValue"] = int(min_val)
             variable["maxValue"] = int(max_val)
         else:  # real
-            variable["minValue"] = min_val
-            variable["maxValue"] = max_val
+            variable["minValue"] = _parse_number_preserving_integer(min_str)
+            variable["maxValue"] = _parse_number_preserving_integer(max_str)
 
     elif variable_type == "nominal":
         if not values:
@@ -214,7 +233,8 @@ def convert_excel_to_json(df):
     Converts a DataFrame from Excel into a JSON structure, handling enumerations specifically,
     and adds 'isCategorical' and 'sql_type' based on the 'type'.
     """
-    df = df.astype(str).replace("nan", None)
+    df = df.where(pd.notna(df), None)
+
     root = {"variables": [], "groups": [], "code": "root"}
 
     for _, row in df.iterrows():
@@ -226,7 +246,9 @@ def convert_excel_to_json(df):
                 and variable["conceptPath"]
                 and variable["conceptPath"] != "None"
             ):
-                path = variable["conceptPath"].split("/")
+                path = [
+                    part.strip() for part in str(variable["conceptPath"]).split("/")
+                ]
                 del variable["conceptPath"]
                 insert_variable_into_structure(root, variable, path)
             else:
@@ -236,11 +258,39 @@ def convert_excel_to_json(df):
         except InvalidDataModelError as e:
             raise InvalidDataModelError(f"Error processing variable: {e}")
 
-    if root["groups"]:
-        data_model = root["groups"][0]
-        data_model["version"] = "to be defined"
-        clean_empty_fields(data_model)
+    if not root["groups"] and not root["variables"]:
+        return {"code": "No groups found", "groups": [], "variables": []}
 
-        return data_model
+    top_level_group = root["groups"][0] if len(root["groups"]) == 1 else None
+    if top_level_group is not None:
+        top_groups = [group for group in root["groups"] if group is not top_level_group]
+        data_model = {
+            "code": top_level_group["code"],
+            "label": top_level_group.get("label", top_level_group["code"]),
+            "version": "to be defined",
+            "variables": top_level_group.get("variables", []),
+            "groups": top_level_group.get("groups", []) + top_groups,
+        }
     else:
-        return {"code": "No groups found", "groups": [], "variables": root["variables"]}
+        data_model = {
+            "code": "DataModel",
+            "label": "DataModel",
+            "version": "to be defined",
+            "variables": root["variables"],
+            "groups": root["groups"],
+        }
+
+    clean_empty_fields(data_model)
+    data_model.setdefault("groups", [])
+    return data_model
+
+
+def _parse_number_preserving_integer(value):
+    if isinstance(value, (int, float)):
+        return value
+
+    value = str(value).strip()
+    if re.fullmatch(r"[+-]?\d+", value):
+        return int(value)
+    return float(value)
+

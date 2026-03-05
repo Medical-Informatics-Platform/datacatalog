@@ -1,18 +1,33 @@
 from flask import Flask, request, jsonify, send_file
 import json
 import logging
+import os
 from io import BytesIO
+from zipfile import BadZipFile
+
 import pandas as pd
-from flask_cors import CORS
+from werkzeug.exceptions import RequestEntityTooLarge
+
+from common_entities import InvalidDataModelError
 from converter.excel_to_json import convert_excel_to_json
 from converter.json_to_excel import convert_json_to_excel
 from validator import json_validator, excel_validator
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
+app.config["MAX_CONTENT_LENGTH"] = (
+    int(os.getenv("MAX_UPLOAD_SIZE_MB", "20")) * 1024 * 1024
+)
+
+EXCEL_TO_JSON_VALIDATION_ERROR_MESSAGE = "Invalid Excel payload for conversion."
+JSON_TO_EXCEL_VALIDATION_ERROR_MESSAGE = "Invalid JSON payload for conversion."
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+@app.errorhandler(RequestEntityTooLarge)
+def handle_file_too_large(_error):
+    return jsonify({"error": "Uploaded file exceeds the maximum allowed size."}), 413
 
 
 @app.route("/")
@@ -47,20 +62,31 @@ def excel_to_json():
                 response=pretty_json_data, status=200, mimetype="application/json"
             )
             return response
-        except Exception as e:
-            logger.error(f"Error processing file: {str(e)}")
-            return jsonify({"error": str(e)}), 500
+        except InvalidDataModelError as e:
+            logger.error("Validation error while processing file: %s", e)
+            return jsonify({"error": EXCEL_TO_JSON_VALIDATION_ERROR_MESSAGE}), 400
+        except (BadZipFile, ValueError):
+            logger.error("Invalid Excel file format.")
+            return jsonify({"error": "Invalid Excel file format."}), 400
+        except Exception:
+            logger.exception("Unhandled error while converting Excel to JSON.")
+            return jsonify({"error": "Internal server error"}), 500
 
 
 @app.route("/json-to-excel", methods=["POST"])
 def json_to_excel():
     logger.info("json_to_excel endpoint accessed")
-    if not request.json:
+    if not request.is_json:
         logger.error("No JSON provided in request")
         return jsonify({"error": "No JSON provided"}), 400
-    json_data = request.json
+
+    json_data = request.get_json(silent=True)
+    if json_data is None:
+        logger.error("Invalid JSON payload")
+        return jsonify({"error": "Invalid JSON payload"}), 400
+
     try:
-        logger.info(f"Processing JSON data: {json_data}")
+        logger.info("Processing JSON payload")
         json_validator.validate_json(json_data)
         logger.info("JSON data validated")
         df = convert_json_to_excel(json_data)
@@ -76,21 +102,26 @@ def json_to_excel():
             download_name="output.xlsx",
             mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
-    except Exception as e:
-        logger.error(f"Error processing JSON: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+    except InvalidDataModelError as e:
+        logger.error("Error processing JSON: %s", e)
+        return jsonify({"error": JSON_TO_EXCEL_VALIDATION_ERROR_MESSAGE}), 400
+    except Exception:
+        logger.exception("Unhandled error while converting JSON to Excel.")
+        return jsonify({"error": "Internal server error"}), 500
 
 
 @app.route("/validate-json", methods=["POST"])
 def validate_json():
     logger.info("validate_json endpoint accessed")
     try:
-        if not request.json:
+        if not request.is_json:
             logger.error("No JSON provided in request")
             return jsonify({"error": "No JSON provided"}), 400
 
-        json_data = request.json
-        logger.info(f"Received JSON: {json_data}")
+        json_data = request.get_json(silent=True)
+        if json_data is None:
+            logger.error("Invalid JSON payload")
+            return jsonify({"error": "Invalid JSON payload"}), 400
 
         # Validate the JSON
         json_validator.validate_json(json_data)
@@ -123,9 +154,15 @@ def validate_excel():
             excel_validator.validate_excel(df)
             logger.info("Excel file is valid")
             return jsonify({"message": "Data model is valid."})
-        except json_validator.InvalidDataModelError as e:
+        except InvalidDataModelError as e:
             logger.error(f"Excel validation error: {str(e)}")
             return jsonify({"error": str(e)}), 400
+        except (BadZipFile, ValueError):
+            logger.error("Invalid Excel file format.")
+            return jsonify({"error": "Invalid Excel file format."}), 400
+        except Exception:
+            logger.exception("Unhandled error while validating Excel.")
+            return jsonify({"error": "Internal server error"}), 500
 
 
 if __name__ == "__main__":
