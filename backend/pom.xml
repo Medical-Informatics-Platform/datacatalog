@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.3.2</version>
+		<version>4.0.3</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
@@ -18,11 +18,11 @@
 
 	<properties>
 		<java.version>21</java.version>
-		<springdoc.version>2.6.0</springdoc.version>
-		<jsonpath.version>2.9.0</jsonpath.version>
-		<gson.version>2.10.1</gson.version>
-		<poi.version>5.2.3</poi.version>
-		<junit.version>5.7.0</junit.version>
+		<springdoc.version>3.0.2</springdoc.version>
+		<jsonpath.version>3.0.0</jsonpath.version>
+		<gson.version>2.13.2</gson.version>
+		<poi.version>5.5.1</poi.version>
+		<junit.version>6.0.3</junit.version>
 	</properties>
 
 	<dependencies>
@@ -36,7 +36,7 @@
 		<dependency>
 			<groupId>jakarta.persistence</groupId>
 			<artifactId>jakarta.persistence-api</artifactId>
-			<version>3.1.0</version> <!-- Ensure a compatible version -->
+			<version>3.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -93,7 +93,7 @@
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
-			<version>9.22.3</version>
+			<version>12.0.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.postgresql</groupId>
@@ -176,7 +176,7 @@
 			<plugin>
 				<groupId>org.asciidoctor</groupId>
 				<artifactId>asciidoctor-maven-plugin</artifactId>
-				<version>2.2.1</version>
+				<version>3.2.0</version>
 				<executions>
 					<execution>
 						<id>generate-docs</id>
