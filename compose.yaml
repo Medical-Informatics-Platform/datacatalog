@@ -12,9 +12,9 @@ services:
       - FLASK_DEBUG=${FLASK_DEBUG}
 
   datacatalogdb:
-    image: postgres:15
+    image: postgres:18.3
     volumes:
-      - ./.stored_data/datacatalogdb:/var/lib/postgresql/data
+      - ./.stored_data/datacatalogdb:/var/lib/postgresql
     hostname: datacatalogdb
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}

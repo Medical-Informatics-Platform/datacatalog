@@ -22,7 +22,7 @@ dqt:
   flaskDebug: "1"
 
 datacatalogDb:
-  image: postgres:15
+  image: postgres:18.3
   db: "datacatalog"
   storage: 5Gi
 
