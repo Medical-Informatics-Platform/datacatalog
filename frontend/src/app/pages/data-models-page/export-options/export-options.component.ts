@@ -1,6 +1,6 @@
 import {Component, Input, Output, EventEmitter, HostListener} from '@angular/core';
 import {FormsModule} from "@angular/forms";
-import {NgIf} from "@angular/common";
+
 
 @Component({
   selector: 'app-export-options',
@@ -8,9 +8,8 @@ import {NgIf} from "@angular/common";
   styleUrls: ['./export-options.component.css'],
   standalone: true,
   imports: [
-    FormsModule,
-    NgIf
-  ]
+    FormsModule
+]
 })
 export class ExportOptionsComponent {
   @Input() selectedFileType: 'json' | 'xlsx' = 'json';

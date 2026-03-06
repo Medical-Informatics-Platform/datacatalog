@@ -1,13 +1,13 @@
 import {Component, EventEmitter, OnInit, Output} from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
-import {CommonModule} from "@angular/common";
+
 import {DataModelService} from "../../../services/data-model.service";
 
 @Component({
   selector: 'app-data-model-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './data-model-form.component.html',
   styleUrls: ['./data-model-form.component.css'],
 })

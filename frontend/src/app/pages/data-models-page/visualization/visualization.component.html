@@ -18,18 +18,21 @@
     <div id="max-depth-container">
       <label for="maxDepth">Max Depth:</label>
       <select id="maxDepth" [(ngModel)]="maxDepth" (change)="onMaxDepthChange()">
-        <option *ngFor="let depth of createArray(newAvailableDepths)" [value]="depth">
-          {{ depth }}
-        </option>
+        @for (depth of createArray(newAvailableDepths); track depth) {
+          <option [value]="depth">
+            {{ depth }}
+          </option>
+        }
       </select>
     </div>
 
     <div id="search-bar-container">
-      <app-search-bar
-        *ngIf="dataModelHierarchy"
-        [dataModelHierarchy]="dataModelHierarchy"
-        (searchResultSelected)="onSearchResult($event)"
-      ></app-search-bar>
+      @if (dataModelHierarchy) {
+        <app-search-bar
+          [dataModelHierarchy]="dataModelHierarchy"
+          (searchResultSelected)="onSearchResult($event)"
+        ></app-search-bar>
+      }
       <div aria-label="Toggle fullscreen">
         <div class="fullscreen-btn" (click)="toggleFullscreen()">
           <i class="fas" [ngClass]="isFullscreen ? 'fa-compress' : 'fa-expand'"></i>
@@ -39,13 +42,12 @@
   </div>
 
   <!-- Chart or Error Template -->
-  <ng-container *ngIf="!error; else errorTemplate">
+  @if (!error) {
     <div id="chart" style="width: 100%; height: 100%;"></div>
-  </ng-container>
-  <ng-template #errorTemplate>
+  } @else {
     <div class="error-message">
       {{ error }}
     </div>
-  </ng-template>
+  }
 
 </div>

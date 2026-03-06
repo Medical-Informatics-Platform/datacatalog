@@ -10,17 +10,15 @@ import {
   OnChanges
 } from '@angular/core';
 import {FormsModule} from "@angular/forms";
-import {NgForOf, NgIf} from "@angular/common";
+
 
 @Component({
   selector: 'app-search-bar',
   templateUrl: './search-bar.component.html',
   standalone: true,
   imports: [
-    FormsModule,
-    NgIf,
-    NgForOf
-  ],
+    FormsModule
+],
   styleUrls: ['./search-bar.component.css']
 })
 export class SearchBarComponent implements OnInit, OnChanges  {
