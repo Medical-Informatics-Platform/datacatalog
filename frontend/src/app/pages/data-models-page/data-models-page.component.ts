@@ -1,14 +1,11 @@
 import { Component, OnInit, signal} from '@angular/core';
 import { FormsModule } from "@angular/forms";
-import { CommonModule } from "@angular/common";
+
 import { Federation } from "../../interfaces/federations.interface";
 import { FederationService } from "../../services/federation.service";
 import { DataModelService } from "../../services/data-model.service";
-import {ActivatedRoute, Router, RouterOutlet} from '@angular/router';
+import { ActivatedRoute, Router, RouterOutlet } from '@angular/router';
 import { AuthService } from "../../services/auth.service";
-import { MatMenu, MatMenuItem, MatMenuTrigger } from "@angular/material/menu";
-import { MatIcon } from "@angular/material/icon";
-import { MatIconButton } from "@angular/material/button";
 import { DataModel } from "../../interfaces/data-model.interface";
 import { FederationSelectorComponent } from "./federation-selector/federation-selector.component";
 import { VisualizationComponent } from "./visualization/visualization.component";
@@ -27,22 +24,15 @@ import {GuidePopupComponent} from "./guide-popup/guide-popup.component";
   templateUrl: './data-models-page.component.html',
   styleUrls: ['./data-models-page.component.css'],
   imports: [
-    CommonModule,
     FormsModule,
-    MatMenuTrigger,
-    MatIcon,
-    MatMenu,
-    MatIconButton,
-    MatMenuItem,
     FederationSelectorComponent,
     VisualizationComponent,
     ActionMenuComponent,
     DataModelSelectorComponent,
     ExportOptionsComponent,
     RouterOutlet,
-    GuidePopupComponent,
-  ],
-  standalone: true
+    GuidePopupComponent
+],
 })
 export class DataModelsPageComponent implements OnInit{
   d3Data: any;

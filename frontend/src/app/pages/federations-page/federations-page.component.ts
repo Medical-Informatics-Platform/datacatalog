@@ -4,7 +4,6 @@ import { FederationService } from '../../services/federation.service';
 import { AuthService } from '../../services/auth.service';
 import { Federation } from '../../interfaces/federations.interface';
 import { filter, Subject, takeUntil } from 'rxjs';
-import { FilterComponent } from "./filter/filter.component";
 import { FederationCardComponent } from "./federation-card/federation-card.component";
 import { AddFederationCardComponent } from "./add-federation-card/add-federation-card.component";
 import {MatDialog} from "@angular/material/dialog";
@@ -15,12 +14,10 @@ import {ConfirmationDialogComponent} from "./confirmation-dialog/confirmation-di
   templateUrl: './federations-page.component.html',
   styleUrls: ['./federations-page.component.css'],
   imports: [
-    FilterComponent,
     RouterOutlet,
     FederationCardComponent,
     AddFederationCardComponent,
   ],
-  standalone: true
 })
 export class FederationsPageComponent implements OnInit, OnDestroy {
   selectedFilter = 'All';

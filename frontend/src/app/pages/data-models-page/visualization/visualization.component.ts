@@ -10,7 +10,7 @@ import {
 import { createTidyTree } from './tidy-tree';
 import { FormsModule } from '@angular/forms';
 import { ErrorService } from '../services/error.service';
-import { NgForOf, NgIf, NgClass } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { BreadcrumbComponent } from './breadcrumb/breadcrumb.component';
 import { SearchBarComponent } from './search-bar/search-bar.component';
 
@@ -19,7 +19,7 @@ import { SearchBarComponent } from './search-bar/search-bar.component';
   templateUrl: './visualization.component.html',
   styleUrls: ['./visualization.component.css'],
   standalone: true,
-  imports: [NgForOf, NgIf, NgClass, FormsModule, BreadcrumbComponent, SearchBarComponent],
+  imports: [NgClass, FormsModule, BreadcrumbComponent, SearchBarComponent],
 })
 export class VisualizationComponent implements OnInit, OnChanges {
   @Input() dataModelHierarchy: any;

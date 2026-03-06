@@ -1,8 +1,8 @@
 # Step 1: Build the Angular app
-FROM node:18 AS build
+FROM node:20 AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm ci
 COPY . .
 RUN npm run build -- --configuration production
 
