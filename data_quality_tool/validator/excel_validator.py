@@ -27,11 +27,22 @@ def validate_enumerations(values):
             + values
             + "."
         )
+
+    if not isinstance(enumerations, list) or any(
+        not isinstance(_enum, dict) for _enum in enumerations
+    ):
+        raise InvalidDataModelError(
+            'Nominal values format error: \'{"code", "label"}, {"code", "label"}\' expected but got '
+            + str(values)
+            + "."
+        )
+
     codes = [code for _enum in enumerations for code, label in _enum.items()]
     if len(codes) != len(set(codes)):
         raise InvalidDataModelError(
             f"Duplicate codes found in enumeration values {codes=}."
         )
+
 
 def validate_min_max(values):
     """Validate the format and logic of min-max values."""

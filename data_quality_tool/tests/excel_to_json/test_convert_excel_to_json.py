@@ -75,7 +75,7 @@ class TestConvertExcelToJson(unittest.TestCase):
             "Error processing variable: The variable Var2 is missing the conceptPath"
         )
         with self.assertRaisesRegex(InvalidDataModelError, expected_message):
-            print(convert_excel_to_json(df))
+            convert_excel_to_json(df)
 
     def test_dataframe_with_invalid_type_raises_error(self):
         # Scenario where a row has an invalid 'type' that fails validation
