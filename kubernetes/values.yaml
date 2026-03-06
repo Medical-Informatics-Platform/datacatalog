@@ -3,8 +3,8 @@ managed_cluster: false
 namespace: default
 
 datacatalog_images:
-  repository: madgik
-  tag: 1.2.1
+  repository: hbpmip
+  tag: 1.2.2
 
 
 storageClasses:

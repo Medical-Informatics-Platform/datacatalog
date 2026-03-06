@@ -21,7 +21,7 @@ This project provides a backend API for Excel and JSON conversion and validation
 Clone this repository to your local machine:
 
 ```sh
-git clone https://github.com/madgik/datacatalog.git
+git clone https://github.com/Medical-Informatics-Platform/datacatalog.git
 cd datacatalog/data_quality_tool
 ```
 

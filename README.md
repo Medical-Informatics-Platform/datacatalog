@@ -69,7 +69,7 @@ Authenticated users with proper roles gain access to management features, includ
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/madgik/datacatalog.git
+   git clone https://github.com/Medical-Informatics-Platform/datacatalog.git
    cd datacatalog
    ```
 
