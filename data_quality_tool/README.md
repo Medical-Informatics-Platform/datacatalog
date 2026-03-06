@@ -1,53 +1,53 @@
-# Data Quality Tool Setup
+# Data Quality Tool
 
-This project provides a backend API for Excel and JSON conversion and validation.
+This service converts and validates DataCatalog payloads between Excel and JSON formats. It exposes Flask endpoints used by the backend and can also be run independently during development.
 
-## Prerequisites
+## Endpoints
 
-- Docker
+- `GET /`: basic welcome response
+- `POST /excel-to-json`
+- `POST /json-to-excel`
+- `POST /validate-json`
+- `POST /validate-excel`
 
-## Installation Instructions
+## Local Development
 
-### Step 1: Install Docker
+### Prerequisites
 
-#### Windows and macOS
-- Download and install Docker Desktop from [Docker's official website](https://www.docker.com/products/docker-desktop).
+- Python `3.9+`
+- Poetry
 
-#### Linux
-- Follow the instructions on the [Docker website](https://docs.docker.com/engine/install/) to install Docker.
+### Install And Run
 
-### Step 2: Clone the Repository
-
-Clone this repository to your local machine:
-
-```sh
-git clone https://github.com/Medical-Informatics-Platform/datacatalog.git
-cd datacatalog/data_quality_tool
+```bash
+poetry install --with dev
+poetry run python controller.py
 ```
 
-### Step 3: Build and Run the Service
+The service listens on `http://localhost:8000`.
 
-1. Build the image:
+## Testing And Formatting
 
-    ```sh
-    docker build -t data-quality-tool .
-    ```
+- `poetry run pytest`
+- `poetry run black .`
 
-2. Start the container:
+## Docker
 
-    ```sh
-    docker run --rm -p 8000:8000 data-quality-tool
-    ```
+Build and run the container from this directory:
 
-### Step 4: Access the API
+```bash
+docker build -t data-quality-tool .
+docker run --rm -p 8000:8000 data-quality-tool
+```
 
-- The API will be available at [http://localhost:8000](http://localhost:8000).
+## Configuration
 
-### Stopping the Container
+- `MAX_UPLOAD_SIZE_MB`: optional upload size limit, default `20`
+- `FLASK_ENV` and `FLASK_DEBUG`: Flask runtime flags used by the compose setup
 
-To stop the container, press `Ctrl+C` in the running terminal.
+## Project Layout
 
-## Additional Information
-
-- To rebuild the image after making changes, run `docker build -t data-quality-tool .` again.
-- For shell access, run `docker run --rm -it data-quality-tool /bin/bash`.
+- `controller.py`: Flask routes and request handling
+- `converter/`: Excel to JSON and JSON to Excel logic
+- `validator/`: validation rules for both formats
+- `tests/`: unit and endpoint coverage plus sample fixtures
