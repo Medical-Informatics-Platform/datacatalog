@@ -1,27 +1,43 @@
-# Datacatalog
+# Datacatalog Frontend
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.2.3.
+This directory contains the Angular 21 frontend for DataCatalog. The app uses standalone components, Angular Material, D3-based visualization, and a dev proxy for `/services` requests to the backend.
 
-## Development server
+## Prerequisites
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+- Node.js `20.19+`
+- npm `10+`
 
-## Code scaffolding
+## Development
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+Install dependencies and start the dev server:
 
-## Build
+```bash
+npm ci
+npm start
+```
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+The app runs at `http://localhost:4200`. API calls to `/services` are proxied to `http://localhost:8090` through `src/proxy.conf.json`.
 
-## Running unit tests
+## Common Commands
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+- `npm start`: run the Angular dev server
+- `npm run watch`: rebuild continuously in development mode
+- `npm run build`: create a production bundle in `dist/datacatalog-frontend`
+- `npm test -- --watch=false --browsers=ChromeHeadless`: run the Karma/Jasmine suite once
 
-## Running end-to-end tests
+## Docker Build
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+Build the production image from this directory:
 
-## Further help
+```bash
+docker build -t datacatalog-frontend .
+```
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+The container compiles the Angular app with Node 20 and serves the built output with Nginx on port `80`.
+
+## Project Layout
+
+- `src/app/`: application code
+- `src/assets/`: static images and logos
+- `src/proxy.conf.json`: local backend proxy
+- `angular.json`: Angular workspace configuration

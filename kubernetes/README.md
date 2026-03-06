@@ -1,59 +1,65 @@
 # Kubernetes Deployment Guide
 
-This guide explains how to deploy the **Datacatalog** using **MicroK8s** and **Helm**.
-
----
+This chart deploys the frontend, backend, data quality tool, and PostgreSQL for DataCatalog.
 
 ## Prerequisites
 
-1. **MicroK8s**: A lightweight Kubernetes distribution.
-2. **Helm**: A package manager for Kubernetes (already included in MicroK8s).
+- Kubernetes cluster
+- Helm 3
+- A namespace where the release will run
 
----
-
-## Deployment Steps
-
-### 1. Install MicroK8s
-
-To install MicroK8s, run the following command:
+For local MicroK8s usage:
 
 ```bash
 sudo snap install microk8s --classic
-```
-
-### 2. Enable Required MicroK8s Add-ons
-
-Enable the necessary MicroK8s add-ons for DNS, ingress, and Helm:
-
-```bash
 microk8s enable dns ingress helm3
 ```
 
-### 3. Configure the `values.yaml` File
+## Required Configuration
 
-Before deploying the **Datacatalog**, update the `values.yaml` file with your Keycloak configuration details for authentication. Here’s an example:
+Update `values.yaml` before deploying:
 
-```yaml
-backend:
-  authentication: "true"
-  keycloak:
-    authUrl: "https://keycloak.example.com"
-    realm: "your-realm"
-    clientId: "your-client-id"
-    clientSecret: "your-client-secret"
-```
+- `managed_cluster`: `false` for local NodePort access, `true` for ingress-based clusters
+- `namespace`: target namespace
+- `datacatalog_images.repository` and `datacatalog_images.tag`: image location and release tag
+- `datacatalogDb.image`: PostgreSQL image, currently `postgres:18.3`
+- `backend.publicHost`: public hostname used by the frontend and auth callback
+- `backend.dqtUrl`: URL of the data quality tool service
 
-- Replace `https://keycloak.example.com` with your Keycloak server URL.
-- Replace `your-realm`, `your-client-id`, and `your-client-secret` with your actual Keycloak configuration.
+The chart expects a secret named `datacatalog-secrets` with:
 
-### 4. Deploy the Application
+- `db.user`
+- `db.password`
+- `keycloak.client-id`
+- `keycloak.client-secret`
 
-Navigate to the directory containing your Helm chart and deploy the **Datacatalog** using:
+Example:
 
 ```bash
-microk8s helm3 install datacatalog .
+kubectl -n default create secret generic datacatalog-secrets \
+  --from-literal=db.user=postgres \
+  --from-literal=db.password=test \
+  --from-literal=keycloak.client-id=datacatalog \
+  --from-literal=keycloak.client-secret=change-me
 ```
 
-Here:
-- `datacatalog` is the release name for your deployment.
-- `.` refers to the current directory containing the Helm chart.
+## Install Or Upgrade
+
+From the `kubernetes/` directory:
+
+```bash
+helm upgrade --install datacatalog . -n default --create-namespace
+```
+
+With MicroK8s:
+
+```bash
+microk8s helm3 upgrade --install datacatalog . -n default --create-namespace
+```
+
+## Access Model
+
+- `managed_cluster: false`: frontend and backend are exposed through NodePorts defined in the templates
+- `managed_cluster: true`: the chart creates an ingress for the frontend host in `backend.publicHost`
+
+The database uses a PVC and mounts storage at `/var/lib/postgresql`.

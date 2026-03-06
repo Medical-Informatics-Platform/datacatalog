@@ -1,25 +1,25 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- Core backend code lives at the repository root.
-- `controller.py` defines Flask API routes for conversion and validation.
-- `converter/` contains Excel <-> JSON transformation logic.
+- Service code lives in this directory.
+- `controller.py` defines the Flask routes for conversion and validation.
+- `converter/` contains Excel to JSON and JSON to Excel transformation logic.
 - `validator/` contains JSON and Excel validation rules.
-- `common_entities.py` stores shared constants/exceptions used across modules.
+- `common_entities.py` stores shared constants and exceptions.
 - `tests/` mirrors runtime responsibilities (`excel_to_json/`, `json_to_excel/`, `validator/`) and includes API tests in `tests/test_endpoint.py`.
-- Test fixtures are in `tests/` (for example `tests/MinimalDataModelExample.json` and `tests/MinimalDataModelExample.xlsx`).
+- Test fixtures are committed under `tests/`, for example `tests/MinimalDataModelExample.json` and `tests/MinimalDataModelExample.xlsx`.
 
 ## Build, Test, and Development Commands
 - `poetry install --with dev`: install runtime and development dependencies.
 - `poetry run python controller.py`: run Flask locally on port `8000`.
 - `poetry run gunicorn --bind 0.0.0.0:8000 controller:app`: run a production-like server.
-- `cd tests && poetry run pytest -q`: run the full test suite (run from `tests/` so fixture paths resolve correctly).
-- `docker build -t data-quality-tool .`: build backend container image.
+- `poetry run pytest`: run the full test suite from the service root.
+- `docker build -t data-quality-tool .`: build the container image.
 
 ## Coding Style & Naming Conventions
 - Follow PEP 8 with 4-space indentation.
 - Use `snake_case` for modules/functions/variables, `PascalCase` for classes, and `UPPER_SNAKE_CASE` for constants.
-- Keep route handlers lightweight; place conversion/validation business logic in `converter/` or `validator/`.
+- Keep route handlers lightweight; place conversion and validation business logic in `converter/` or `validator/`.
 - Format code with Black before submitting changes: `poetry run black .`.
 
 ## Testing Guidelines
@@ -29,10 +29,11 @@
 - Cover both successful flows and explicit validation failures.
 
 ## Commit & Pull Request Guidelines
-- Existing history uses short, sentence-style summaries and sometimes issue references like `(#9)`.
+- Existing history uses short summaries and sometimes issue references like `(#9)`.
 - Write concise imperative commit subjects and include an issue reference when applicable.
-- PRs should include: what changed, why it changed, test evidence, and sample request/response when endpoint behavior is affected.
+- PRs should include what changed, why it changed, and test evidence; include sample request or response details when endpoint behavior changes.
 
 ## Security & Configuration Tips
-- Do not commit sensitive real-world data in JSON/XLSX fixtures.
-- Call out any authentication or API exposure changes clearly in PR descriptions.
+- Do not commit sensitive real-world data in JSON or XLSX fixtures.
+- `MAX_UPLOAD_SIZE_MB` controls the upload limit; keep defaults and docs aligned if you change it.
+- Call out API exposure or validation rule changes clearly in PR descriptions.
