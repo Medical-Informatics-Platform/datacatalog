@@ -18,17 +18,24 @@ DataCatalog is part of the [Medical Informatics Platform](https://mip.ebrains.eu
 
 ### Local Environment
 
-Create a `.env` file in the repository root:
+The compose setup now has safe local defaults. A ready-to-use dummy file is included at `.env`, and you can copy values from `.env.example` if you need to rebuild it.
 
 ```env
 FLASK_ENV=development
 FLASK_DEBUG=1
+MAX_UPLOAD_SIZE_MB=20
+
+POSTGRES_PORT=5432
+POSTGRES_DB=postgres
 POSTGRES_PASSWORD=test
 
+BACKEND_PORT=8090
 DB_URL=jdbc:postgresql://datacatalogdb:5432/postgres
 DB_USER=postgres
 DB_PASSWORD=test
+FRONTEND_PORT=80
 PUBLIC_HOST=http://localhost
+DQT_PORT=8000
 DQT_URL=http://data_quality_tool:8000
 
 AUTHENTICATION=0
@@ -41,13 +48,15 @@ KEYCLOAK_SSL_REQUIRED=none
 
 Set `PUBLIC_HOST=http://localhost:4200` if you run the Angular frontend outside Docker. Set `AUTHENTICATION=1` only when valid Keycloak settings are available.
 
+If port `80` is already in use on your machine, set `FRONTEND_PORT=8080` and update `PUBLIC_HOST=http://localhost:8080`.
+
 ### Start The Stack
 
 ```bash
 docker compose up --build
 ```
 
-The frontend is available at `http://localhost`, the backend at `http://localhost:8090/services`, and the data quality tool at `http://localhost:8000`. PostgreSQL data is persisted under `.stored_data/datacatalogdb`.
+The frontend is available at `http://localhost` (or your configured `FRONTEND_PORT`), the backend at `http://localhost:8090/services`, and the data quality tool at `http://localhost:8000`. PostgreSQL data is persisted under `.stored_data/datacatalogdb`.
 
 ## Local Service Development
 

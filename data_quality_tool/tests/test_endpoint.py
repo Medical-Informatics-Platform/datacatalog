@@ -139,6 +139,91 @@ class TestController(unittest.TestCase):
             ["example methodology", "group methodology", "nested methodology"],
         )
 
+    def test_json_to_excel_conversion_with_null_top_level_variables(self):
+        json_data = {
+            "code": "DM001",
+            "version": "1.0",
+            "label": "Test Model",
+            "variables": None,
+            "groups": [
+                {
+                    "code": "G001",
+                    "label": "Group 1",
+                    "variables": [
+                        {
+                            "label": "Dataset Variable",
+                            "code": "dataset",
+                            "sql_type": "text",
+                            "isCategorical": True,
+                            "type": "nominal",
+                            "enumerations": [
+                                {"code": "dataset1", "label": "Dataset 1"}
+                            ],
+                        }
+                    ],
+                    "groups": [],
+                }
+            ],
+        }
+
+        response = self.client.post(
+            "/json-to-excel", json=json_data, content_type="application/json"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        excel_file = BytesIO(response.data)
+        df = pd.read_excel(excel_file)
+
+        self.assertEqual(df["code"].tolist(), ["dataset"])
+        self.assertEqual(df["conceptPath"].tolist(), ["Test Model/Group 1/dataset"])
+
+    def test_json_to_excel_conversion_with_null_first_level_group_variables(self):
+        json_data = {
+            "code": "DM002",
+            "version": "1.0",
+            "label": "Test Model",
+            "variables": [],
+            "groups": [
+                {
+                    "code": "G001",
+                    "label": "Group 1",
+                    "variables": None,
+                    "groups": [
+                        {
+                            "code": "G002",
+                            "label": "Group 2",
+                            "variables": [
+                                {
+                                    "label": "Dataset Variable",
+                                    "code": "dataset",
+                                    "sql_type": "text",
+                                    "isCategorical": True,
+                                    "type": "nominal",
+                                    "enumerations": [
+                                        {"code": "dataset1", "label": "Dataset 1"}
+                                    ],
+                                }
+                            ],
+                            "groups": [],
+                        }
+                    ],
+                }
+            ],
+        }
+
+        response = self.client.post(
+            "/json-to-excel", json=json_data, content_type="application/json"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        excel_file = BytesIO(response.data)
+        df = pd.read_excel(excel_file)
+
+        self.assertEqual(df["code"].tolist(), ["dataset"])
+        self.assertEqual(
+            df["conceptPath"].tolist(), ["Test Model/Group 1/Group 2/dataset"]
+        )
+
     def test_excel_to_json_conversion_no_excel(self):
         response = self.client.post(
             "/excel-to-json", content_type="multipart/form-data", data={}

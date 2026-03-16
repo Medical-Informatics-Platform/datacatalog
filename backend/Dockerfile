@@ -67,4 +67,4 @@ EXPOSE 8090
 #######################################################
 # Healthcheck
 #######################################################
-HEALTHCHECK --start-period=60s CMD curl -f http://localhost:8090/actuator/health || exit 1
+HEALTHCHECK --start-period=60s CMD curl -f http://localhost:8090/services/actuator/health || exit 1
