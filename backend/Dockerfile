@@ -46,7 +46,7 @@ RUN apk add --no-cache curl
 #######################################################
 # Install dockerize (for config templating)
 #######################################################
-ENV DOCKERIZE_VERSION=v0.6.1
+ENV DOCKERIZE_VERSION=v0.10.1
 RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
     && tar -C /usr/local/bin -xzvf dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
     && rm dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz
@@ -67,4 +67,4 @@ EXPOSE 8090
 #######################################################
 # Healthcheck
 #######################################################
-HEALTHCHECK --start-period=60s CMD curl -f http://localhost:8090/actuator/health || exit 1
+HEALTHCHECK --start-period=60s CMD curl -f http://localhost:8090/services/actuator/health || exit 1

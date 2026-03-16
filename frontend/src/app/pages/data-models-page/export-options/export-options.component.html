@@ -5,17 +5,19 @@
   </button>
 
   <!-- Dropdown Menu -->
-  <div *ngIf="isDropdownVisible" class="dropdown-menu">
-    <label for="file-type-select" class="export-label">Format:</label>
-    <select
-      id="file-type-select"
-      class="dropdown"
-      [(ngModel)]="selectedFileType"
-      aria-label="Choose export format"
-    >
-      <option value="json">JSON</option>
-      <option value="xlsx">XLSX</option>
-    </select>
-    <button class="confirm-button" (click)="onExport()">Confirm</button>
-  </div>
+  @if (isDropdownVisible) {
+    <div class="dropdown-menu">
+      <label for="file-type-select" class="export-label">Format:</label>
+      <select
+        id="file-type-select"
+        class="dropdown"
+        [(ngModel)]="selectedFileType"
+        aria-label="Choose export format"
+        >
+        <option value="json">JSON</option>
+        <option value="xlsx">XLSX</option>
+      </select>
+      <button class="confirm-button" (click)="onExport()">Confirm</button>
+    </div>
+  }
 </div>

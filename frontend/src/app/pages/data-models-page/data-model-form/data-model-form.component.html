@@ -29,9 +29,11 @@
       </div>
     }
 
-    <section class="error-message" *ngIf="errorMessage">
-      <p>{{ errorMessage }}</p>
-    </section>
+    @if (errorMessage) {
+      <section class="error-message">
+        <p>{{ errorMessage }}</p>
+      </section>
+    }
 
 
     <button type="submit" [disabled]="!file">

@@ -1,10 +1,12 @@
-import {Component, Input, Output, EventEmitter, HostListener} from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
   selector: 'app-action-menu',
   templateUrl: './action-menu.component.html',
   styleUrls: ['./action-menu.component.css'],
-  standalone: true,
+  host: {
+    '(document:keydown.escape)': 'onEscape()',
+  },
 })
 export class ActionMenuComponent {
   @Input() isSelectedDataModelReleased: boolean = false; // Determines menu options
@@ -28,8 +30,7 @@ export class ActionMenuComponent {
   }
 
 
-  @HostListener('document:keydown.escape', ['$event'])
-  onEscape(event: KeyboardEvent): void {
+  onEscape(): void {
     if (this.menuVisible) {
       this.toggleMenu();
     }

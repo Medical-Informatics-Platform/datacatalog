@@ -365,7 +365,7 @@ class TestValidateDataModel(unittest.TestCase):
         ):
             validate_json(data_model)
 
-    def test_variables_explicit_null_raises_error(self):
+    def test_variables_explicit_null_is_treated_as_empty_list(self):
         data_model = {
             "code": "DM001",
             "version": "1.0",
@@ -387,11 +387,8 @@ class TestValidateDataModel(unittest.TestCase):
                 }
             ],
         }
-        with self.assertRaisesRegex(
-            InvalidDataModelError,
-            "'variables' in DataModel must be a list of dictionaries",
-        ):
-            validate_json(data_model)
+        validate_json(data_model)
+        self.assertEqual(data_model["variables"], [])
 
     def test_variables_empty_list(self):
         data_model = {
