@@ -1,6 +1,6 @@
 import { ViewportScroller } from '@angular/common';
 import { FooterComponent } from './pages/shared/footer/footer.component';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { HeaderComponent } from './pages/shared/header/header.component';
 import { RouterModule } from '@angular/router';
 
@@ -11,23 +11,11 @@ import { RouterModule } from '@angular/router';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
   private readonly viewportScroller = inject(ViewportScroller);
   title = 'datacatalog-frontend';
 
   constructor() {
     this.viewportScroller.setOffset(() => [0, 80]);
-  }
-
-  ngOnInit(): void {
-    this.clearTokenOnInit();
-  }
-
-  private clearTokenOnInit(): void {
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      localStorage.removeItem('auth_token');
-      console.log('Token cleared during initialization');
-    }
   }
 }

@@ -3,7 +3,7 @@ import 'zone.js'; // Required for Angular
 import { bootstrapApplication } from '@angular/platform-browser';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter, withInMemoryScrolling, withRouterConfig } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withXsrfConfiguration } from '@angular/common/http';
 import { AppComponent } from './app/app.component';
 import {appRoutes} from "./app/app.routes";
 
@@ -21,6 +21,11 @@ bootstrapApplication(AppComponent, {
         onSameUrlNavigation: 'reload'
       })
     ),
-    provideHttpClient()
+    provideHttpClient(
+      withXsrfConfiguration({
+        cookieName: 'MIP-XSRF-TOKEN',
+        headerName: 'X-MIP-XSRF-TOKEN',
+      })
+    )
   ]
 }).catch(err => console.error(err));
