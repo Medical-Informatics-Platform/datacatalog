@@ -12,7 +12,7 @@ storageClasses:
   managed: ceph-corbo-cephfs-retain
 
 frontend:
-  ingress: nginx-public
+  className: haproxy-public
   cert_manager: letsencrypt-public
 
 storageClass:
