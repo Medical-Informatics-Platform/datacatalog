@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
 spec:
   replicas: 1
   selector:
@@ -15,12 +15,12 @@ spec:
     spec:
       containers:
       - name: backend
-        image: "{{ .Values.datacatalog_images.repository }}/datacatalog_backend:{{ .Values.datacatalog_images.tag }}"
+        image: {{ printf "%s/datacatalog_backend:%s" .Values.images.repository .Values.images.tag | quote }}
         ports:
         - containerPort: 8090
         env:
         - name: DB_URL
-          value: "{{ .Values.backend.dbUrl }}"
+          value: {{ printf "jdbc:postgresql://datacatalogdb:5432/%s" .Values.datacatalogDb.db | quote }}
         - name: DB_USER
           valueFrom:
             secretKeyRef:
@@ -31,14 +31,16 @@ spec:
             secretKeyRef:
               name: datacatalog-secrets
               key: db.password
+        - name: AUTHENTICATION
+          value: {{ ternary "1" "0" .Values.backend.authentication | quote }}
         - name: PUBLIC_HOST
-          value: "http://{{ .Values.backend.publicHost }}"
+          value: {{ printf "https://%s" .Values.global.publicHost | quote }}
         - name: DQT_URL
-          value: "{{ .Values.backend.dqtUrl }}"
+          value: "http://data-quality-tool:8000"
         - name: KEYCLOAK_AUTH_URL
-          value: "{{ .Values.backend.keycloak.authUrl }}"
+          value: {{ .Values.backend.keycloak.authUrl | quote }}
         - name: KEYCLOAK_REALM
-          value: "{{ .Values.backend.keycloak.realm }}"
+          value: {{ .Values.backend.keycloak.realm | quote }}
         - name: KEYCLOAK_CLIENT_ID
           valueFrom:
             secretKeyRef:
@@ -50,13 +52,32 @@ spec:
               name: datacatalog-secrets
               key: keycloak.client-secret
         - name: KEYCLOAK_SSL_REQUIRED
-          value: "{{ .Values.backend.keycloak.sslRequired }}"
+          value: {{ .Values.backend.keycloak.sslRequired | quote }}
+        startupProbe:
+          httpGet:
+            path: /services/actuator/health
+            port: 8090
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 12
+        readinessProbe:
+          httpGet:
+            path: /services/actuator/health
+            port: 8090
+          periodSeconds: 10
+          timeoutSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /services/actuator/health
+            port: 8090
+          periodSeconds: 30
+          timeoutSeconds: 5
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: backend
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
 spec:
   selector:
     app: backend
@@ -64,8 +85,4 @@ spec:
     - protocol: TCP
       port: 8090
       targetPort: 8090
-  {{- if not .Values.managed_cluster }}
-      nodePort: 30090  # Static NodePort for backend
-  type: NodePort
-  {{- end }}
-
+  type: ClusterIP

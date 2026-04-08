@@ -1,41 +1,34 @@
-# Toggle between old (self-hosted) and new (managed) cluster storage
-managed_cluster: false
-namespace: default
+cluster:
+  managed: false
+  storageClasses:
+    local: k8s-local-storage
+    managed: ceph-corbo-cephfs-retain
 
-datacatalog_images:
+images:
   repository: hbpmip
   tag: 2.0.0
 
-
-storageClasses:
-  local: k8s-local-storage
-  managed: ceph-corbo-cephfs-retain
+global:
+  publicHost: datacatalogue.mip.ebrains.eu
 
 frontend:
-  className: haproxy-public
-  cert_manager: letsencrypt-public
-
-storageClass:
+  ingress:
+    className: haproxy-public
+    clusterIssuer: letsencrypt-public
+    tlsSecretName: datacatalog-tls
 
 dqt:
-  flaskEnv: "development"
-  flaskDebug: "1"
+  flaskEnv: development
+  flaskDebug: '1'
 
 datacatalogDb:
   image: postgres:18.3
-  db: "datacatalog"
+  db: datacatalog
   storage: 5Gi
 
 backend:
-  dbUrl: "jdbc:postgresql://datacatalogdb:5432/datacatalog"
-  publicHost: "https://datacatalogue.mip.ebrains.eu"
-  dqtUrl: "http://data-quality-tool:8000"
-  authentication: "true"
+  authentication: true
   keycloak:
-    authUrl: "https://iam.ebrains.eu/auth/"
-    realm: "MIP"
-    sslRequired: "none"
-
-persistence:
-  enabled: true
-  accessModes: ["ReadWriteOnce"]
+    authUrl: https://iam.ebrains.eu/auth/
+    realm: MIP
+    sslRequired: none

@@ -12,19 +12,22 @@ For local MicroK8s usage:
 
 ```bash
 sudo snap install microk8s --classic
-microk8s enable dns ingress helm3
+microk8s enable dns ingress helm3 storage
 ```
 
 ## Required Configuration
 
-Update `values.yaml` before deploying:
+The chart now takes its namespace from the Helm release, not from `values.yaml`.
 
-- `managed_cluster`: `false` for local NodePort access, `true` for ingress-based clusters
-- `namespace`: target namespace
-- `datacatalog_images.repository` and `datacatalog_images.tag`: image location and release tag
+Update `values.yaml` or provide overrides for:
+
+- `cluster.managed`: `false` for microk8s/local storage, `true` for managed-cluster storage classes
+- `images.repository` and `images.tag`: image location and release tag
+- `global.publicHost`: bare public hostname used by the frontend ingress and backend auth callback URL
 - `datacatalogDb.image`: PostgreSQL image, currently `postgres:18.3`
-- `backend.publicHost`: public hostname used by the frontend and auth callback
-- `backend.dqtUrl`: URL of the data quality tool service
+- `backend.authentication`: enable or disable Keycloak-backed authentication in the backend
+- `cluster.storageClasses.managed` if your managed cluster uses a different default storage class
+- `frontend.ingress.tlsSecretName`: override the default TLS secret name
 
 The chart expects a secret named `datacatalog-secrets` with:
 
@@ -59,7 +62,8 @@ microk8s helm3 upgrade --install datacatalog . -n default --create-namespace
 
 ## Access Model
 
-- `managed_cluster: false`: frontend and backend are exposed through NodePorts defined in the templates
-- `managed_cluster: true`: the chart creates an ingress for the frontend host in `backend.publicHost`
+- The frontend is exposed through ingress when `global.publicHost` is set.
+- Frontend and backend services are internal `ClusterIP` services in both managed and microk8s deployments.
+- `cluster.managed` only controls storage-class selection and whether the microk8s local `StorageClass` is rendered.
 
 The database uses a PVC and mounts storage at `/var/lib/postgresql`.
