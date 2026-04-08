@@ -4,7 +4,7 @@ namespace: default
 
 datacatalog_images:
   repository: hbpmip
-  tag: 1.2.2
+  tag: 2.0.0
 
 
 storageClasses:
