@@ -1,25 +1,19 @@
 import { RouterModule, Routes } from '@angular/router';
 import { LandingPageComponent } from './pages/landing-page/landing-page.component';
-import { FederationsPageComponent } from './pages/federations-page/federations-page.component';
 import { AccountPageComponent } from './pages/account-page/account-page.component';
 import { AuthGuard } from './guards/auth.guard';
 import { NgModule } from '@angular/core';
 import { AuthCallbackComponent } from './callback/authcallback.component';
 import { PathologyPageComponent } from './pages/pathology-page/pathology-page.component';
-import { AboutPageComponent } from './pages/about-page/about-page.component';
+import { HomeSectionRedirectComponent } from './pages/home-section-redirect/home-section-redirect.component';
 
 
 export const appRoutes: Routes = [
-  { path: 'home', component: LandingPageComponent },
+  { path: '', component: LandingPageComponent },
   {
-    path: 'federations',
-    component: FederationsPageComponent,
-    loadChildren: () =>
-      import('./pages/federations-page/federations-page.module').then(
-        (m) => m.FederationsPageModule
-      ),
+    path: 'home',
+    component: HomeSectionRedirectComponent,
   },
-  { path: 'account', component: AccountPageComponent, canActivate: [AuthGuard] },
   {
     path: 'pathology',
     component: PathologyPageComponent,
@@ -28,14 +22,31 @@ export const appRoutes: Routes = [
         (m) => m.PathologyPageModule
       ),
   },
+  {
+    path: 'federations',
+    pathMatch: 'full',
+    component: HomeSectionRedirectComponent,
+    data: { fragment: 'federations' },
+  },
+  {
+    path: 'federations',
+    loadChildren: () =>
+      import('./pages/federations-page/federations-page.module').then(
+        (m) => m.FederationsPageModule
+      ),
+  },
+  { path: 'account', component: AccountPageComponent, canActivate: [AuthGuard] },
   { path: 'auth-callback', component: AuthCallbackComponent },
-  { path: 'about', component: AboutPageComponent },
-  { path: '', redirectTo: 'home', pathMatch: 'full' },
-  { path: '**', redirectTo: 'home' }
+  {
+    path: 'about',
+    component: HomeSectionRedirectComponent,
+    data: { fragment: 'about' },
+  },
+  { path: '**', redirectTo: '' }
 ];
 
 @NgModule({
   imports: [RouterModule.forRoot(appRoutes)],
-  exports: [RouterModule],
+  exports: [RouterModule]
 })
-export class AppRoutingModule {}
+export class AppRoutingModule { }

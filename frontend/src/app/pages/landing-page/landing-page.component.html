@@ -1,91 +1,69 @@
-<section class="landing-page">
-  <!-- Federation Image Grid Section -->
-  <div class="federation-container">
-    <div class="image-gallery">
-      <div class="image-container">
-        <!-- Dynamic Federation Cards -->
-        @for (federation of federations; track federation) {
-          <div
-            class="image-item"
-            (click)="navigateToFederation(federation.url)"
-            >
-            <img
-              [src]="'assets/' + federation.code + '.png'"
-              [alt]="federation.title"
-              />
-            <div class="image-caption">
-              <h3>{{ federation.title }}</h3>
-              <p>
-                @if (federation.institutions != '0') {
-                  <span>
-                    Institutions: {{ federation.institutions }} |
-                  </span>
-                }
-                Data Records: {{ federation.records | number }}
+<div class="home-page" id="top">
+  <div class="home-content">
+    <section id="Intro" class="section hero-section">
+      <div class="container">
+        <div class="intro-row">
+          <div class="intro-content">
+            <div class="hero-glass-card">
+              <p class="eyebrow">Medical Informatics Platform</p>
+              <h1 class="title">Explore the frontiers of <span class="text-gradient">clinical discovery.</span></h1>
+              <p class="subtitle">
+                Access decentralized real-world data across medical centers.
+                Perform secure analysis while preserving patient privacy using
+                our federated architecture.
               </p>
+              <div class="hero-actions">
+                <a href="#federations" class="btn btn-primary" style="text-decoration: none;">Explore Network</a>
+                <a href="#about" class="btn-ghost" style="text-decoration: none;">Learn More</a>
+              </div>
+              <div class="hero-stats-preview">
+                <div class="stat-item">
+                  <span class="stat-value">30+</span>
+                  <span class="stat-label">Hospitals</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                  <span class="stat-value">500k+</span>
+                  <span class="stat-label">Patients</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                  <span class="stat-value">12</span>
+                  <span class="stat-label">Countries</span>
+                </div>
+              </div>
             </div>
           </div>
-        }
+          <div class="intro-image-wrapper">
+            <div class="demo-window" [class.fullscreen]="isFullscreen">
+              <button class="expand-preview-btn" (click)="toggleFullScreen()" [title]="isFullscreen ? 'Close preview' : 'Expand preview'">
+                <span class="material-icons">{{ isFullscreen ? 'close_fullscreen' : 'open_in_full' }}</span>
+              </button>
+              <div class="window-content scrollable">
+                <div class="scroll-container">
+                  <img src="assets/home/platform-screenshot.png" alt="MIP Experiment Studio" class="demo-screenshot full-view">
+                </div>
+                <div class="scroll-hint" *ngIf="!isFullscreen">
+                  <span class="mouse-icon"></span>
+                  <span class="hint-text">Scroll to explore</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Description Section -->
-    <div class="description">
-      <h6 class="welcome">
-        Welcome to the <br /> Medical Informatics Platform
-      </h6>
-      <br />
-      <p>
-        Collaborate across multiple hospitals to access medical data and use
-        cutting-edge algorithms to analyze shared pathologies like dementia,
-        mental health, and more.
-        <br />
-        <br />
-        Make sure you have an EBRAINS Account to access the platform.
-      </p>
-      <div class="actions">
-        <!-- Call-to-Action Button -->
-        <button class="gradient-button" (click)="getStarted()">Get Started</button>
-        <button class="gradient-button" (click)="learnMore()">Learn More</button>
+    <section id="federations" class="section">
+      <div class="container overflow-hidden">
+        <app-embedded-federations></app-embedded-federations>
       </div>
-    </div>
+    </section>
+
+    <section id="about" class="section">
+      <div class="container">
+        <app-about-page [isEmbedded]="true"></app-about-page>
+      </div>
+    </section>
   </div>
-
-  <section class="info-section">
-    <div class="info-card">
-      <div class="info-icon">
-        <i class="fas fa-database"></i>
-      </div>
-      <div class="info-content">
-        <h2>Access to Medical Data</h2>
-        <p>
-          Explore tools that enable secure access to medical data from our federated network of hospitals. Gain insights while maintaining privacy and compliance.
-        </p>
-        <!-- <button class="gradient-button">Learn More</button> -->
-      </div>
-    </div>
-
-    <div class="info-card reverse">
-      <div class="info-content">
-        <h2>Algorithms</h2>
-        <p>
-          Leverage cutting-edge algorithms for analyzing medical data, including advanced tools for diagnosing pathologies like dementia or mental health conditions.
-        </p>
-        <!-- <button class="gradient-button">Discover Tools</button> -->
-      </div>
-      <div class="info-icon">
-        <i class="fas fa-brain"></i>
-      </div>
-    </div>
-  </section>
-
-  @if (!isLoggedIn()) {
-    <div class="floating-button" aria-label="Create an EBRAINS Account">
-      <button (click)="redirectToSignUp()">
-        <!-- Create EBRAINS Account -->
-        <img src="assets/ebrains-logo.png" alt="Create EBRAINS Account" />
-      </button>
-    </div>
-  }
-
-</section>
+</div>

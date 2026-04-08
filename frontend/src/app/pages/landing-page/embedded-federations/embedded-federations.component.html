@@ -1,0 +1,40 @@
+<div class="federations-section">
+  <div class="section-header">
+    <p class="eyebrow">MIP network map</p>
+    <h2 class="title">Active <span class="text-gradient">Federations</span></h2>
+    <p class="subtitle">
+      Access global pathology research networks. Connect with decentralized
+      datasets across leading institutions for secure, collaborative analysis.
+    </p>
+  </div>
+
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading network federations...</p>
+    </div>
+  } @else if (hasError) {
+    <div class="error-state">
+      <span class="material-icons error-icon">error_outline</span>
+      <p>Unable to load the MIP network federations. Please try again later.</p>
+      <button class="btn btn-primary" (click)="loadFederations()">Retry</button>
+    </div>
+  } @else if (federations.length === 0) {
+    <div class="empty-state">
+      <span class="material-icons empty-icon">hub</span>
+      <p>No federations are currently connected to the network.</p>
+    </div>
+  } @else {
+    <section class="federations-grid">
+      @for (federation of federations; track federation.code) {
+        <app-federation-card
+          [federation]="federation"
+          [isAdmin]="isAdmin"
+          (visualizePathology)="goToPathology($event)"
+          (updateFederation)="goToUpdateFederation($event)"
+          (deleteFederation)="deleteFederation($event)"
+        ></app-federation-card>
+      }
+    </section>
+  }
+</div>
