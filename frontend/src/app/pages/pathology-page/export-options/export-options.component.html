@@ -1,0 +1,24 @@
+<!-- Export Button -->
+<div class="export-container" (document:click)="closeDropdown($event)">
+  <button class="btn btn-ghost btn-sm" (click)="toggleDropdown($event)">
+    <span class="material-icons">download</span>
+    Export
+  </button>
+
+  <!-- Dropdown Menu -->
+  @if (isDropdownVisible) {
+    <div class="dropdown-menu">
+      <label for="file-type-select" class="export-label">Format:</label>
+      <select
+        id="file-type-select"
+        class="dropdown"
+        [(ngModel)]="selectedFileType"
+        aria-label="Choose export format"
+        >
+        <option value="json">JSON</option>
+        <option value="xlsx">XLSX</option>
+      </select>
+      <button class="btn btn-primary btn-sm" (click)="onExport()" style="width: 100%; margin-top: 12px;">Confirm</button>
+    </div>
+  }
+</div>

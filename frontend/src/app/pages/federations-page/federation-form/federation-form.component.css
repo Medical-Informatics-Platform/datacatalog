@@ -1,232 +1,203 @@
-/* General container styling */
+:host {
+  --mip-blue: #2b33e9;
+  --mip-blue-soft: #7f9ce8;
+  --mip-orange: #ffba08;
+  --mip-mint: #dfefe4;
+  --mip-ink: #111827;
+  --mip-muted: #5f6b85;
+  --mip-border: rgba(43, 51, 233, 0.12);
+  --mip-danger: #d64545;
+}
+
 .federation-form {
-  background: linear-gradient(145deg, #fcffff, #f9f9f9); /* Subtle gradient */
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1); /* Soft shadow */
-  max-width: 700px;
-  margin: 50px auto;
-  padding: 40px;
-  border-radius: 12px;
-  font-family: 'Roboto', sans-serif;
-  transition: transform 0.3s, box-shadow 0.3s;
+  position: relative;
+  max-width: 760px;
+  margin: 40px auto;
+  padding: 36px;
+  border: 1px solid var(--mip-border);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 186, 8, 0.12), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 251, 255, 0.96));
+  box-shadow: 0 26px 48px rgba(26, 35, 126, 0.1);
 }
 
-.federation-form:hover {
-  transform: scale(1.01); /* Slight scaling effect on hover */
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-}
-
-/* Form heading */
 .federation-form h1 {
-  font-size: 28px;
-  margin-bottom: 20px;
+  margin: 0 0 28px;
+  color: var(--mip-ink);
+  font-size: 2rem;
+  line-height: 1.05;
   text-align: center;
-  font-weight: bold;
-  color: #333;
 }
 
-/* Labels */
 .federation-form label {
-  font-weight: 500;
-  font-family: 'Roboto', sans-serif;
-  margin-top: 15px;
   display: block;
-  font-size: 14px;
-  color: #444;
+  margin-top: 16px;
+  color: var(--mip-muted);
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
 }
 
-/* Input fields */
 .federation-form input[type="text"],
 .federation-form input[type="url"],
 .federation-form input[type="file"],
 .federation-form select,
 .federation-form textarea {
   width: 100%;
-  padding: 12px;
   margin-top: 8px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  padding: 13px 15px;
+  border: 1px solid rgba(43, 51, 233, 0.12);
+  border-radius: 16px;
   box-sizing: border-box;
-  font-size: 14px;
-  transition: border-color 0.3s, box-shadow 0.3s;
+  font-size: 0.95rem;
+  color: var(--mip-ink);
+  background: rgba(255, 255, 255, 0.92);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
 }
 
 .federation-form input[type="text"]:focus,
 .federation-form input[type="url"]:focus,
 .federation-form select:focus,
 .federation-form textarea:focus {
-  border-color: #159cb3;
-  background-color: #06b2bb10;
-  box-shadow: 0 0 8px rgba(165, 244, 250, 0.2);
   outline: none;
+  border-color: var(--mip-blue);
+  background-color: #fff;
+  box-shadow: 0 0 0 4px rgba(43, 51, 233, 0.09);
 }
 
-.federation-form input[type="text"]:required:invalid,
-.federation-form input[type="url"]:required:invalid,
-.federation-form select:required:invalid,
-.federation-form textarea:required:invalid {
-  border-color: #159cb3;
-  background-color: rgba(255, 0, 0, 0.034);
-  box-shadow: 0 0 8px rgba(165, 244, 250, 0.2);
-  outline: none;
-}
-
-/* Textarea field */
 .federation-form textarea {
+  min-height: 120px;
   resize: vertical;
 }
 
-/* Data Models Section */
-.data-models-section {
-  margin-top: 30px;
+.pathology-section {
+  margin-top: 34px;
 }
 
-.data-models-section h2 {
-  font-size: 20px;
-  margin-bottom: 10px;
-  color: #333;
+.pathology-section h2 {
+  margin: 0 0 14px;
+  color: var(--mip-ink);
+  font-size: 1.2rem;
 }
 
-.data-models-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
+.pathology-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
 }
 
-.data-model-card {
-  background-color: #f9f9f9;
-  transition: background-color 0.3s, box-shadow 0.3s;
-  flex: 1 1 calc(50% - 15px); /* Two-column layout with gap */
-  padding: 15px;
-  border: 1px solid #e6e6e6;
-  border-radius: 8px;
+.pathology-card {
   display: flex;
   align-items: center;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid rgba(43, 51, 233, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 14px 30px rgba(26, 35, 126, 0.06);
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
-.data-model-card:hover {
-  border: 1px solid #18a2b8;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-  background-color: #18a3b811;
-  color: white;
+.pathology-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(43, 51, 233, 0.28);
+  box-shadow: 0 18px 34px rgba(26, 35, 126, 0.1);
 }
 
-.data-model-card label {
-  font-size: 14px;
-  font-weight: normal;
-  color: #555;
+.pathology-card input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--mip-blue);
 }
 
-.data-model-name {
-  margin-left: 5px;
+.pathology-name {
+  color: var(--mip-ink);
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
-/* Button */
-.federation-form button[type="submit"] {
-  width: 100%;
-  padding: 12px;
-  background: linear-gradient(45deg, #18a2b8, #a2f1f5);
-  color: white;
-  border: none;
-  border-radius: 6px;
+.button-container {
+  display: flex;
+  gap: 16px;
+  margin-top: 26px;
+}
+
+.federation-form button[type="submit"],
+.close-btn {
+  flex: 1;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
   cursor: pointer;
-  font-size: 16px;
-  font-weight: bold;
-  transition: background-color 0.3s, transform 0.3s;
-  margin-top: 20px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
-.federation-form button[type="submit"]:hover {
-  background-color: #a2f1f5;
-  transform: scale(1.02);
+.federation-form button[type="submit"] {
+  background: linear-gradient(135deg, var(--mip-blue), #2027b7);
+  box-shadow: 0 14px 28px rgba(43, 51, 233, 0.2);
+}
+
+.close-btn {
+  background: linear-gradient(135deg, var(--mip-danger), #b83030);
+  box-shadow: 0 14px 28px rgba(214, 69, 69, 0.18);
+}
+
+.federation-form button[type="submit"]:hover,
+.close-btn:hover {
+  transform: translateY(-1px);
 }
 
 .federation-form button[type="submit"]:disabled {
-  background-color: #ddd;
-  cursor: not-allowed;
+  background: #c7d0df;
   box-shadow: none;
+  cursor: not-allowed;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .federation-form {
-    padding: 20px;
-  }
-
-  .data-model-card {
-    flex: 1 1 100%; /* Stack cards on smaller screens */
-  }
-
-  button {
-    font-size: 14px;
-    padding: 10px;
-  }
-}
-/* Breadcrumb */
 .breadcrumb {
-  margin-bottom: 20px;
-  font-size: 14px;
-  color: #666;
+  margin-bottom: 16px;
+  color: var(--mip-muted);
+  font-size: 0.88rem;
 }
 
 .breadcrumb a {
+  color: var(--mip-blue);
   text-decoration: none;
-  color: #06b2bb;
-  transition: color 0.3s;
 }
 
-.breadcrumb a:hover {
-  color: #16a6ad;
-}
-
-/* Close X Button */
 .close-x-btn {
   position: absolute;
-  top: 10px;
-  right: 15px;
-  background: #fff;
-  color: #333;
-  font-size: 20px;
-  border: none;
+  top: 16px;
+  right: 16px;
+  width: 34px;
+  height: 34px;
+  border: 0;
   border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  text-align: center;
-  line-height: 30px;
+  background: rgba(43, 51, 233, 0.08);
+  color: var(--mip-blue);
+  font-size: 1.1rem;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .close-x-btn:hover {
-  background: #f5f5f5;
-  color: #ff0000;
+  background: rgba(214, 69, 69, 0.1);
+  color: var(--mip-danger);
 }
 
-/* Close Button at the Bottom */
-.close-btn {
-  width: 100%;
-  padding: 12px;
-  background: linear-gradient(145deg, #ff4e4e, #ff7979);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: bold;
-  transition: background-color 0.3s, transform 0.3s;
-  margin-top: 20px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
+@media (max-width: 768px) {
+  .federation-form {
+    margin: 18px;
+    padding: 24px 18px;
+  }
 
-.close-btn:hover {
-  background-color: #ff4e4e;
-  transform: scale(1.02);
-}
-.button-container {
-  display: flex;
-  justify-content: space-between;
-  gap: 50%;
-  margin-top: 20px;
+  .pathology-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .button-container {
+    flex-direction: column;
+  }
 }

@@ -3,8 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin, of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { Federation } from '../interfaces/federations.interface';
-import { DataModelService } from './data-model.service';
-import {DataModel} from "../interfaces/data-model.interface";
+import { PathologyService } from './pathology.service';
+import {Pathology} from "../interfaces/pathology.interface";
 
 @Injectable({
   providedIn: 'root',
@@ -12,21 +12,21 @@ import {DataModel} from "../interfaces/data-model.interface";
 export class FederationService {
   private apiUrl = `/services/federations`;
 
-  constructor(private http: HttpClient, private dataModelService: DataModelService) {}
+  constructor(private http: HttpClient, private pathologyService: PathologyService) {}
 
-  getFederationsWithModels(): Observable<Federation[]> {
+  getFederationsWithPathologies(): Observable<Federation[]> {
     return this.http.get<Federation[]>(this.apiUrl).pipe(
       switchMap((federations) =>
         forkJoin(
           federations.map((federation) =>
-            this.dataModelService.getDataModelsByIds(federation.dataModelIds).pipe(
-              map((dataModels: DataModel[]) => ({
+            this.pathologyService.getPathologiesByIds(federation.dataModelIds).pipe(
+              map((pathologies: Pathology[]) => ({
                 ...federation,
-                dataModels, // Assign correctly typed DataModel objects
+                pathologies,
               })),
               catchError(() => of({
                 ...federation,
-                dataModels: [], // Fallback to an empty array if fetching data models fails
+                pathologies: [],
               }))
             )
           )

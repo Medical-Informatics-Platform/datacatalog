@@ -1,4 +1,5 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, OnDestroy, OnInit, Input } from '@angular/core';
 import { Router, NavigationEnd, RouterOutlet } from '@angular/router';
 import { FederationService } from '../../services/federation.service';
 import { AuthService } from '../../services/auth.service';
@@ -6,13 +7,12 @@ import { Federation } from '../../interfaces/federations.interface';
 import { filter, Subject, takeUntil } from 'rxjs';
 import { FederationCardComponent } from "./federation-card/federation-card.component";
 import { AddFederationCardComponent } from "./add-federation-card/add-federation-card.component";
-import {MatDialog} from "@angular/material/dialog";
-import {ConfirmationDialogComponent} from "./confirmation-dialog/confirmation-dialog.component";
 
 @Component({
   selector: 'app-federations',
   templateUrl: './federations-page.component.html',
   styleUrls: ['./federations-page.component.css'],
+  standalone: true,
   imports: [
     RouterOutlet,
     FederationCardComponent,
@@ -20,6 +20,7 @@ import {ConfirmationDialogComponent} from "./confirmation-dialog/confirmation-di
   ],
 })
 export class FederationsPageComponent implements OnInit, OnDestroy {
+  @Input() isEmbedded = false;
   selectedFilter = 'All';
   federations: Federation[] = [];
   filteredFederations: Federation[] = [];
@@ -30,8 +31,7 @@ export class FederationsPageComponent implements OnInit, OnDestroy {
   constructor(
     private federationService: FederationService,
     private authService: AuthService,
-    private router: Router,
-    private dialog: MatDialog
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -61,7 +61,7 @@ export class FederationsPageComponent implements OnInit, OnDestroy {
   }
 
   loadFederations(): void {
-    this.federationService.getFederationsWithModels().subscribe({
+    this.federationService.getFederationsWithPathologies().subscribe({
       next: (federations) => {
         this.federations = federations;
         this.filteredFederations = federations;
@@ -78,25 +78,31 @@ export class FederationsPageComponent implements OnInit, OnDestroy {
     this.router.navigate(['/federations/update'], {queryParams: {federationCode}}).then(() => null);
    }
 
-  goToVisualization(federationCode: string): void {
-    this.router.navigate(['/data-models'], {queryParams: {federationCode}}).then(() => null);
+  goToPathology(federationCode: string): void {
+    this.router.navigate(['/pathology'], {queryParams: {federationCode}}).then(() => null);
    }
 
   deleteFederation(federationCode: string): void {
-    const dialogRef = this.dialog.open(ConfirmationDialogComponent, {
-      data: {
-        title: 'Delete Federation',
-        message: 'Are you sure you want to delete this federation? This action cannot be undone.'
-      }
-    });
+    const confirmed = window.confirm(
+      'Are you sure you want to delete this federation? This action cannot be undone.'
+    );
 
-    dialogRef.afterClosed().subscribe((confirmed) => {
-      if (confirmed) {
-        this.federationService.deleteFederation(federationCode).subscribe({
-          next: () => this.loadFederations(),
-          error: (error) => console.error('Error deleting federation:', error),
-        });
-      }
+    if (!confirmed) {
+      return;
+    }
+
+    this.federationService.deleteFederation(federationCode).subscribe({
+      next: () => this.loadFederations(),
+      error: (error: HttpErrorResponse) => {
+        console.error('Error deleting federation:', error);
+        if (error.status === 403) {
+          this.isAdmin = false;
+          window.alert('You are not authorized to delete federations.');
+          return;
+        }
+
+        window.alert('Failed to delete federation.');
+      },
     });
   }
 

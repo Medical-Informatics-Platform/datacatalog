@@ -1,0 +1,127 @@
+.popup-container {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 1000;
+  width: min(420px, calc(100vw - 32px));
+}
+
+.guide-popup {
+  border: 1px solid var(--mip-border);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 24px 48px rgba(18, 32, 63, 0.16);
+  overflow: hidden;
+}
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px 14px;
+  background:
+    radial-gradient(circle at top right, rgba(223, 239, 228, 0.86), transparent 36%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 251, 255, 0.95));
+}
+
+.popup-eyebrow {
+  margin: 0 0 6px;
+  color: var(--mip-dark-blue);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.popup-header h2 {
+  margin: 0;
+  color: var(--mip-ink);
+  font-family: var(--mip-font-brand);
+  font-size: 1.35rem;
+  line-height: 1.1;
+}
+
+.close-btn {
+  align-self: flex-start;
+  border: 0;
+  background: transparent;
+  color: rgba(18, 32, 63, 0.7);
+  font-size: 1.4rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.popup-body {
+  padding: 0 20px 18px;
+  color: rgba(18, 32, 63, 0.78);
+  line-height: 1.65;
+}
+
+.intro-copy {
+  margin: 0 0 14px;
+}
+
+.popup-body ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.popup-body li + li {
+  margin-top: 10px;
+}
+
+.popup-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px 18px;
+  border-top: 1px solid rgba(43, 51, 233, 0.08);
+}
+
+.footer-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(18, 32, 63, 0.72);
+  font-size: 0.9rem;
+}
+
+.dismiss-btn {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--mip-dark-blue);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mobile-warning {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .popup-container {
+    right: 16px;
+    left: 16px;
+    bottom: 16px;
+    width: auto;
+  }
+
+  .mobile-warning {
+    display: block;
+    margin: 0 0 12px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(255, 186, 8, 0.16);
+    color: #6b4e00;
+    font-size: 0.88rem;
+  }
+
+  .popup-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

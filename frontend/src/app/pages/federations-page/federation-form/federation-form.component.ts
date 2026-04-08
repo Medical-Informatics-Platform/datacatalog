@@ -1,7 +1,7 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { DataModelService } from '../../../services/data-model.service';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { PathologyService } from '../../../services/pathology.service';
 import { FederationService } from '../../../services/federation.service';
 
 @Component({
@@ -10,6 +10,7 @@ import { FederationService } from '../../../services/federation.service';
   styleUrls: ['./federation-form.component.css'],
   imports: [
     ReactiveFormsModule,
+    RouterLink,
   ],
   standalone: true
 })
@@ -17,14 +18,14 @@ export class FederationFormComponent implements OnInit {
   @Output() federationUpdated = new EventEmitter<void>(); // Event to notify parent
 
   federationForm: FormGroup;
-  dataModels: any[] = [];
-  selectedDataModels: string[] = [];
+  pathologies: any[] = [];
+  selectedPathologies: string[] = [];
   isUpdateMode: boolean = false;
   federationCode: string | null = null;
 
   constructor(
     private fb: FormBuilder,
-    private dataModelService: DataModelService,
+    private pathologyService: PathologyService,
     private federationService: FederationService,
     private router: Router,
     private route: ActivatedRoute
@@ -51,15 +52,15 @@ export class FederationFormComponent implements OnInit {
       });
     }
 
-    this.loadDataModels();
+    this.loadPathologies();
   }
 
   closeModal(): void {
-    this.router.navigate(['/federations']); // Navigate back to the federations list or previous page
+    void this.router.navigate(['/'], { fragment: 'federations' });
   }
 
   loadFederation(code: string): void {
-    this.federationService.getFederationsWithModels().subscribe((federations) => {
+    this.federationService.getFederationsWithPathologies().subscribe((federations) => {
       const federation = federations.find((f) => f.code === code);
       if (federation) {
         this.federationForm.patchValue({
@@ -70,25 +71,25 @@ export class FederationFormComponent implements OnInit {
           institutions: federation.institutions,
           records: federation.records,
         });
-        this.selectedDataModels = [...federation.dataModelIds];
+        this.selectedPathologies = [...federation.dataModelIds];
       }
     });
   }
 
-  loadDataModels(): void {
-    this.dataModelService.getAllReleasedDataModels().subscribe((models) => {
-      this.dataModels = models;
+  loadPathologies(): void {
+    this.pathologyService.getAllReleasedPathologies().subscribe((pathologies) => {
+      this.pathologies = pathologies;
     });
   }
 
-  onDataModelChange(event: any): void {
+  onPathologyChange(event: any): void {
     const selectedModel = event.target.value;
     if (event.target.checked) {
-      if (!this.selectedDataModels.includes(selectedModel)) {
-        this.selectedDataModels.push(selectedModel);
+      if (!this.selectedPathologies.includes(selectedModel)) {
+        this.selectedPathologies.push(selectedModel);
       }
     } else {
-      this.selectedDataModels = this.selectedDataModels.filter(
+      this.selectedPathologies = this.selectedPathologies.filter(
         (model) => model !== selectedModel
       );
     }
@@ -98,7 +99,7 @@ export class FederationFormComponent implements OnInit {
     if (this.federationForm.valid) {
       const federationData = {
         ...this.federationForm.value,
-        dataModelIds: this.selectedDataModels,
+        dataModelIds: this.selectedPathologies,
       };
 
       if (this.isUpdateMode && this.federationCode) {
@@ -107,7 +108,7 @@ export class FederationFormComponent implements OnInit {
           .subscribe({
             next: () => {
               this.federationUpdated.emit(); // Notify parent
-              this.router.navigate(['/federations']); // Navigate back to federations list
+              void this.router.navigate(['/'], { fragment: 'federations' });
             },
             error: (error) => console.error('Error updating federation:', error),
           });
@@ -115,7 +116,7 @@ export class FederationFormComponent implements OnInit {
         this.federationService.createFederation(federationData).subscribe({
           next: () => {
             this.federationUpdated.emit(); // Notify parent
-            this.router.navigate(['/federations']); // Navigate back to federations list
+            void this.router.navigate(['/'], { fragment: 'federations' });
           },
           error: (error) => console.error('Error creating federation:', error),
         });

@@ -1,33 +1,74 @@
-<div class="federation-card">
-  <img [src]="'assets/' + federation.code + '.png'" alt="{{ federation.title }}" class="federation-image">
-  <div class="federation-content">
-    <h3>{{ federation.title }}</h3>
-    @if (federation.institutions != '0') {
-      <p>Data Records: {{ federation.records }} | Institutions: {{ federation.institutions }}</p>
-    } @else {
-      <p>Data Records: {{ federation.records | number }}</p>
-    }
-    <p>Data Models:</p>
-    <ul>
-      @for (dataModel of federation.dataModels; track dataModel){
-        <li>
-          {{ dataModel.label + ' ' + dataModel.version }}
-        </li>
-      }
-    </ul>
-    <p class="federation-description">
-      {{ showMore ? federation.description : (federation.description | slice: 0:100) + '...' }}
-      <span class="toggle-description" (click)="toggleDescription()">
-        {{ showMore ? 'Read Less' : 'Read More' }}
-      </span>
-    </p>
-    <div class="federation-buttons">
-      <button class="data-model-btn" (click)="viewDataModel()">Data Model</button>
-      <button class="visit-btn" (click)="navigateToFederation(federation.url)">Visit Federation</button>
-      @if (isAdmin){
-        <button class="update-btn" (click)="update()">✏️ Edit</button>
-        <button class="delete-btn" (click)="delete()">🗑️ Delete</button>
+<article class="card-fed">
+  <div class="card-header">
+    <div class="header-main">
+      <h3 class="card-title">{{ federation.title }}</h3>
+      <p class="eyebrow-sm">{{ federation.code }}</p>
+    </div>
+
+    <div class="admin-actions">
+      <a [href]="federation.url || '#'" target="_blank" rel="noopener noreferrer" class="icon-btn external" title="Open the external federation">
+        <span class="material-icons">open_in_new</span>
+      </a>
+      @if (isAdmin) {
+        <button type="button" class="icon-btn" (click)="update()" title="Edit federation">
+          <span class="material-icons">edit</span>
+        </button>
+        <button type="button" class="icon-btn delete" (click)="delete()" title="Delete federation">
+          <span class="material-icons">delete</span>
+        </button>
       }
     </div>
   </div>
-</div>
+
+  <div class="card-metrics">
+    @if(federation.institutions != '0') {
+    <div class="metric-chip">
+      <span class="material-icons">hub</span>
+      <span class="metric-label">Nodes</span>
+      <span class="metric-value">{{ federation.institutions }}</span>
+    </div>
+    }
+    <div class="metric-chip secondary">
+      <span class="material-icons">groups</span>
+      <span class="metric-label">Patients</span>
+      <span class="metric-value">{{ federation.records | number }}</span>
+    </div>
+  </div>
+
+  <div class="card-description-wrapper">
+    <div class="pathology-preview">
+      <div class="pathology-header">
+        <span class="section-label">Pathology Scope</span>
+        <button type="button" class="btn-text-link sm" (click)="viewPathology()" title="View the hierarchical pathology structure and variables for this federation">
+          <span class="material-icons">account_tree</span>
+          View Structure
+        </button>
+      </div>
+      <div class="pathology-tags">
+        @for (pathology of (showAllPathologies ? federation.pathologies : (federation.pathologies | slice:0:3)); track pathology.label){
+        <span class="pathology-tag">
+          {{ pathology.label }}
+        </span>
+        }
+        @if (federation.pathologies.length > 3) {
+        <button type="button" class="pathology-tag more clickable" (click)="$event.stopPropagation(); showAllPathologies = !showAllPathologies">
+          {{ showAllPathologies ? 'See less' : '+' + (federation.pathologies.length - 3) + ' more' }}
+        </button>
+        }
+      </div>
+    </div>
+
+    <div class="card-description-container">
+      <p class="card-description" [class.expanded]="showMore">
+        {{ federation.description }}
+      </p>
+      @if (federation.description.length > 120) {
+        <button type="button" class="btn-text-link mt-1" (click)="toggleDescription()">
+          {{ showMore ? 'Show less' : 'Read more' }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Card ends cleanly after description -->
+</article>
