@@ -7,3 +7,4 @@
 /frontend/node_modules/
 /.stored_data/
 /.env
+/.playwright-cli/
