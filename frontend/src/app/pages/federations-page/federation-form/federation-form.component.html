@@ -1,7 +1,7 @@
 <section class="federation-form">
   <button class="close-x-btn" (click)="closeModal()">×</button>
   <nav class="breadcrumb">
-    <a href="/federations">Federations</a> / {{ isUpdateMode ? 'Update Federation' : 'Add New Federation' }}
+    <a routerLink="/" fragment="federations">Federations</a> / {{ isUpdateMode ? 'Update Federation' : 'Add New Federation' }}
   </nav>
 
   <h1>{{ isUpdateMode ? 'Update Federation' : 'Add New Federation' }}</h1>
@@ -25,21 +25,21 @@
     <label for="records">Records</label>
     <input id="records" formControlName="records" type="text" required />
 
-    <!-- Data Models Checkboxes -->
-    <div class="data-models-section">
-      <h2>Select Data Models</h2>
-      <div class="data-models-grid">
-        @for (model of dataModels; track model){
+    <!-- Pathology Checkboxes -->
+    <div class="pathology-section">
+      <h2>Select Pathology</h2>
+      <div class="pathology-grid">
+        @for (pathology of pathologies; track pathology){
           <label
-            class="data-model-card"
+            class="pathology-card"
           >
             <input
               type="checkbox"
-              [value]="model.uuid"
-              (change)="onDataModelChange($event)"
-              [checked]="selectedDataModels.includes(model.uuid)"
+              [value]="pathology.uuid"
+              (change)="onPathologyChange($event)"
+              [checked]="selectedPathologies.includes(pathology.uuid)"
             />
-            <span class="data-model-name">{{ model.code }}_{{ model.version }}</span>
+            <span class="pathology-name">{{ pathology.code }}_{{ pathology.version }}</span>
           </label>
         }
       </div>
@@ -47,7 +47,7 @@
 
     <div class="button-container">
       <button type="submit">{{ isUpdateMode ? 'Update Federation' : 'Create Federation' }}</button>
-      <button class="close-btn" (click)="closeModal()">Close</button>
+      <button type="button" class="close-btn" (click)="closeModal()">Close</button>
     </div>
   </form>
 </section>

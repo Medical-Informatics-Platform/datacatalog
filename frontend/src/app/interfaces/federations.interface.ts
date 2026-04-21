@@ -1,4 +1,4 @@
-import {DataModel} from "./data-model.interface";
+import {Pathology} from "./pathology.interface";
 
 export interface Federation {
   code: string;
@@ -6,7 +6,7 @@ export interface Federation {
   url: string;
   description: string;
   dataModelIds: string[];
-  dataModels: DataModel[];
+  pathologies: Pathology[];
   institutions: string;
   records: string;
 }

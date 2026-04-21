@@ -1,24 +1,13 @@
 <nav class="navbar">
   <ul>
     <li>
-      <a routerLink="/home" routerLinkActive="active">
-        <i class="fas fa-house-user"></i> Home
-      </a>
+      <a routerLink="/" fragment="top" routerLinkActive="active" [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'ignored', matrixParams: 'ignored', fragment: 'exact' }">Home</a>
     </li>
     <li>
-      <a routerLink="/federations" routerLinkActive="active">
-        <i class="fas fa-sitemap"></i> Federations
-      </a>
+      <a routerLink="/" fragment="federations" routerLinkActive="active" [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'ignored', matrixParams: 'ignored', fragment: 'exact' }">Federations</a>
     </li>
     <li>
-      <a routerLink="/data-models" routerLinkActive="active">
-        <i class="fas fa-brain"></i> Data Models
-      </a>
-    </li>
-    <li>
-      <a routerLink="/about" routerLinkActive="active">
-        <i class="fas fa-info-circle"></i> About
-      </a>
+      <a routerLink="/" fragment="about" routerLinkActive="active" [routerLinkActiveOptions]="{ paths: 'exact', queryParams: 'ignored', matrixParams: 'ignored', fragment: 'exact' }">About</a>
     </li>
   </ul>
 </nav>

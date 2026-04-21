@@ -1,0 +1,43 @@
+<section class="pathology-form">
+  <h1>{{ selectedPathologyID ? 'Update Pathology' : 'Add New Pathology' }}</h1>
+
+  <form [formGroup]="pathologyForm" (ngSubmit)="submitForm()">
+    <div class="input-with-icon">
+      <label for="file-type">Select File Type</label>
+      <select id="file-type" formControlName="fileType" (change)="onFileTypeChange($event)">
+        <option value="" disabled>Select file type</option>
+        <option value="json">JSON</option>
+        <option value="xlsx">XLSX</option>
+      </select>
+      <span class="icon">📂</span>
+    </div>
+
+    @if(selectedFileType){
+      <div>
+        <label for="file">Choose {{ selectedFileType.toUpperCase() }} File</label>
+        <input id="file" type="file" (change)="onFileChange($event)" accept=".json, .xlsx" />
+      </div>
+    }
+
+    @if(selectedFileType === 'xlsx'){
+      <div>
+        <label for="version">Version</label>
+        <input id="version" type="text" formControlName="version" placeholder="Enter version (e.g., 1.0)" />
+
+        <label for="longitudinal">Is Longitudinal</label>
+        <input id="longitudinal" type="checkbox" formControlName="longitudinal" />
+      </div>
+    }
+
+    @if (errorMessage) {
+      <section class="error-message">
+        <p>{{ errorMessage }}</p>
+      </section>
+    }
+
+
+    <button type="submit" [disabled]="!file">
+      {{ selectedPathologyID ? 'Update' : 'Upload' }} Pathology
+    </button>
+  </form>
+</section>
