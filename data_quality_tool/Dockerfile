@@ -1,13 +1,10 @@
-FROM python:3.9-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 COPY . .
 
 # Install Poetry
-RUN pip install "poetry<2.0"
-
-# 🔧 Pin packaging to a version known to work with older tools
-RUN pip install "packaging<24"
+RUN pip install "poetry>=2.0,<3.0"
 
 # Disable virtualenvs
 RUN poetry config virtualenvs.create false

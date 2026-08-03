@@ -40,5 +40,15 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "^2.2.0",
     "typescript": "~5.9.3"
+  },
+  "overrides": {
+    "postcss": "8.5.25",
+    "webpack-dev-server": "5.2.6",
+    "sockjs": {
+      "uuid": "11.1.1"
+    },
+    "@modelcontextprotocol/sdk": {
+      "@hono/node-server": "2.0.12"
+    }
   }
 }
