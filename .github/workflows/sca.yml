@@ -1,0 +1,221 @@
+name: Software Composition Analysis (SCA)
+
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * 1'
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  # ===== backend: Spring Boot, Maven =======================================
+  sca-backend:
+    name: SCA (backend, maven)
+    runs-on: ubuntu-latest
+    env:
+      # --- what to scan ---
+      PROJECT: ./backend
+      ECOSYSTEM: maven
+
+      # --- gate thresholds (CVSS) ---
+      GATE_FAIL_THRESHOLD: "9.5"
+      GATE_WARN_THRESHOLD: "5.0"
+
+      # --- suppressions (absolute: they live at the repo root) ---
+      TRIVY_IGNOREFILE: ${{ github.workspace }}/ci/suppress_trivy.yaml
+      OSV_IGNOREFILE: ${{ github.workspace }}/ci/suppress_osv_scanner.toml
+
+      # --- outputs, relative to PROJECT ---
+      SBOM_PATH: target/bom.json
+      TRIVY_SARIF_OUTPUT: sca-trivy.sarif
+      OSV_SARIF_OUTPUT: sca-osv-scanner.sarif
+      SCA_MERGED_SARIF_OUTPUT: sca-merged.sarif
+
+      # --- must be unique per job ---
+      SARIF_CATEGORY: sca-backend
+      ARTIFACT_NAME: sca-report-backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.14.4'
+
+      # Maven is preinstalled on ubuntu-latest, only the download cache is warmed here.
+      # if it's not preinstalled, setup-java@v
+      # The key is scoped to PROJECT: a bare '**/pom.xml' would hash the whole monorepo.
+      - name: Cache Maven packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.m2/repository # ~/.m2 is too broad and can corrupt the cache
+          key: ${{ runner.os }}-m2-v1-${{ hashFiles(format('{0}/**/pom.xml', env.PROJECT)) }}
+          restore-keys: ${{ runner.os }}-m2-v1-
+
+      # cd into PROJECT: setup-tools.sh writes the SBOM to the current directory.
+      # `mvn dependency:resolve` runs inside setup-tools.sh, not here
+      - name: Install scanners and generate SBOM
+        working-directory: ${{ env.PROJECT }}
+        run: |
+          bash "$GITHUB_WORKSPACE/ci/setup-tools.sh" \
+            --install-tool trivy,osv-scanner \
+            --sbom-ecosystem "$ECOSYSTEM"
+
+      - name: Run SCA scan
+        working-directory: ${{ env.PROJECT }}
+        run: python3 "$GITHUB_WORKSPACE/ci/sca_scan.py"
+
+      # Gated on the SARIF existing, not on the scan passing: a failed gate is
+      # exactly when the findings need publishing.
+      - name: Upload SARIF to GitHub Security tab
+        if: ${{ !cancelled() && hashFiles(format('{0}/{1}', env.PROJECT, env.SCA_MERGED_SARIF_OUTPUT)) != '' }}
+        uses: github/codeql-action/upload-sarif@4e94bd11f71e507f7f87df81788dff88d1dacbfb # v4.31.2
+        with:
+          sarif_file: ${{ env.PROJECT }}/${{ env.SCA_MERGED_SARIF_OUTPUT }}
+          category: ${{ env.SARIF_CATEGORY }}
+
+      - name: Upload SARIF artifact
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ env.PROJECT }}/*.sarif
+          retention-days: 30
+          if-no-files-found: warn
+
+  # ===== frontend: Angular, npm ============================================
+  sca-frontend:
+    name: SCA (frontend, npm)
+    runs-on: ubuntu-latest
+    env:
+      # --- what to scan ---
+      PROJECT: ./frontend
+      ECOSYSTEM: npm
+
+      # --- gate thresholds (CVSS) ---
+      GATE_FAIL_THRESHOLD: "9.5"
+      GATE_WARN_THRESHOLD: "5.0"
+
+      # --- suppressions ---
+      TRIVY_IGNOREFILE: ${{ github.workspace }}/ci/suppress_trivy.yaml
+      OSV_IGNOREFILE: ${{ github.workspace }}/ci/suppress_osv_scanner.toml
+
+      # --- outputs, relative to PROJECT ---
+      SBOM_PATH: target/bom.json
+      TRIVY_SARIF_OUTPUT: sca-trivy.sarif
+      OSV_SARIF_OUTPUT: sca-osv-scanner.sarif
+      SCA_MERGED_SARIF_OUTPUT: sca-merged.sarif
+
+      # --- must be unique per job ---
+      SARIF_CATEGORY: sca-frontend
+      ARTIFACT_NAME: sca-report-frontend
+
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.14.4'
+
+      - name: Cache npm packages
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-v1-${{ hashFiles(format('{0}/package-lock.json', env.PROJECT)) }}
+          restore-keys: ${{ runner.os }}-npm-v1-
+
+      - name: Install scanners and generate SBOM
+        working-directory: ${{ env.PROJECT }}
+        run: |
+          bash "$GITHUB_WORKSPACE/ci/setup-tools.sh" \
+            --install-tool trivy,osv-scanner \
+            --sbom-ecosystem "$ECOSYSTEM"
+
+      - name: Run SCA scan
+        working-directory: ${{ env.PROJECT }}
+        run: python3 "$GITHUB_WORKSPACE/ci/sca_scan.py"
+
+      - name: Upload SARIF to GitHub Security tab
+        if: ${{ !cancelled() && hashFiles(format('{0}/{1}', env.PROJECT, env.SCA_MERGED_SARIF_OUTPUT)) != '' }}
+        uses: github/codeql-action/upload-sarif@4e94bd11f71e507f7f87df81788dff88d1dacbfb # v4.31.2
+        with:
+          sarif_file: ${{ env.PROJECT }}/${{ env.SCA_MERGED_SARIF_OUTPUT }}
+          category: ${{ env.SARIF_CATEGORY }}
+
+      - name: Upload SARIF artifact
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ env.PROJECT }}/*.sarif
+          retention-days: 30
+          if-no-files-found: warn
+
+  # ===== data quality tool: Poetry lock file, (Python, generic) ========================
+  sca-dqt:
+    name: SCA (data_quality_tool, generic)
+    runs-on: ubuntu-latest
+    env:
+      # --- what to scan ---
+      PROJECT: ./data_quality_tool
+      ECOSYSTEM: generic
+
+      # --- gate thresholds (CVSS) ---
+      GATE_FAIL_THRESHOLD: "9.5"
+      GATE_WARN_THRESHOLD: "5.0"
+
+      # --- suppressions ---
+      TRIVY_IGNOREFILE: ${{ github.workspace }}/ci/suppress_trivy.yaml
+      OSV_IGNOREFILE: ${{ github.workspace }}/ci/suppress_osv_scanner.toml
+
+      # --- outputs, relative to PROJECT ---
+      SBOM_PATH: target/bom.json
+      TRIVY_SARIF_OUTPUT: sca-trivy.sarif
+      OSV_SARIF_OUTPUT: sca-osv-scanner.sarif
+      SCA_MERGED_SARIF_OUTPUT: sca-merged.sarif
+
+      # --- must be unique per job ---
+      SARIF_CATEGORY: sca-dqt
+      ARTIFACT_NAME: sca-report-dqt
+
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.14.4'
+
+      # No dependency cache and no Poetry install: `generic` is a Trivy
+      # filesystem scan that reads poetry.lock directly, nothing is resolved.
+      # less accurate then using cyclonedx-poetry to generate a BOM, but faster and simpler.
+      - name: Install scanners and generate SBOM
+        working-directory: ${{ env.PROJECT }}
+        run: |
+          bash "$GITHUB_WORKSPACE/ci/setup-tools.sh" \
+            --install-tool trivy,osv-scanner \
+            --sbom-ecosystem "$ECOSYSTEM"
+
+      - name: Run SCA scan
+        working-directory: ${{ env.PROJECT }}
+        run: python3 "$GITHUB_WORKSPACE/ci/sca_scan.py"
+
+      - name: Upload SARIF to GitHub Security tab
+        if: ${{ !cancelled() && hashFiles(format('{0}/{1}', env.PROJECT, env.SCA_MERGED_SARIF_OUTPUT)) != '' }}
+        uses: github/codeql-action/upload-sarif@4e94bd11f71e507f7f87df81788dff88d1dacbfb # v4.31.2
+        with:
+          sarif_file: ${{ env.PROJECT }}/${{ env.SCA_MERGED_SARIF_OUTPUT }}
+          category: ${{ env.SARIF_CATEGORY }}
+
+      - name: Upload SARIF artifact
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ env.PROJECT }}/*.sarif
+          retention-days: 30
+          if-no-files-found: warn
