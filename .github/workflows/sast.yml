@@ -23,11 +23,11 @@ jobs:
             language: java
             project: ./backend
             rulesets: >-
-              ${{ github.workspace }}/../tools/semgrep-rules/java
-              ${{ github.workspace }}/../tools/semgrep-rules/generic
-              ${{ github.workspace }}/../tools/semgrep-rules/problem-based-packs
-              ${{ github.workspace }}/../tools/semgrep-rules/bash
-              ${{ github.workspace }}/../tools/semgrep-rules/package_managers
+              {0}/../tools/semgrep-rules/java
+              {0}/../tools/semgrep-rules/generic
+              {0}/../tools/semgrep-rules/problem-based-packs
+              {0}/../tools/semgrep-rules/bash
+              {0}/../tools/semgrep-rules/package_managers
               p/default auto
             exclude_paths: "*.sarif target/ src/test/ Dockerfile*"
 
@@ -36,12 +36,12 @@ jobs:
             language: typescript
             project: ./frontend
             rulesets: >-
-              ${{ github.workspace }}/../tools/semgrep-rules/typescript
-              ${{ github.workspace }}/../tools/semgrep-rules/javascript
-              ${{ github.workspace }}/../tools/semgrep-rules/html
-              ${{ github.workspace }}/../tools/semgrep-rules/generic
-              ${{ github.workspace }}/../tools/semgrep-rules/problem-based-packs
-              ${{ github.workspace }}/../tools/semgrep-rules/package_managers
+              {0}/../tools/semgrep-rules/typescript
+              {0}/../tools/semgrep-rules/javascript
+              {0}/../tools/semgrep-rules/html
+              {0}/../tools/semgrep-rules/generic
+              {0}/../tools/semgrep-rules/problem-based-packs
+              {0}/../tools/semgrep-rules/package_managers
               p/default auto
             exclude_paths: "*.sarif node_modules/ dist/ *.spec.ts package-lock.json Dockerfile*"
 
@@ -50,11 +50,11 @@ jobs:
             language: python
             project: ./data_quality_tool
             rulesets: >-
-              ${{ github.workspace }}/../tools/semgrep-rules/python
-              ${{ github.workspace }}/../tools/semgrep-rules/generic
-              ${{ github.workspace }}/../tools/semgrep-rules/problem-based-packs
-              ${{ github.workspace }}/../tools/semgrep-rules/bash
-              ${{ github.workspace }}/../tools/semgrep-rules/package_managers
+              {0}/../tools/semgrep-rules/python
+              {0}/../tools/semgrep-rules/generic
+              {0}/../tools/semgrep-rules/problem-based-packs
+              {0}/../tools/semgrep-rules/bash
+              {0}/../tools/semgrep-rules/package_managers
               p/default auto
             exclude_paths: "*.sarif tests/ target/ poetry.lock Dockerfile*"
 
@@ -63,7 +63,7 @@ jobs:
       PROJECT: ${{ matrix.project }}
 
       # --- rulesets, per language, from the matrix above ---
-      SEMGREP_CONFIG_RULESETS: ${{ matrix.rulesets }}
+      SEMGREP_CONFIG_RULESETS: ${{ format(matrix.rulesets, github.workspace) }}
 
       # --- paths to skip, relative to PROJECT ---
       OPENGREP_EXCLUDE: ${{ matrix.exclude_paths }}
