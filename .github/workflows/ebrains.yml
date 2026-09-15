@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: syncmaster
-        uses: wei/git-sync@v3
+        uses: wei/git-sync@v3.0.0
         with:
           source_repo: "Medical-Informatics-Platform/datacatalog"
           source_branch: "master"
@@ -19,7 +19,7 @@ jobs:
           destination_branch: "master"
 
       - name: synctags
-        uses: wei/git-sync@v3
+        uses: wei/git-sync@v3.0.0
         with:
           source_repo: "Medical-Informatics-Platform/datacatalog"
           source_branch: "refs/tags/*"
