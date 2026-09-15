@@ -14,4 +14,14 @@ describe('appRoutes', () => {
 
     expect(legacyHomeRoute?.component).toBe(HomeSectionRedirectComponent);
   });
+
+  it('exposes add and update federation form routes under /federations', () => {
+    const federationsRoute = appRoutes.find((route) => route.path === 'federations');
+    const childPaths = (federationsRoute?.children ?? []).map((route) => route.path);
+
+    expect(childPaths).toEqual(['', 'add', 'update']);
+    expect(federationsRoute?.children?.[0]?.component).toBe(HomeSectionRedirectComponent);
+    expect(federationsRoute?.children?.[1]?.data).toEqual({ isUpdate: false });
+    expect(federationsRoute?.children?.[2]?.data).toEqual({ isUpdate: true });
+  });
 });

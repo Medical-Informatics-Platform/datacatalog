@@ -8,3 +8,4 @@
 /.stored_data/
 /.env
 /.playwright-cli/
+frontend/dist/
