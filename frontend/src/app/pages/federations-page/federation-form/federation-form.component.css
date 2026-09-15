@@ -117,10 +117,22 @@
   font-weight: 600;
 }
 
+.form-error {
+  margin: 16px 0 0;
+  color: var(--mip-danger);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
 .button-container {
   display: flex;
   gap: 16px;
   margin-top: 26px;
+  position: sticky;
+  bottom: 16px;
+  z-index: 2;
+  padding: 12px 0 4px;
+  background: linear-gradient(180deg, rgba(248, 251, 255, 0.2), rgba(248, 251, 255, 0.96) 28%);
 }
 
 .federation-form button[type="submit"],
