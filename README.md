@@ -85,6 +85,10 @@ mvn spring-boot:run
 
 Use `mvn test` to run backend tests.
 
+State-changing requests are CSRF-protected in every profile, including `AUTHENTICATION=0`. The Angular
+client copies the `MIP-XSRF-TOKEN` cookie into the `X-MIP-XSRF-TOKEN` header on its own; send that pair
+by hand when calling `POST`, `PUT`, or `DELETE` endpoints with `curl` or Postman.
+
 ### Data Quality Tool
 
 ```bash
