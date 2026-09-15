@@ -6,7 +6,11 @@
 
   <h1>{{ isUpdateMode ? 'Update Federation' : 'Add New Federation' }}</h1>
 
-  <form [formGroup]="federationForm" (ngSubmit)="submitForm()">
+  @if (federationNotFound) {
+    <p class="form-error">Federation '{{ federationCode }}' was not found.</p>
+  }
+
+  <form [formGroup]="federationForm" (ngSubmit)="submitForm()" novalidate>
     <label for="code">Code</label>
     <input id="code" formControlName="code" type="text" required [readonly]="isUpdateMode" />
 
@@ -29,7 +33,7 @@
     <div class="pathology-section">
       <h2>Select Pathology</h2>
       <div class="pathology-grid">
-        @for (pathology of pathologies; track pathology){
+        @for (pathology of pathologies; track pathology.uuid){
           <label
             class="pathology-card"
           >
@@ -44,6 +48,10 @@
         }
       </div>
     </div>
+
+    @if (submitted && federationForm.invalid) {
+      <p class="form-error">Fill in all required fields before saving.</p>
+    }
 
     <div class="button-container">
       <button type="submit">{{ isUpdateMode ? 'Update Federation' : 'Create Federation' }}</button>

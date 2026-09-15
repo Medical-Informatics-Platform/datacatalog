@@ -24,7 +24,7 @@ Update `values.yaml` or provide overrides for:
 - `cluster.managed`: `false` for microk8s/local storage, `true` for managed-cluster storage classes
 - `images.repository` and `images.tag`: image location and release tag
 - `global.publicHost`: bare public hostname used by the frontend ingress and backend auth callback URL
-- `datacatalogDb.image`: PostgreSQL image, currently `postgres:18.3`
+- `datacatalogDb.image`: PostgreSQL image, currently `postgres:18.6`
 - `backend.authentication`: enable or disable Keycloak-backed authentication in the backend
 - `cluster.storageClasses.managed` if your managed cluster uses a different default storage class
 - `frontend.ingress.tlsSecretName`: override the default TLS secret name

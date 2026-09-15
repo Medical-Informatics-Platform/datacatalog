@@ -19,13 +19,16 @@
       <p>Unable to load the MIP network federations. Please try again later.</p>
       <button class="btn btn-primary" (click)="loadFederations()">Retry</button>
     </div>
-  } @else if (federations.length === 0) {
+  } @else if (federations.length === 0 && !isAdmin) {
     <div class="empty-state">
       <span class="material-icons empty-icon">hub</span>
       <p>No federations are currently connected to the network.</p>
     </div>
   } @else {
     <section class="federations-grid">
+      @if (isAdmin) {
+        <app-add-federation-card (addNew)="goToAddFederation()"></app-add-federation-card>
+      }
       @for (federation of federations; track federation.code) {
         <app-federation-card
           [federation]="federation"

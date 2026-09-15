@@ -24,16 +24,30 @@ export const appRoutes: Routes = [
   },
   {
     path: 'federations',
-    pathMatch: 'full',
-    component: HomeSectionRedirectComponent,
-    data: { fragment: 'federations' },
-  },
-  {
-    path: 'federations',
-    loadChildren: () =>
-      import('./pages/federations-page/federations-page.module').then(
-        (m) => m.FederationsPageModule
-      ),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        component: HomeSectionRedirectComponent,
+        data: { fragment: 'federations' },
+      },
+      {
+        path: 'add',
+        loadComponent: () =>
+          import('./pages/federations-page/federation-form/federation-form.component').then(
+            (m) => m.FederationFormComponent
+          ),
+        data: { isUpdate: false },
+      },
+      {
+        path: 'update',
+        loadComponent: () =>
+          import('./pages/federations-page/federation-form/federation-form.component').then(
+            (m) => m.FederationFormComponent
+          ),
+        data: { isUpdate: true },
+      },
+    ],
   },
   { path: 'account', component: AccountPageComponent, canActivate: [AuthGuard] },
   { path: 'auth-callback', component: AuthCallbackComponent },

@@ -4,13 +4,14 @@ import { Router } from '@angular/router';
 import { FederationService } from '../../../services/federation.service';
 import { Federation } from '../../../interfaces/federations.interface';
 import { FederationCardComponent } from '../../federations-page/federation-card/federation-card.component';
+import { AddFederationCardComponent } from '../../federations-page/add-federation-card/add-federation-card.component';
 import { AuthService } from '../../../services/auth.service';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-embedded-federations',
   standalone: true,
-  imports: [FederationCardComponent],
+  imports: [FederationCardComponent, AddFederationCardComponent],
   templateUrl: './embedded-federations.component.html',
   styleUrls: ['./embedded-federations.component.css']
 })
@@ -66,6 +67,10 @@ export class EmbeddedFederationsComponent implements OnInit, OnDestroy {
 
   goToPathology(federationCode: string): void {
     this.router.navigate(['/pathology'], { queryParams: { federationCode } });
+  }
+
+  goToAddFederation(): void {
+    void this.router.navigate(['/federations/add']);
   }
 
   goToUpdateFederation(federationCode: string): void {

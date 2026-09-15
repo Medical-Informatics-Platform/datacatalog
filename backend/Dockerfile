@@ -1,7 +1,7 @@
 #######################################################
 # Build the Spring Boot application with Maven
 #######################################################
-FROM maven:3.9.5-eclipse-temurin-21 AS build-env
+FROM maven:3.9.16-eclipse-temurin-21 AS build-env
 MAINTAINER Kostas Filippopolitis <kfilippopolitis@athenarc.gr>
 
 # Define build environment variables
@@ -19,7 +19,7 @@ RUN mvn clean package -DskipTests
 #######################################################
 # Setup the runtime container
 #######################################################
-FROM amazoncorretto:21-alpine3.18
+FROM amazoncorretto:21.0.12-alpine3.24
 
 #######################################################
 # Setting up timezone
@@ -46,7 +46,7 @@ RUN apk add --no-cache curl
 #######################################################
 # Install dockerize (for config templating)
 #######################################################
-ENV DOCKERIZE_VERSION=v0.10.1
+ENV DOCKERIZE_VERSION=v0.15.1
 RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
     && tar -C /usr/local/bin -xzvf dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
     && rm dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz

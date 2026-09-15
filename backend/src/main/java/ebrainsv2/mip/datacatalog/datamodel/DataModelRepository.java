@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RestResource(exported = false)
-public interface DataModelRepository extends CrudRepository<DataModelDAO, String> {
+public interface DataModelRepository extends CrudRepository<DataModelDAO, UUID> {
     void deleteByUuid(UUID uuid);
     DataModelDAO findByUuid(UUID dataModelUuid);
     Optional<DataModelDAO> findByCodeAndVersion(String code, String version);
