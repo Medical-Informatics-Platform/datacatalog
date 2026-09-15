@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -75,21 +74,37 @@ public class SecurityConfiguration {
         return new InMemoryClientRegistrationRepository(dummyRegistration);
     }
 
+    /**
+     * The double-submit cookie consumed by the Angular XSRF interceptor (see
+     * {@code frontend/src/main.ts}). CSRF protection stays on for every profile: disabling it
+     * for {@code authentication.enabled=0} would leave state-changing requests unprotected
+     * whenever the API is reachable without a login.
+     */
+    static CookieCsrfTokenRepository csrfTokenRepository() {
+        CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        csrfTokenRepository.setCookiePath("/");
+        csrfTokenRepository.setCookieName("MIP-XSRF-TOKEN");
+        csrfTokenRepository.setHeaderName("X-MIP-XSRF-TOKEN");
+        return csrfTokenRepository;
+    }
+
     @Bean
     public SecurityFilterChain clientSecurityFilterChain(HttpSecurity http, ClientRegistrationRepository clientRegistrationRepo,
                                                          OAuth2AuthorizedClientService authorizedClientService) throws Exception {
 
-        if (authenticationEnabled) {
-            CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
-            csrfTokenRepository.setCookiePath("/");
-            csrfTokenRepository.setCookieName("MIP-XSRF-TOKEN");
-            csrfTokenRepository.setHeaderName("X-MIP-XSRF-TOKEN");
+        http
+        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+        .authorizeHttpRequests(auth -> auth
+                .anyRequest().permitAll() // Allow access to any endpoint unless restricted by @PreAuthorize
+        )
+        .csrf(csrf -> csrf
+                .csrfTokenRepository(csrfTokenRepository())
+                .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
+        )
+        .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
 
+        if (authenticationEnabled) {
             http
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-            .authorizeHttpRequests(auth -> auth
-                    .anyRequest().permitAll() // Allow access to any endpoint unless restricted by @PreAuthorize
-            )
             .oauth2Login(oauth -> oauth
                     .userInfoEndpoint(userInfo -> userInfo.oidcUserService(oidcUserService()))
                     .defaultSuccessUrl(this.authCallbackUrl, true)
@@ -102,7 +117,7 @@ public class SecurityConfiguration {
                         );
 
                         String token = client.getAccessToken().getTokenValue();
-                        System.out.println("Authentication successful. Redirecting to Angular auth-callback with token: " + token);
+                        System.out.println("Authentication successful. Redirecting to Angular auth-callback.");
 
                         response.sendRedirect(this.authCallbackUrl + "?token=" + token);
                     })
@@ -111,18 +126,7 @@ public class SecurityConfiguration {
                 OidcClientInitiatedLogoutSuccessHandler successHandler = new OidcClientInitiatedLogoutSuccessHandler(clientRegistrationRepo);
                 successHandler.setPostLogoutRedirectUri(this.frontendBaseUrl);
                 logout.logoutSuccessHandler(successHandler);
-            })
-            .csrf(csrf -> csrf
-                    .csrfTokenRepository(csrfTokenRepository)
-                    .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
-            )
-            .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
-        } else {
-            http
-                    .authorizeHttpRequests(auth -> auth
-                            .anyRequest().permitAll()
-                    )
-                    .csrf(AbstractHttpConfigurer::disable);
+            });
         }
         return http.build();
     }
