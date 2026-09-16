@@ -41,7 +41,7 @@ ENV FRAMEWORK_LOG_LEVEL="INFO"
 WORKDIR /opt
 
 # Install necessary utilities
-RUN apk add --no-cache curl
+RUN apk add --no-cache --upgrade libcrypto3 libssl3 curl
 
 #######################################################
 # Install dockerize (for config templating)
