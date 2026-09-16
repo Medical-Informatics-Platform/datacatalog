@@ -3,6 +3,11 @@ FROM python:3.12.14-slim
 WORKDIR /app
 COPY . .
 
+# Patch OS packages and pip shipped in the base image
+RUN apt-get update && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --no-cache-dir --upgrade pip
+
 # Install Poetry
 RUN pip install "poetry>=2.4,<3.0"
 
