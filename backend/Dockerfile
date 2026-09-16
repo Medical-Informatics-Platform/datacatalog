@@ -60,6 +60,11 @@ COPY --from=build-env /opt/code/target/datacatalog-0.0.1-SNAPSHOT.jar /usr/share
 #######################################################
 # Set up entrypoint and expose port
 #######################################################
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
+    && mkdir -p /opt/config \
+    && chown -R appuser:appgroup /opt/config /usr/share/jars
+
+USER appuser
 
 ENTRYPOINT ["sh", "-c", "dockerize -template $APP_CONFIG_TEMPLATE:$APP_CONFIG_LOCATION java -jar /usr/share/jars/datacatalog-0.0.1-SNAPSHOT.jar"]
 EXPOSE 8090
