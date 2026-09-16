@@ -1,6 +1,6 @@
 # Datacatalog Frontend
 
-This directory contains the Angular 21 frontend for DataCatalog. The app uses standalone components, Angular Material, D3-based visualization, and a dev proxy for `/services` requests to the backend.
+This directory contains the Angular 22 frontend for DataCatalog. The app uses standalone components, Angular Material, D3-based visualization, and a dev proxy for `/services` requests to the backend.
 
 ## Prerequisites
 
@@ -33,7 +33,7 @@ Build the production image from this directory:
 docker build -t datacatalog-frontend .
 ```
 
-The container compiles the Angular app with Node 20 and serves the built output with Nginx on port `80`.
+The container compiles the Angular app with Node 24 and serves the built output with Nginx on port `80`.
 
 ## Project Layout
 

@@ -1,5 +1,5 @@
 # Step 1: Build the Angular app
-FROM node:20 AS build
+FROM node:24.21.0-trixie AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -7,7 +7,7 @@ COPY . .
 RUN npm run build -- --configuration production
 
 # Step 2: Use Nginx to serve the Angular app
-FROM nginx:alpine
+FROM nginx:1.31.5-alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist/datacatalog-frontend /usr/share/nginx/html
 EXPOSE 80

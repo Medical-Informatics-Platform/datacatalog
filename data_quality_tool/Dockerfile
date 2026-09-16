@@ -1,10 +1,10 @@
-FROM python:3.12-slim
+FROM python:3.12.14-slim
 
 WORKDIR /app
 COPY . .
 
 # Install Poetry
-RUN pip install "poetry>=2.0,<3.0"
+RUN pip install "poetry>=2.4,<3.0"
 
 # Disable virtualenvs
 RUN poetry config virtualenvs.create false

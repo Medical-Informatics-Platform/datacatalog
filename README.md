@@ -4,7 +4,7 @@ DataCatalog is part of the [Medical Informatics Platform](https://mip.ebrains.eu
 
 ## Repository Layout
 
-- `frontend/`: Angular 21 application served locally on `http://localhost:4200` or through Nginx in Docker
+- `frontend/`: Angular 22 application served locally on `http://localhost:4200` or through Nginx in Docker
 - `backend/`: Spring Boot API exposed on `http://localhost:8090/services`
 - `data_quality_tool/`: Flask service for Excel and JSON conversion and validation on `http://localhost:8000`
 - `compose.yaml`: local multi-service setup with PostgreSQL `18.3`
@@ -84,6 +84,10 @@ mvn spring-boot:run
 ```
 
 Use `mvn test` to run backend tests.
+
+State-changing requests are CSRF-protected in every profile, including `AUTHENTICATION=0`. The Angular
+client copies the `MIP-XSRF-TOKEN` cookie into the `X-MIP-XSRF-TOKEN` header on its own; send that pair
+by hand when calling `POST`, `PUT`, or `DELETE` endpoints with `curl` or Postman.
 
 ### Data Quality Tool
 
