@@ -12,6 +12,9 @@ RUN poetry config virtualenvs.create false
 # Install project dependencies
 RUN poetry install --without dev
 
+RUN useradd --create-home --uid 1001 appuser
+USER appuser
+
 EXPOSE 8000
 
 ENV MODULE_NAME=data_quality_tool.controller

@@ -54,16 +54,15 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
 #######################################################
 # Prepare the Spring Boot application files
 #######################################################
-COPY config/application.tmpl $APP_CONFIG_TEMPLATE
-COPY --from=build-env /opt/code/target/datacatalog-0.0.1-SNAPSHOT.jar /usr/share/jars/
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
+    && install -d -o appuser -g appgroup /opt/config
+
+COPY --chown=appuser:appgroup config/application.tmpl $APP_CONFIG_TEMPLATE
+COPY --from=build-env --chown=appuser:appgroup /opt/code/target/datacatalog-0.0.1-SNAPSHOT.jar /usr/share/jars/
 
 #######################################################
 # Set up entrypoint and expose port
 #######################################################
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
-    && mkdir -p /opt/config \
-    && chown -R appuser:appgroup /opt/config /usr/share/jars
-
 USER appuser
 
 ENTRYPOINT ["sh", "-c", "dockerize -template $APP_CONFIG_TEMPLATE:$APP_CONFIG_LOCATION java -jar /usr/share/jars/datacatalog-0.0.1-SNAPSHOT.jar"]
