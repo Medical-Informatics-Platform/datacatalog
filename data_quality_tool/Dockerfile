@@ -1,16 +1,24 @@
-FROM python:3.12-slim
+FROM python:3.12.14-slim
 
 WORKDIR /app
 COPY . .
 
+# Patch OS packages and pip shipped in the base image
+RUN apt-get update && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --no-cache-dir --upgrade pip
+
 # Install Poetry
-RUN pip install "poetry>=2.0,<3.0"
+RUN pip install "poetry>=2.4,<3.0"
 
 # Disable virtualenvs
 RUN poetry config virtualenvs.create false
 
 # Install project dependencies
 RUN poetry install --without dev
+
+RUN useradd --create-home --uid 1001 appuser
+USER appuser
 
 EXPOSE 8000
 

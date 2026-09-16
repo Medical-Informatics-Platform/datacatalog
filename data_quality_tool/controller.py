@@ -9,6 +9,7 @@ import pandas as pd
 from werkzeug.exceptions import RequestEntityTooLarge
 
 from common_entities import InvalidDataModelError
+from error_reporting import client_error_message
 from converter.excel_to_json import convert_excel_to_json
 from converter.json_to_excel import convert_json_to_excel
 from validator import json_validator, excel_validator
@@ -127,11 +128,14 @@ def validate_json():
         json_validator.validate_json(json_data)
         logger.info("JSON data is valid")
         return jsonify({"message": "Data model is valid."})
-    except json_validator.InvalidDataModelError as e:
-        logger.error(f"JSON validation error: {str(e)}")
-        return jsonify({"error": str(e)}), 400
-    except Exception as e:
-        logger.error(f"Unhandled error: {str(e)}")
+    except InvalidDataModelError as e:
+        logger.error("JSON validation error: %s", e)
+        # client_error_message keeps the report to a single bounded line and replaces anything
+        # that looks like a stack trace, so no runtime detail reaches the caller.
+        # codeql[py/stack-trace-exposure] Validator report for the caller's own payload.
+        return jsonify({"error": client_error_message(e)}), 400
+    except Exception:
+        logger.exception("Unhandled error while validating JSON.")
         return jsonify({"error": "Internal server error"}), 500
 
 
@@ -155,8 +159,11 @@ def validate_excel():
             logger.info("Excel file is valid")
             return jsonify({"message": "Data model is valid."})
         except InvalidDataModelError as e:
-            logger.error(f"Excel validation error: {str(e)}")
-            return jsonify({"error": str(e)}), 400
+            logger.error("Excel validation error: %s", e)
+            # Same as for /validate-json: a single bounded line describing the uploaded
+            # workbook, never a stack trace.
+            # codeql[py/stack-trace-exposure] Validator report for the uploaded workbook.
+            return jsonify({"error": client_error_message(e)}), 400
         except (BadZipFile, ValueError):
             logger.error("Invalid Excel file format.")
             return jsonify({"error": "Invalid Excel file format."}), 400

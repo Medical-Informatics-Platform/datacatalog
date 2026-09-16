@@ -1,7 +1,7 @@
 #######################################################
 # Build the Spring Boot application with Maven
 #######################################################
-FROM maven:3.9.5-eclipse-temurin-21 AS build-env
+FROM maven:3.9.16-eclipse-temurin-21 AS build-env
 MAINTAINER Kostas Filippopolitis <kfilippopolitis@athenarc.gr>
 
 # Define build environment variables
@@ -19,7 +19,7 @@ RUN mvn clean package -DskipTests
 #######################################################
 # Setup the runtime container
 #######################################################
-FROM amazoncorretto:21-alpine3.18
+FROM amazoncorretto:21.0.12-alpine3.24
 
 #######################################################
 # Setting up timezone
@@ -41,12 +41,12 @@ ENV FRAMEWORK_LOG_LEVEL="INFO"
 WORKDIR /opt
 
 # Install necessary utilities
-RUN apk add --no-cache curl
+RUN apk add --no-cache --upgrade libcrypto3 libssl3 curl
 
 #######################################################
 # Install dockerize (for config templating)
 #######################################################
-ENV DOCKERIZE_VERSION=v0.10.1
+ENV DOCKERIZE_VERSION=v0.15.1
 RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
     && tar -C /usr/local/bin -xzvf dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
     && rm dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz
@@ -54,12 +54,16 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
 #######################################################
 # Prepare the Spring Boot application files
 #######################################################
-COPY config/application.tmpl $APP_CONFIG_TEMPLATE
-COPY --from=build-env /opt/code/target/datacatalog-0.0.1-SNAPSHOT.jar /usr/share/jars/
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
+    && install -d -o appuser -g appgroup /opt/config
+
+COPY --chown=appuser:appgroup config/application.tmpl $APP_CONFIG_TEMPLATE
+COPY --from=build-env --chown=appuser:appgroup /opt/code/target/datacatalog-0.0.1-SNAPSHOT.jar /usr/share/jars/
 
 #######################################################
 # Set up entrypoint and expose port
 #######################################################
+USER appuser
 
 ENTRYPOINT ["sh", "-c", "dockerize -template $APP_CONFIG_TEMPLATE:$APP_CONFIG_LOCATION java -jar /usr/share/jars/datacatalog-0.0.1-SNAPSHOT.jar"]
 EXPOSE 8090
