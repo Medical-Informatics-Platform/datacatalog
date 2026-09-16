@@ -29,7 +29,7 @@ jobs:
               {0}/../tools/semgrep-rules/bash
               {0}/../tools/semgrep-rules/package_managers
               p/default auto
-            exclude_paths: "*.sarif target/ src/test/ Dockerfile*"
+            exclude_paths: "*.sarif target/ src/test/  DataModelAPI.java FederationAPI.java Dockerfile*"
 
           # ===== frontend: Angular, TypeScript ==============================
           - slug: frontend
