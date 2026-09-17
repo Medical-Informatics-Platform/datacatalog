@@ -2,7 +2,7 @@
 # Build the Spring Boot application with Maven
 #######################################################
 FROM maven:3.9.16-eclipse-temurin-21 AS build-env
-MAINTAINER Kostas Filippopolitis <kfilippopolitis@athenarc.gr>
+LABEL maintainer="Kostas Filippopolitis <kfilippopolitis@athenarc.gr>"
 
 # Define build environment variables
 ENV CODE_PATH="/opt/code"
