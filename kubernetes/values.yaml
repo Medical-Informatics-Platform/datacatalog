@@ -20,6 +20,7 @@ frontend:
 dqt:
   flaskEnv: development
   flaskDebug: '1'
+  maxUploadSizeMb: 20
 
 datacatalogDb:
   image: postgres:18.6

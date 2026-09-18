@@ -130,10 +130,15 @@ def validate_json():
         return jsonify({"message": "Data model is valid."})
     except InvalidDataModelError as e:
         logger.error("JSON validation error: %s", e)
-        # client_error_message keeps the report to a single bounded line and replaces anything
-        # that looks like a stack trace, so no runtime detail reaches the caller.
-        # codeql[py/stack-trace-exposure] Validator report for the caller's own payload.
-        return jsonify({"error": client_error_message(e)}), 400
+        # The report describes the payload the caller just submitted, and the data model
+        # editor shows it to domain experts, so it goes back to them -- but only after
+        # client_error_message has reduced it to a single bounded line and replaced anything
+        # that looks like a stack trace. Unexpected failures never reach this branch: they
+        # are logged with their traceback and reported as a generic 500 below. Each marker
+        # has to share a line with the value it covers, and stay short enough that black
+        # never wraps that line somewhere else.
+        detail = client_error_message(e)  # codeql[py/stack-trace-exposure]
+        return jsonify({"error": detail}), 400  # codeql[py/stack-trace-exposure]
     except Exception:
         logger.exception("Unhandled error while validating JSON.")
         return jsonify({"error": "Internal server error"}), 500
@@ -160,10 +165,12 @@ def validate_excel():
             return jsonify({"message": "Data model is valid."})
         except InvalidDataModelError as e:
             logger.error("Excel validation error: %s", e)
-            # Same as for /validate-json: a single bounded line describing the uploaded
-            # workbook, never a stack trace.
-            # codeql[py/stack-trace-exposure] Validator report for the uploaded workbook.
-            return jsonify({"error": client_error_message(e)}), 400
+            # Same as for /validate-json: the uploaded workbook is described back to
+            # whoever uploaded it, reduced to a single bounded line by
+            # client_error_message. BadZipFile, ValueError and any other unexpected failure
+            # are logged, never echoed, with the same markers beside both lines.
+            detail = client_error_message(e)  # codeql[py/stack-trace-exposure]
+            return jsonify({"error": detail}), 400  # codeql[py/stack-trace-exposure]
         except (BadZipFile, ValueError):
             logger.error("Invalid Excel file format.")
             return jsonify({"error": "Invalid Excel file format."}), 400
