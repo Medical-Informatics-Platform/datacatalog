@@ -54,6 +54,16 @@ class TestClientErrorMessage(unittest.TestCase):
         details = 'Column "Âge (années)" is missing the required meta sheet.'
         self.assertEqual(client_error_message(details), details)
 
+    def test_uses_the_first_line_that_carries_text(self):
+        details = client_error_message(
+            "\n\n  Missing value for required column 'name'.\nInternal detail"
+        )
+        self.assertEqual(details, "Missing value for required column 'name'.")
+
+    def test_blank_report_falls_back_to_generic_message(self):
+        self.assertEqual(client_error_message("   \n\t "), GENERIC_VALIDATION_ERROR)
+        self.assertEqual(client_error_message(""), GENERIC_VALIDATION_ERROR)
+
     def test_bounds_length(self):
         message = client_error_message("x" * (MAX_CLIENT_ERROR_LENGTH * 2))
         self.assertEqual(len(message), MAX_CLIENT_ERROR_LENGTH)

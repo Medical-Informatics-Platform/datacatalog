@@ -23,6 +23,8 @@ spec:
           value: {{ .Values.dqt.flaskEnv | quote }}
         - name: FLASK_DEBUG
           value: {{ .Values.dqt.flaskDebug | quote }}
+        - name: MAX_UPLOAD_SIZE_MB
+          value: {{ .Values.dqt.maxUploadSizeMb | default 20 | quote }}
         startupProbe:
           httpGet:
             path: /

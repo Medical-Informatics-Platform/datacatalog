@@ -360,6 +360,18 @@ class TestController(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(len(response.json["error"]), MAX_CLIENT_ERROR_LENGTH)
 
+    def test_validate_json_never_reports_an_empty_error(self):
+        with patch(
+            "controller.json_validator.validate_json",
+            side_effect=InvalidDataModelError("\n  \n"),
+        ):
+            response = self.client.post(
+                "/validate-json", json={"code": "DM"}, content_type="application/json"
+            )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json, {"error": GENERIC_VALIDATION_ERROR})
+
     def test_validate_excel_hides_stack_traces(self):
         with patch(
             "controller.excel_validator.validate_excel",

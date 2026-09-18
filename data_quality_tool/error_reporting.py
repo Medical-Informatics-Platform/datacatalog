@@ -27,7 +27,12 @@ def client_error_message(details: object) -> str:
     if _TRACEBACK_MARKER.search(message):
         # A stack trace reached us instead of a validation report; keep it in the logs only.
         return GENERIC_VALIDATION_ERROR
-    message = _CONTROL_CHARS.sub("", " ".join(message.splitlines()[0].split()))
+    # An empty report would be worse than a generic one, so the first line that carries text is
+    # used: validators can prefix the report with a newline when they nest messages.
+    line = next((line for line in message.splitlines() if line.strip()), None)
+    if line is None:
+        return GENERIC_VALIDATION_ERROR
+    message = _CONTROL_CHARS.sub("", " ".join(line.split()))
     if len(message) > MAX_CLIENT_ERROR_LENGTH:
         message = f"{message[: MAX_CLIENT_ERROR_LENGTH - 1].rstrip()}…"
     return message
