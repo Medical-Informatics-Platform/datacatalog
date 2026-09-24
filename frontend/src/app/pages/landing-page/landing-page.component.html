@@ -1,51 +1,53 @@
 <div class="home-page" id="top">
   <div class="home-content">
+
+    <!-- ===== HERO ===== -->
     <section id="Intro" class="section hero-section">
       <div class="container">
         <div class="intro-row">
           <div class="intro-content">
-            <div class="hero-glass-card">
-              <p class="eyebrow">Medical Informatics Platform</p>
-              <h1 class="title">Explore the frontiers of <span class="text-gradient">clinical discovery.</span></h1>
-              <p class="subtitle">
-                Access decentralized real-world data across medical centers.
-                Perform secure analysis while preserving patient privacy using
-                our federated architecture.
-              </p>
-              <div class="hero-actions">
-                <a href="#federations" class="btn btn-primary" style="text-decoration: none;">Explore Network</a>
-                <a href="#about" class="btn-ghost" style="text-decoration: none;">Learn More</a>
-              </div>
-              <div class="hero-stats-preview">
-                <div class="stat-item">
-                  <span class="stat-value">30+</span>
-                  <span class="stat-label">Hospitals</span>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat-item">
-                  <span class="stat-value">500k+</span>
-                  <span class="stat-label">Patients</span>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat-item">
-                  <span class="stat-value">12</span>
-                  <span class="stat-label">Countries</span>
-                </div>
-              </div>
+            <p class="eyebrow">Medical Informatics Platform</p>
+            <h1 class="title">Explore the frontiers of <span class="text-gradient">clinical discovery.</span></h1>
+            <p class="subtitle">
+              Access decentralized real-world data across medical centers.
+              Perform secure analysis while preserving patient privacy using
+              our federated architecture.
+            </p>
+            <div class="hero-actions">
+              <a href="#federations" class="btn btn-primary">
+                Explore Federations
+                <span class="material-icons">arrow_forward</span>
+              </a>
+              <a [href]="dataQualityToolUrl" target="_blank" rel="noopener noreferrer" class="btn btn-outline">
+                Data Quality Tool
+                <span class="material-icons">open_in_new</span>
+              </a>
+            </div>
+            <div class="data-model-badges">
+              <span class="data-models-label">Supported data models:</span>
+              <span class="data-model-pill">OMOP v5.4</span>
+              <span class="data-model-pill">CDM v6.1</span>
+              <span class="data-model-pill">CDM v5.3.1</span>
             </div>
           </div>
+
           <div class="intro-image-wrapper">
-            <div class="demo-window" [class.fullscreen]="isFullscreen">
-              <button class="expand-preview-btn" (click)="toggleFullScreen()" [title]="isFullscreen ? 'Close preview' : 'Expand preview'">
-                <span class="material-icons">{{ isFullscreen ? 'close_fullscreen' : 'open_in_full' }}</span>
-              </button>
-              <div class="window-content scrollable">
-                <div class="scroll-container">
-                  <img src="assets/home/platform-screenshot.png" alt="MIP Experiment Studio" class="demo-screenshot full-view">
+            <div class="proof-card">
+              <p class="proof-eyebrow">Network at a glance</p>
+              <div class="proof-stats">
+                <div class="proof-stat">
+                  <span class="proof-stat-value">30+</span>
+                  <span class="proof-stat-label">Hospitals</span>
                 </div>
-                <div class="scroll-hint" *ngIf="!isFullscreen">
-                  <span class="mouse-icon"></span>
-                  <span class="hint-text">Scroll to explore</span>
+                <div class="proof-divider"></div>
+                <div class="proof-stat">
+                  <span class="proof-stat-value">500k+</span>
+                  <span class="proof-stat-label">Patients</span>
+                </div>
+                <div class="proof-divider"></div>
+                <div class="proof-stat">
+                  <span class="proof-stat-value">12</span>
+                  <span class="proof-stat-label">Countries</span>
                 </div>
               </div>
             </div>
@@ -54,16 +56,103 @@
       </div>
     </section>
 
+    <!-- ===== CAPABILITIES ===== -->
+    <section id="capabilities" class="section">
+      <div class="container">
+        <div class="section-header">
+          <p class="eyebrow">Core capabilities</p>
+          <h2 class="title">Comprehensive Data Ecosystem</h2>
+        </div>
+        <div class="cards-grid">
+          <article class="feature-card">
+            <span class="feature-icon"><span class="material-icons">hub</span></span>
+            <h3 class="feature-title">Federated Network</h3>
+            <p class="feature-desc">
+              Connect decentralized datasets across leading institutions
+              for collaborative, large-scale analysis.
+            </p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-icon"><span class="material-icons">shield</span></span>
+            <h3 class="feature-title">Secure Environment</h3>
+            <p class="feature-desc">
+              Controlled accreditation, access control, and user management
+              keep data owners in full control of their data.
+            </p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-icon"><span class="material-icons">insights</span></span>
+            <h3 class="feature-title">Privacy-Preserving Analytics</h3>
+            <p class="feature-desc">
+              Run sensitive analyses on sensitive data without ever moving
+              or pooling the underlying records.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FAIR DATA MODEL ===== -->
+    <section id="fair" class="section">
+      <div class="container">
+        <div class="section-header">
+          <p class="eyebrow">Data standards</p>
+          <h2 class="title">A FAIR Data Model</h2>
+          <p class="subtitle">
+            Built on principles that make data reusable across sites
+            and studies.
+          </p>
+        </div>
+        <div class="fair-grid">
+          <article class="fair-card">
+            <span class="fair-letter">F</span>
+            <h3 class="fair-title">Findable</h3>
+            <p class="fair-desc">
+              Datasets and federations carry rich metadata so researchers
+              can reliably discover relevant data.
+            </p>
+          </article>
+          <article class="fair-card">
+            <span class="fair-letter">A</span>
+            <h3 class="fair-title">Accessible</h3>
+            <p class="fair-desc">
+              Standardized, well-documented access protocols let authorized
+              users retrieve data on demand.
+            </p>
+          </article>
+          <article class="fair-card">
+            <span class="fair-letter">I</span>
+            <h3 class="fair-title">Interoperable</h3>
+            <p class="fair-desc">
+              Common data models (OMOP / CDM) let data from different
+              sites speak the same language.
+            </p>
+          </article>
+          <article class="fair-card">
+            <span class="fair-letter">R</span>
+            <h3 class="fair-title">Reusable</h3>
+            <p class="fair-desc">
+              Clear provenance and licensing metadata let results be shared
+              and built upon by the community.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FEDERATIONS (live) ===== -->
     <section id="federations" class="section">
       <div class="container overflow-hidden">
         <app-embedded-federations></app-embedded-federations>
       </div>
     </section>
 
+    <!-- ===== ABOUT ===== -->
     <section id="about" class="section">
       <div class="container">
         <app-about-page [isEmbedded]="true"></app-about-page>
       </div>
     </section>
+
   </div>
 </div>

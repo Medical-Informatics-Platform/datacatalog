@@ -12,14 +12,7 @@ import { AboutPageComponent } from '../about-page/about-page.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LandingPageComponent {
-  isFullscreen = false;
-
-  toggleFullScreen() {
-    this.isFullscreen = !this.isFullscreen;
-    if (this.isFullscreen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-  }
+  // External Data Quality Tool (DQT) service. Update to the deployed
+  // endpoint once it is publicly reachable; defaults to the local dev service.
+  readonly dataQualityToolUrl = 'http://localhost:8000';
 }

@@ -112,7 +112,7 @@ input:required:valid, textarea:required:valid, select:required:valid {
 
 /* Typography */
 .text-gradient {
-  background: linear-gradient(135deg, var(--mip-dark-blue) 0%, #7F9CE8 100%);
+  background: linear-gradient(135deg, var(--mip-dark-blue) 0%, #4a5ce0 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;

@@ -1,24 +1,14 @@
+:host {
+  display: block;
+}
+
 .main-footer {
   position: relative;
   overflow: hidden;
   margin-top: 48px;
   color: #fff;
-  background:
-    radial-gradient(circle at 50% -10%, rgba(111, 165, 255, 0.18) 0%, rgba(111, 165, 255, 0.05) 28%, transparent 58%),
-    radial-gradient(circle at 0% 20%, rgba(86, 210, 255, 0.08) 0%, transparent 34%),
-    linear-gradient(180deg, #0d1628 0%, #09111f 56%, #070d18 100%);
-  border-top: 1px solid var(--mip-border);
-}
-
-.main-footer::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.04) 18%, transparent 36%),
-    linear-gradient(90deg, transparent 60%, rgba(255, 255, 255, 0.025) 82%, transparent 100%);
-  pointer-events: none;
-  opacity: 0.55;
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .footer-shell {
@@ -27,7 +17,7 @@
   gap: 0;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 44px 28px 34px;
+  padding: 48px 28px 36px;
   position: relative;
   z-index: 1;
 }
@@ -43,10 +33,11 @@
   border-left: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* Brand column */
 .footer-logo {
   width: 132px;
   height: auto;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
   filter: brightness(0) invert(1);
 }
 
@@ -66,6 +57,7 @@
   max-width: 34ch;
 }
 
+/* Resources column */
 .footer-col-title {
   margin: 0 0 24px;
   font-size: 0.77rem;
@@ -97,6 +89,13 @@
   transform: translateX(2px);
 }
 
+.footer-links a:focus-visible {
+  outline: 2px solid rgba(127, 156, 232, 0.5);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+/* Institutional column */
 .institutional-logos {
   display: flex;
   flex-direction: row;
@@ -123,9 +122,17 @@
 }
 
 .partner-link:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.35);
+  outline: 2px solid rgba(127, 156, 232, 0.48);
   outline-offset: 6px;
   border-radius: 6px;
+}
+
+.partner-logo {
+  height: auto;
+  width: auto;
+  max-width: 132px;
+  max-height: 34px;
+  object-fit: contain;
 }
 
 .chuv-link {
@@ -136,14 +143,6 @@
 .chuv-link:hover,
 .chuv-link:focus-visible {
   opacity: 0.92;
-}
-
-.partner-logo {
-  height: auto;
-  width: auto;
-  max-width: 132px;
-  max-height: 34px;
-  object-fit: contain;
 }
 
 .chuv-logo {
@@ -158,6 +157,7 @@
   max-height: 28px;
 }
 
+/* Funding section */
 .footer-funding-section {
   padding-top: 18px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
@@ -257,6 +257,7 @@
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16), 0 6px 12px rgba(0, 0, 0, 0.14);
 }
 
+/* Tooltip */
 .footer-funding-tooltip {
   position: absolute;
   left: 0;
@@ -309,12 +310,52 @@
   transform: translateY(0);
 }
 
+/* Quick links row */
+.footer-links-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 16px 28px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.footer-quick-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.footer-quick-link:hover {
+  color: #fff;
+}
+
+.footer-quick-link:focus-visible {
+  outline: 2px solid rgba(127, 156, 232, 0.5);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.footer-quick-link .material-icons {
+  font-size: 1rem;
+}
+
+/* Bottom bar */
 .footer-bottom {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px 28px 28px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  text-align: left;
+  text-align: center;
   font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.4);
   position: relative;
@@ -361,6 +402,11 @@
 
   .footer-bottom {
     padding: 20px 24px 28px;
+  }
+
+  .footer-links-row {
+    gap: 20px;
+    padding: 16px 24px;
   }
 
   .footer-funding-tooltip {
