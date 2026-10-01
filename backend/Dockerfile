@@ -2,7 +2,7 @@
 # Build the Spring Boot application with Maven
 #######################################################
 FROM maven:3.9.16-eclipse-temurin-21 AS build-env
-MAINTAINER Kostas Filippopolitis <kfilippopolitis@athenarc.gr>
+LABEL maintainer="Kostas Filippopolitis <kfilippopolitis@athenarc.gr>"
 
 # Define build environment variables
 ENV CODE_PATH="/opt/code"
@@ -41,7 +41,7 @@ ENV FRAMEWORK_LOG_LEVEL="INFO"
 WORKDIR /opt
 
 # Install necessary utilities
-RUN apk add --no-cache curl
+RUN apk add --no-cache --upgrade libcrypto3 libssl3 curl
 
 #######################################################
 # Install dockerize (for config templating)
@@ -54,12 +54,16 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
 #######################################################
 # Prepare the Spring Boot application files
 #######################################################
-COPY config/application.tmpl $APP_CONFIG_TEMPLATE
-COPY --from=build-env /opt/code/target/datacatalog-0.0.1-SNAPSHOT.jar /usr/share/jars/
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
+    && install -d -o appuser -g appgroup /opt/config
+
+COPY --chown=appuser:appgroup config/application.tmpl $APP_CONFIG_TEMPLATE
+COPY --from=build-env --chown=appuser:appgroup /opt/code/target/datacatalog-0.0.1-SNAPSHOT.jar /usr/share/jars/
 
 #######################################################
 # Set up entrypoint and expose port
 #######################################################
+USER appuser
 
 ENTRYPOINT ["sh", "-c", "dockerize -template $APP_CONFIG_TEMPLATE:$APP_CONFIG_LOCATION java -jar /usr/share/jars/datacatalog-0.0.1-SNAPSHOT.jar"]
 EXPOSE 8090
