@@ -34,9 +34,10 @@ Hard requirements for `POST /excel-to-json` / `POST /validate-excel`, enforced b
 - **Columns**: header must be exactly these 11 — `csvFile`, `name`, `code`, `type`, `values`,
   `unit`, `description`, `canBeNull`, `comments`, `conceptPath`, `methodology`
 - **Required per row**: `name`, `code`, `type`, `conceptPath`
-- **`type`**: `nominal`, `real`, `integer`, or `text`
-- **`values`** (only when filled): `"{"code", "label"}"` pairs for `nominal` (no duplicate codes);
-  `<min>-<max>` for `real`/`integer` (min < max; whole numbers for `integer`)
+- **`type`**: numerical `continuous` or `discrete`; categorical `nominal`, `ordinal`, or `binary`
+- **`values`** (only when filled): `"{"code", "label"}"` pairs for `nominal`/`ordinal`/`binary`
+  (no duplicate codes; `binary` requires exactly two); `<min>-<max>` for `continuous`/`discrete`
+  (min < max; whole numbers for `discrete`)
 - **`conceptPath`**: `level1/level2/...` — builds the group hierarchy, then dropped
 
 **Column → CDEs JSON mapping**
@@ -46,7 +47,7 @@ Hard requirements for `POST /excel-to-json` / `POST /validate-excel`, enforced b
 | `name` | `label` | |
 | `code` | `code` | |
 | `type` | `type` | |
-| `values` | `enumerations` / `minValue`+`maxValue` | nominal → enumerations; real/integer → range |
+| `values` | `enumerations` / `minValue`+`maxValue` | categorical → enumerations; numerical → range |
 | `unit` | `units` | |
 | `description` | `description` | |
 | `canBeNull` | `canBeNull` | |
@@ -55,7 +56,7 @@ Hard requirements for `POST /excel-to-json` / `POST /validate-excel`, enforced b
 | `conceptPath` | — | consumed to build the tree |
 | `csvFile` | — | **not used** in this direction |
 
-`sql_type` and `isCategorical` are derived from `type`; empty fields and empty
+`type` is the only typing field (no `sql_type` or `isCategorical`); empty fields and empty
 `groups`/`variables`/`enumerations` lists are stripped. Failures return `400` with a single
 bounded error line naming the variable.
 
@@ -63,18 +64,19 @@ bounded error line naming the variable.
 
 Excel workbooks must contain exactly these columns: `csvFile`, `name`, `code`, `type`, `values`,
 `unit`, `description`, `canBeNull`, `comments`, `conceptPath`, `methodology`. `name`, `code`, `type`,
-and `conceptPath` are required on every row, `type` must be `nominal`, `real`, `integer`, or `text`,
-`values` is checked as `{"code", "label"}, ...` for `nominal` and as `<min>-<max>` for `real` and
-`integer` whenever it is filled in, duplicate enumeration codes are rejected, and `conceptPath` must
-look like `characters/characters/...`.
+and `conceptPath` are required on every row, `type` must be `continuous`, `discrete`, `nominal`,
+`ordinal`, or `binary`, `values` is checked as `{"code", "label"}, ...` for the categorical types and
+as `<min>-<max>` for the numerical types whenever it is filled in, `binary` needs exactly two values,
+duplicate enumeration codes are rejected, and `conceptPath` must look like `characters/characters/...`.
 
 JSON data models must carry non-empty `code`, `version`, `label`, and a `groups` list. Every group
-needs a `code` that is unique within its path, and every Common Data Element needs `code`, `type`,
-`sql_type`, and `isCategorical` that agree with the mapping `nominal` → `text`/`true`,
-`real` → `real`/`false`, `integer` → `int`/`false`, `text` → `text`/`false`. Categorical elements
-require `enumerations`, `minValue` must be below `maxValue`, element codes must be unique inside a
-group, at least one dataset element (`code: dataset`, `sql_type: text`, categorical) must exist, and
-longitudinal models must define `subjectid` and `visitid`.
+needs a `code` that is unique within its path, and every Common Data Element needs `code` and a
+`type` of `continuous`, `discrete`, `nominal`, `ordinal`, or `binary`. Numerical elements cannot carry
+`enumerations` and categorical elements cannot carry `minValue`/`maxValue`; `binary` elements need
+exactly two `enumerations`, `discrete` bounds must be whole numbers, and `minValue` must be below
+`maxValue`. `nominal` and `ordinal` elements without `enumerations` are free-text variables. Element
+codes must be unique inside a group, at least one dataset element (`code: dataset`, `type: nominal`,
+with `enumerations`) must exist, and longitudinal models must define `subjectid` and `visitid`.
 
 ## Local Development
 

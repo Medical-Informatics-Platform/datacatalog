@@ -6,7 +6,13 @@ from validator.json_validator import contains_required_dataset
 class TestContainsRequiredDataset(unittest.TestCase):
     def test_dataset_present_in_variables(self):
         # Dataset CDE is directly in the variables list
-        variables = [{"code": "dataset", "sql_type": "text", "isCategorical": True}]
+        variables = [
+            {
+                "code": "dataset",
+                "type": "nominal",
+                "enumerations": [{"code": "d1", "label": "D1"}],
+            }
+        ]
         groups = []
         self.assertTrue(contains_required_dataset(variables, groups))
 
@@ -16,16 +22,24 @@ class TestContainsRequiredDataset(unittest.TestCase):
         groups = [
             {
                 "variables": [
-                    {"code": "dataset", "sql_type": "text", "isCategorical": True}
+                    {
+                        "code": "dataset",
+                        "type": "nominal",
+                        "enumerations": [{"code": "d1", "label": "D1"}],
+                    }
                 ],
                 "groups": [],
             }
         ]
         self.assertTrue(contains_required_dataset(variables, groups))
 
+    def test_dataset_without_enumerations_is_not_accepted(self):
+        variables = [{"code": "dataset", "type": "nominal"}]
+        self.assertFalse(contains_required_dataset(variables, []))
+
     def test_dataset_absent(self):
         # Dataset CDE is absent
-        variables = [{"code": "other_var", "sql_type": "real", "isCategorical": False}]
+        variables = [{"code": "other_var", "type": "continuous"}]
         groups = []
         self.assertFalse(contains_required_dataset(variables, groups))
 
@@ -43,8 +57,8 @@ class TestContainsRequiredDataset(unittest.TestCase):
                                 "variables": [
                                     {
                                         "code": "dataset",
-                                        "sql_type": "text",
-                                        "isCategorical": True,
+                                        "type": "nominal",
+                                        "enumerations": [{"code": "d1", "label": "D1"}],
                                     }
                                 ],
                                 "groups": [],
@@ -66,8 +80,8 @@ class TestContainsRequiredDataset(unittest.TestCase):
                         "variables": [
                             {
                                 "code": "dataset",
-                                "sql_type": "text",
-                                "isCategorical": True,
+                                "type": "nominal",
+                                "enumerations": [{"code": "d1", "label": "D1"}],
                             }
                         ],
                         "groups": [],
@@ -100,11 +114,21 @@ class TestContainsRequiredDataset(unittest.TestCase):
 
     def test_multiple_datasets_in_different_locations(self):
         # Multiple dataset CDEs in different locations
-        variables = [{"code": "dataset", "sql_type": "text", "isCategorical": True}]
+        variables = [
+            {
+                "code": "dataset",
+                "type": "nominal",
+                "enumerations": [{"code": "d1", "label": "D1"}],
+            }
+        ]
         groups = [
             {
                 "variables": [
-                    {"code": "dataset", "sql_type": "text", "isCategorical": True}
+                    {
+                        "code": "dataset",
+                        "type": "nominal",
+                        "enumerations": [{"code": "d1", "label": "D1"}],
+                    }
                 ],
                 "groups": [],
             }
@@ -119,6 +143,6 @@ class TestContainsRequiredDataset(unittest.TestCase):
 
     def test_misspelled_dataset_code(self):
         # Dataset code is misspelled
-        variables = [{"code": "datast", "sql_type": "text", "isCategorical": True}]
+        variables = [{"code": "datast", "type": "nominal"}]
         groups = []
         self.assertFalse(contains_required_dataset(variables, groups))

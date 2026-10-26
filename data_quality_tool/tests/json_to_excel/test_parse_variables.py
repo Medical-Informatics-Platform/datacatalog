@@ -8,7 +8,7 @@ class TestParseVariablesFunction(unittest.TestCase):
         self.basic_variable = {
             "code": "V1",
             "label": "Variable 1",
-            "type": "integer",
+            "type": "discrete",
             "enumerations": [{"code": "1", "label": "One"}],
             "units": "units",
             "description": "A basic variable.",
@@ -20,7 +20,7 @@ class TestParseVariablesFunction(unittest.TestCase):
             "",  # csvFile is not present in the basic_variable
             "Variable 1",
             "V1",
-            "integer",
+            "discrete",
             '{"1","One"}',
             "units",
             "A basic variable.",

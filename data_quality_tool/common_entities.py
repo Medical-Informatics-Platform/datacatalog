@@ -15,12 +15,9 @@ EXCEL_JSON_FIELDS_MAP = {
 }
 
 
-EXCEL_TYPE_2_SQL_TYPE_ISCATEGORICAL_MAP = {
-    "nominal": ("text", True),
-    "real": ("real", False),
-    "integer": ("int", False),
-    "text": ("text", False),
-}
+NUMERICAL_TYPES = ("continuous", "discrete")
+CATEGORICAL_TYPES = ("nominal", "ordinal", "binary")
+VARIABLE_TYPES = NUMERICAL_TYPES + CATEGORICAL_TYPES
 
 EXCEL_COLUMNS = [
     "csvFile",

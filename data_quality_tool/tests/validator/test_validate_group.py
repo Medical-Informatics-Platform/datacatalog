@@ -11,16 +11,12 @@ class TestValidateGroup(unittest.TestCase):
             "variables": [
                 {
                     "code": "001",
-                    "sql_type": "text",
-                    "isCategorical": True,
                     "type": "nominal",
                     "enumerations": ["yes", "no"],
                 },
                 {
                     "code": "002",
-                    "sql_type": "real",
-                    "isCategorical": False,
-                    "type": "real",
+                    "type": "continuous",
                 },
             ],
             "groups": [],
@@ -38,9 +34,7 @@ class TestValidateGroup(unittest.TestCase):
                     "variables": [
                         {
                             "code": "003",
-                            "sql_type": "int",
-                            "isCategorical": False,
-                            "type": "integer",
+                            "type": "discrete",
                         }
                     ],
                     "groups": [],
@@ -91,8 +85,6 @@ class TestValidateGroup(unittest.TestCase):
                             "variables": [
                                 {
                                     "code": "101",
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                     "type": "nominal",
                                     "enumerations": ["A", "B", "C"],
                                 }
@@ -114,9 +106,7 @@ class TestValidateGroup(unittest.TestCase):
             "variables": [
                 {
                     "code": "102",
-                    "sql_type": "int",
-                    "isCategorical": False,
-                    "type": "integer",
+                    "type": "discrete",
                 },  # Valid
                 {"code": "103"},  # Invalid, missing required fields other than 'code'
             ],
@@ -136,9 +126,7 @@ class TestValidateGroup(unittest.TestCase):
                     "variables": [
                         {
                             "code": "104",
-                            "sql_type": "real",
-                            "isCategorical": False,
-                            "type": "real",
+                            "type": "continuous",
                         }
                     ],
                     "groups": [],
@@ -153,9 +141,7 @@ class TestValidateGroup(unittest.TestCase):
         # Test a group where all variables are invalid
         group = {
             "variables": [
-                {
-                    "sql_type": "text"
-                },  # Invalid, missing 'code', 'isCategorical', and 'type'
+                {"type": "nominal"},  # Invalid, missing 'code' and 'type'
                 {},  # Completely invalid
             ],
             "groups": [],
@@ -172,8 +158,6 @@ class TestValidateGroup(unittest.TestCase):
                     "variables": [
                         {
                             "code": "105",
-                            "sql_type": "text",
-                            "isCategorical": True,
                             "type": "nominal",
                             "enumerations": ["X", "Y"],
                         }
@@ -194,16 +178,12 @@ class TestValidateGroup(unittest.TestCase):
             "variables": [
                 {
                     "code": "001",
-                    "sql_type": "text",
-                    "isCategorical": True,
                     "type": "nominal",
                     "enumerations": ["X", "Y"],
                 },
                 {
                     "code": "001",
-                    "sql_type": "int",
-                    "isCategorical": False,
-                    "type": "integer",
+                    "type": "discrete",
                 },
             ],
             "groups": [],
@@ -221,8 +201,6 @@ class TestValidateGroup(unittest.TestCase):
                     "variables": [
                         {
                             "code": "002",
-                            "sql_type": "text",
-                            "isCategorical": True,
                             "type": "nominal",
                             "enumerations": ["X", "Y"],
                         }
@@ -233,9 +211,7 @@ class TestValidateGroup(unittest.TestCase):
                     "variables": [
                         {
                             "code": "002",
-                            "sql_type": "real",
-                            "isCategorical": False,
-                            "type": "real",
+                            "type": "continuous",
                         }
                     ],
                     "groups": [],

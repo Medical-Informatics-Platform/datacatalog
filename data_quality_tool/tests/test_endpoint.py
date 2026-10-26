@@ -55,8 +55,6 @@ class TestController(unittest.TestCase):
                                                 "label": "Nested Enumeration 1",
                                             }
                                         ],
-                                        "sql_type": "text",
-                                        "isCategorical": True,
                                     }
                                 ],
                             }
@@ -65,14 +63,12 @@ class TestController(unittest.TestCase):
                             {
                                 "label": "Group Variable",
                                 "code": "group_variable",
-                                "type": "integer",
+                                "type": "discrete",
                                 "units": "years",
                                 "description": "A variable within a group",
                                 "methodology": "group methodology",
                                 "minValue": -10,
                                 "maxValue": 100,
-                                "sql_type": "int",
-                                "isCategorical": False,
                             }
                         ],
                     }
@@ -86,8 +82,6 @@ class TestController(unittest.TestCase):
                         "description": "An example variable description",
                         "methodology": "example methodology",
                         "enumerations": [{"code": "enum1", "label": "Enumeration 1"}],
-                        "sql_type": "text",
-                        "isCategorical": True,
                     }
                 ],
                 "version": "to be defined",
@@ -121,7 +115,7 @@ class TestController(unittest.TestCase):
         self.assertEqual(
             df["code"].tolist(), ["dataset", "group_variable", "nested_group_variable"]
         )
-        self.assertEqual(df["type"].tolist(), ["nominal", "integer", "nominal"])
+        self.assertEqual(df["type"].tolist(), ["nominal", "discrete", "nominal"])
         self.assertEqual(
             df["values"].tolist(),
             [
@@ -157,8 +151,6 @@ class TestController(unittest.TestCase):
                         {
                             "label": "Dataset Variable",
                             "code": "dataset",
-                            "sql_type": "text",
-                            "isCategorical": True,
                             "type": "nominal",
                             "enumerations": [
                                 {"code": "dataset1", "label": "Dataset 1"}
@@ -200,8 +192,6 @@ class TestController(unittest.TestCase):
                                 {
                                     "label": "Dataset Variable",
                                     "code": "dataset",
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                     "type": "nominal",
                                     "enumerations": [
                                         {"code": "dataset1", "label": "Dataset 1"}

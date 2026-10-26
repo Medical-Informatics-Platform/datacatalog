@@ -8,8 +8,6 @@ class TestValidateCommonDataElement(unittest.TestCase):
         # Test a valid nominal common data element with enumerations
         cde = {
             "code": "001",
-            "sql_type": "text",
-            "isCategorical": True,
             "type": "nominal",
             "enumerations": ["value1", "value2"],
         }
@@ -19,7 +17,7 @@ class TestValidateCommonDataElement(unittest.TestCase):
 
     def test_missing_required_fields(self):
         # Test CDE missing one or more required fields
-        cde_incomplete = {"code": "002", "type": "real"}
+        cde_incomplete = {"code": "002"}
         path = "/test/missing_fields"
         with self.assertRaises(InvalidDataModelError):
             validate_common_data_element(cde_incomplete, path)
@@ -28,45 +26,61 @@ class TestValidateCommonDataElement(unittest.TestCase):
         # Test CDE with an invalid type
         cde_invalid_type = {
             "code": "003",
-            "sql_type": "text",
-            "isCategorical": False,
             "type": "undefined_type",
         }
         path = "/test/invalid_type"
         with self.assertRaises(InvalidDataModelError):
             validate_common_data_element(cde_invalid_type, path)
 
-    def test_mismatch_sql_type_and_isCategorical(self):
-        # Test CDE where sql_type or isCategorical does not match the expected values for the type
-        cde_mismatch = {
-            "code": "004",
-            "sql_type": "int",  # Expected to be 'text' for 'nominal'
-            "isCategorical": True,
-            "type": "nominal",
-        }
-        path = "/test/mismatch"
-        with self.assertRaises(InvalidDataModelError):
-            validate_common_data_element(cde_mismatch, path)
+    def test_legacy_types_are_rejected(self):
+        for legacy_type in ["real", "integer", "text"]:
+            with self.assertRaises(InvalidDataModelError):
+                validate_common_data_element(
+                    {"code": "004", "type": legacy_type}, "/test/legacy"
+                )
 
-    def test_categorical_without_enumerations(self):
-        # Test CDE that is categorical but missing enumerations
-        cde_no_enumerations = {
-            "code": "005",
-            "sql_type": "text",
-            "isCategorical": True,
-            "type": "nominal",
-        }
-        path = "/test/no_enumerations"
-        with self.assertRaises(InvalidDataModelError):
-            validate_common_data_element(cde_no_enumerations, path)
+    def test_numerical_with_enumerations(self):
+        cde = {"code": "004", "type": "continuous", "enumerations": ["a", "b"]}
+        with self.assertRaisesRegex(
+            InvalidDataModelError, "cannot have 'enumerations'"
+        ):
+            validate_common_data_element(cde, "/test/numerical_enumerations")
+
+    def test_categorical_with_range(self):
+        cde = {"code": "004", "type": "ordinal", "enumerations": ["a"], "minValue": 0}
+        with self.assertRaisesRegex(InvalidDataModelError, "cannot have 'minValue'"):
+            validate_common_data_element(cde, "/test/categorical_range")
+
+    def test_nominal_and_ordinal_without_enumerations_are_free_text(self):
+        for variable_type in ["nominal", "ordinal"]:
+            validate_common_data_element(
+                {"code": "005", "type": variable_type}, "/test/free_text"
+            )
+
+    def test_binary_requires_two_enumerations(self):
+        for enumerations in [None, ["a"], ["a", "b", "c"]]:
+            cde = {"code": "005", "type": "binary", "enumerations": enumerations}
+            with self.assertRaisesRegex(InvalidDataModelError, "exactly two"):
+                validate_common_data_element(cde, "/test/binary")
+        validate_common_data_element(
+            {"code": "005", "type": "binary", "enumerations": ["a", "b"]},
+            "/test/binary",
+        )
+
+    def test_discrete_requires_whole_number_range(self):
+        cde = {"code": "005", "type": "discrete", "minValue": 0.5, "maxValue": 3}
+        with self.assertRaisesRegex(InvalidDataModelError, "whole-number"):
+            validate_common_data_element(cde, "/test/discrete")
+        validate_common_data_element(
+            {"code": "005", "type": "discrete", "minValue": 0, "maxValue": 3},
+            "/test/discrete",
+        )
 
     def test_minValue_greater_than_maxValue(self):
         # Test CDE with minValue greater than maxValue
         cde_invalid_range = {
             "code": "006",
-            "sql_type": "real",
-            "isCategorical": False,
-            "type": "real",
+            "type": "continuous",
             "minValue": 10,
             "maxValue": 5,
         }

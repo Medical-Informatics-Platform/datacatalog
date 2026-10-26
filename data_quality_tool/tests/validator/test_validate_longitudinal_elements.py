@@ -12,15 +12,11 @@ class TestValidateLongitudinalElements(unittest.TestCase):
         variables = [
             {
                 "code": "subjectid",
-                "sql_type": "text",
-                "isCategorical": False,
-                "type": "text",
+                "type": "nominal",
             },
             {
                 "code": "visitid",
-                "sql_type": "text",
-                "isCategorical": False,
-                "type": "text",
+                "type": "nominal",
             },
         ]
         groups = []
@@ -35,15 +31,11 @@ class TestValidateLongitudinalElements(unittest.TestCase):
                 "variables": [
                     {
                         "code": "subjectid",
-                        "sql_type": "text",
-                        "isCategorical": False,
-                        "type": "text",
+                        "type": "nominal",
                     },
                     {
                         "code": "visitid",
-                        "sql_type": "text",
-                        "isCategorical": False,
-                        "type": "text",
+                        "type": "nominal",
                     },
                 ],
                 "groups": [],
@@ -65,9 +57,7 @@ class TestValidateLongitudinalElements(unittest.TestCase):
         variables = [
             {
                 "code": "subjectid",
-                "sql_type": "text",
-                "isCategorical": False,
-                "type": "text",
+                "type": "nominal",
             }
         ]
         groups = [
@@ -75,9 +65,7 @@ class TestValidateLongitudinalElements(unittest.TestCase):
                 "variables": [
                     {
                         "code": "visitid",
-                        "sql_type": "text",
-                        "isCategorical": False,
-                        "type": "text",
+                        "type": "nominal",
                     }
                 ],
                 "groups": [],
@@ -91,9 +79,7 @@ class TestValidateLongitudinalElements(unittest.TestCase):
         variables = [
             {
                 "code": "subjectid",
-                "sql_type": "text",
-                "isCategorical": False,
-                "type": "text",
+                "type": "nominal",
             }
         ]
         groups = [
@@ -101,15 +87,11 @@ class TestValidateLongitudinalElements(unittest.TestCase):
                 "variables": [
                     {
                         "code": "visitid",
-                        "sql_type": "text",
-                        "isCategorical": False,
-                        "type": "text",
+                        "type": "nominal",
                     },
                     {
                         "code": "subjectid",
-                        "sql_type": "text",
-                        "isCategorical": False,
-                        "type": "text",
+                        "type": "nominal",
                     },  # Another instance
                 ],
                 "groups": [],
@@ -122,9 +104,7 @@ class TestValidateLongitudinalElements(unittest.TestCase):
         variables = [
             {
                 "code": "subjectid",
-                "sql_type": "text",
-                "isCategorical": False,
-                "type": "text",
+                "type": "nominal",
             }
         ]
         groups = []
@@ -137,9 +117,7 @@ class TestValidateLongitudinalElements(unittest.TestCase):
         variables = [
             {
                 "code": "subjectid",
-                "sql_type": "text",
-                "isCategorical": False,
-                "type": "text",
+                "type": "nominal",
             }
         ]
         groups = [
@@ -153,9 +131,7 @@ class TestValidateLongitudinalElements(unittest.TestCase):
                                 "variables": [
                                     {
                                         "code": "visitid",
-                                        "sql_type": "text",
-                                        "isCategorical": False,
-                                        "type": "text",
+                                        "type": "nominal",
                                     }
                                 ],
                                 "groups": [],

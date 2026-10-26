@@ -144,7 +144,7 @@ const buildTooltipElement = (node: TreeDatum): HTMLElement => {
     root.append(rows);
   }
 
-  if (node.type === 'nominal' && node.enumerations?.length) {
+  if (node.enumerations?.length) {
     const enumerations = createElement('div', 'margin-top:12px;');
     const list = createElement('div', 'display:flex;flex-wrap:wrap;gap:6px;');
     for (const item of node.enumerations.slice(0, 8)) {

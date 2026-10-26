@@ -13,8 +13,6 @@ class TestValidateDataModel(unittest.TestCase):
             "variables": [
                 {
                     "code": "dataset",
-                    "sql_type": "text",
-                    "isCategorical": True,
                     "type": "nominal",
                     "enumerations": ["dataset1", "dataset2"],
                 }
@@ -25,8 +23,6 @@ class TestValidateDataModel(unittest.TestCase):
                     "variables": [
                         {
                             "code": "001",
-                            "sql_type": "text",
-                            "isCategorical": True,
                             "type": "nominal",
                             "enumerations": ["yes", "no"],
                         }
@@ -37,8 +33,6 @@ class TestValidateDataModel(unittest.TestCase):
                             "variables": [
                                 {
                                     "code": "002",
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                     "type": "nominal",
                                     "enumerations": ["yes", "no"],
                                 }
@@ -84,8 +78,6 @@ class TestValidateDataModel(unittest.TestCase):
             "variables": [
                 {
                     "code": "000",
-                    "sql_type": "text",
-                    "isCategorical": True,
                     "type": "nominal",
                     "enumerations": ["yes", "no"],
                 }
@@ -96,8 +88,6 @@ class TestValidateDataModel(unittest.TestCase):
                     "variables": [
                         {
                             "code": "001",
-                            "sql_type": "text",
-                            "isCategorical": True,
                             "type": "nominal",
                             "enumerations": ["yes", "no"],
                         }
@@ -106,7 +96,7 @@ class TestValidateDataModel(unittest.TestCase):
                 }
             ],
         }
-        expected_message = "The DataModel must include at least one dataset CommonDataElement with code 'dataset', 'sql_type' as 'text', and 'isCategorical' set to true."
+        expected_message = "The DataModel must include at least one dataset CommonDataElement with code 'dataset', 'type' as 'nominal', and 'enumerations'."
         with self.assertRaisesRegex(InvalidDataModelError, expected_message):
             validate_json(data_model_no_dataset)
 
@@ -119,22 +109,16 @@ class TestValidateDataModel(unittest.TestCase):
             "variables": [
                 {
                     "code": "dataset",
-                    "sql_type": "text",
-                    "isCategorical": True,
                     "type": "nominal",
                     "enumerations": ["dataset1", "dataset2"],
                 },
                 {
                     "code": "subjectid",
-                    "sql_type": "text",
-                    "isCategorical": False,
-                    "type": "text",
+                    "type": "nominal",
                 },
                 {
                     "code": "visitid",
-                    "sql_type": "text",
-                    "isCategorical": False,
-                    "type": "text",
+                    "type": "nominal",
                 },
             ],
             "groups": [
@@ -143,8 +127,6 @@ class TestValidateDataModel(unittest.TestCase):
                     "variables": [
                         {
                             "code": "001",
-                            "sql_type": "text",
-                            "isCategorical": True,
                             "type": "nominal",
                             "enumerations": ["yes", "no"],
                         }
@@ -165,8 +147,7 @@ class TestValidateDataModel(unittest.TestCase):
             "variables": [
                 {
                     "code": "invalid_var",
-                    "sql_type": "text",
-                }  # Missing 'isCategorical' and 'type'
+                }  # Missing 'type'
             ],
             "groups": [
                 {
@@ -174,8 +155,6 @@ class TestValidateDataModel(unittest.TestCase):
                     "variables": [
                         {
                             "code": "001",
-                            "sql_type": "text",
-                            "isCategorical": True,
                             "type": "nominal",
                             "enumerations": ["yes", "no"],
                         }
@@ -184,7 +163,7 @@ class TestValidateDataModel(unittest.TestCase):
                 }
             ],
         }
-        expected_message = "Missing required field 'isCategorical' in CommonDataElement at path: '/DM006/invalid_var'. Please ensure all required fields are provided."
+        expected_message = "Missing required field 'type' in CommonDataElement at path: '/DM006/invalid_var'. Please ensure all required fields are provided."
         with self.assertRaisesRegex(InvalidDataModelError, expected_message):
             validate_json(data_model)
 
@@ -197,16 +176,12 @@ class TestValidateDataModel(unittest.TestCase):
             "variables": [
                 {
                     "code": "dataset",
-                    "sql_type": "text",
-                    "isCategorical": True,
                     "type": "nominal",
                     "enumerations": ["dataset1"],
                 },
                 {
                     "code": "visitid",
-                    "sql_type": "text",
-                    "isCategorical": False,
-                    "type": "text",
+                    "type": "nominal",
                 },
             ],
             "longitudinal": True,
@@ -216,8 +191,6 @@ class TestValidateDataModel(unittest.TestCase):
                     "variables": [
                         {
                             "code": "001",
-                            "sql_type": "text",
-                            "isCategorical": True,
                             "type": "nominal",
                             "enumerations": ["yes", "no"],
                         }
@@ -239,8 +212,6 @@ class TestValidateDataModel(unittest.TestCase):
             "variables": [
                 {
                     "code": "dataset",
-                    "sql_type": "text",
-                    "isCategorical": True,
                     "type": "nominal",
                     "enumerations": ["dataset1"],
                 }
@@ -252,12 +223,12 @@ class TestValidateDataModel(unittest.TestCase):
                 }  # Invalid variable configuration
             ],
         }
-        expected_message = "Missing required field 'sql_type' in CommonDataElement at path: '/DM008/group1/group2/deep_var'. Please ensure all required fields are provided."
+        expected_message = "Missing required field 'type' in CommonDataElement at path: '/DM008/group1/group2/deep_var'. Please ensure all required fields are provided."
         with self.assertRaisesRegex(InvalidDataModelError, expected_message):
             validate_json(data_model)
 
-    def test_data_model_categorical_variable_without_enumerations(self):
-        # Test data models where a categorical variable lacks enumerations
+    def test_data_model_binary_variable_without_enumerations(self):
+        # Test data models where a binary variable lacks enumerations
         data_model = {
             "code": "DM009",
             "version": "1.0",
@@ -265,9 +236,7 @@ class TestValidateDataModel(unittest.TestCase):
             "variables": [
                 {
                     "code": "categorical_var",
-                    "sql_type": "text",
-                    "isCategorical": True,
-                    "type": "nominal",
+                    "type": "binary",
                 }
                 # Missing 'enumerations'
             ],
@@ -277,8 +246,6 @@ class TestValidateDataModel(unittest.TestCase):
                     "variables": [
                         {
                             "code": "001",
-                            "sql_type": "text",
-                            "isCategorical": True,
                             "type": "nominal",
                             "enumerations": ["yes", "no"],
                         }
@@ -288,7 +255,7 @@ class TestValidateDataModel(unittest.TestCase):
             ],
         }
 
-        expected_message = "'enumerations' is required for categorical CommonDataElement at path: '/DM009/categorical_var', but it is missing."
+        expected_message = "'binary' CommonDataElement at path: '/DM009/categorical_var' must have exactly two 'enumerations'."
         with self.assertRaisesRegex(InvalidDataModelError, expected_message):
             validate_json(data_model)
 
@@ -301,8 +268,6 @@ class TestValidateDataModel(unittest.TestCase):
             "variables": [
                 {
                     "code": "001",
-                    "sql_type": "text",
-                    "isCategorical": True,
                     "type": "nominal",
                     "enumerations": ["yes", "no"],
                 }
@@ -329,8 +294,6 @@ class TestValidateDataModel(unittest.TestCase):
             "variables": [
                 {
                     "code": "dataset",
-                    "sql_type": "text",
-                    "isCategorical": True,
                     "type": "nominal",
                     "enumerations": ["dataset1"],
                 }
@@ -341,13 +304,13 @@ class TestValidateDataModel(unittest.TestCase):
                     "groups": [
                         {
                             "code": "groupB",
-                            "variables": [{"code": "deep_var", "sql_type": "int"}],
+                            "variables": [{"code": "deep_var", "type": "integer"}],
                         }
                     ],
                 }
             ],
         }
-        expected_message = "Missing required field 'isCategorical' in CommonDataElement at path: '/DM008/groupA/groupB/deep_var'. Please ensure all required fields are provided."
+        expected_message = "Invalid 'type' value 'integer' in CommonDataElement at path: '/DM008/groupA/groupB/deep_var'."
         with self.assertRaisesRegex(InvalidDataModelError, expected_message):
             validate_json(data_model)
 
@@ -377,8 +340,6 @@ class TestValidateDataModel(unittest.TestCase):
                     "variables": [
                         {
                             "code": "dataset",
-                            "sql_type": "text",
-                            "isCategorical": True,
                             "type": "nominal",
                             "enumerations": ["dataset1"],
                         }
@@ -402,8 +363,6 @@ class TestValidateDataModel(unittest.TestCase):
                     "variables": [
                         {
                             "code": "dataset",
-                            "sql_type": "text",
-                            "isCategorical": True,
                             "type": "nominal",
                             "enumerations": ["dataset1"],
                         }
@@ -426,8 +385,6 @@ class TestValidateDataModel(unittest.TestCase):
                     "variables": [
                         {
                             "code": "dataset",
-                            "sql_type": "text",
-                            "isCategorical": True,
                             "type": "nominal",
                             "enumerations": ["dataset1"],
                         }
@@ -462,8 +419,6 @@ class TestValidateDataModel(unittest.TestCase):
             "variables": [
                 {
                     "code": "V001",
-                    "sql_type": "text",
-                    "isCategorical": True,
                     "type": "nominal",
                     "enumerations": ["example1", "example2"],  # Added enumerations
                 }
@@ -485,15 +440,13 @@ class TestValidateDataModel(unittest.TestCase):
             "variables": [
                 {
                     "code": "V001",
-                    "sql_type": "text",
-                    "isCategorical": True,
                     "type": "nominal",
                     "enumerations": ["example1", "example2"],  # Added enumerations
                 }
             ],
             "groups": [],  # Empty list for groups
         }
-        expected_message = "The DataModel must include at least one dataset CommonDataElement with code 'dataset', 'sql_type' as 'text', and 'isCategorical' set to true."
+        expected_message = "The DataModel must include at least one dataset CommonDataElement with code 'dataset', 'type' as 'nominal', and 'enumerations'."
         with self.assertRaisesRegex(
             InvalidDataModelError,
             expected_message,
@@ -508,8 +461,6 @@ class TestValidateDataModel(unittest.TestCase):
             "variables": [
                 {
                     "code": "V001",
-                    "sql_type": "text",
-                    "isCategorical": True,
                     "type": "nominal",
                 }
             ],

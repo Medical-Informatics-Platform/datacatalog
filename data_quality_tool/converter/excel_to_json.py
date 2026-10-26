@@ -3,7 +3,9 @@ import json
 import re
 
 from common_entities import (
-    EXCEL_TYPE_2_SQL_TYPE_ISCATEGORICAL_MAP,
+    CATEGORICAL_TYPES,
+    NUMERICAL_TYPES,
+    VARIABLE_TYPES,
     InvalidDataModelError,
 )
 
@@ -86,16 +88,20 @@ def insert_variable_into_structure(root, variable, path):
 def process_values_based_on_type(row, variable):
     """
     Processes the 'values' field based on the variable's 'type':
-    - For 'integer' or 'real', extracts 'minValue' and 'maxValue' from a range specified in 'values'
-      and ensures these values are of the appropriate type.
-      If 'type' is 'integer' but the parsed bounds aren't whole numbers, raises DatasetError.
-    - For 'nominal', retrieves a list of 'enumerations' from 'values'.
+    - For 'continuous' or 'discrete', extracts 'minValue' and 'maxValue' from a range specified
+      in 'values' and ensures these values are of the appropriate type.
+      If 'type' is 'discrete' but the parsed bounds aren't whole numbers, raises InvalidDataModelError.
+    - For 'nominal', 'ordinal' or 'binary', retrieves a list of 'enumerations' from 'values'.
+      'binary' requires exactly two enumerations; 'nominal' and 'ordinal' may omit values
+      (free-text variables).
     """
     code = row.get("code")
     values = row.get("values")
+    if values is not None and pd.isna(values):
+        values = None
     variable_type = row.get("type")
 
-    if variable_type in ["real", "integer"] and values:
+    if variable_type in NUMERICAL_TYPES and values:
         values = str(values)
         # Split on the last hyphen only
         parts = values.rsplit("-", 1)
@@ -115,31 +121,32 @@ def process_values_based_on_type(row, variable):
                 f"Range values for variable {code} must be valid numbers but got '{values}'."
             )
 
-        if variable_type == "integer":
-            # If either bound has a fractional part, that's invalid for integer variables
+        if variable_type == "discrete":
+            # If either bound has a fractional part, that's invalid for discrete variables
             if not min_val.is_integer() or not max_val.is_integer():
                 raise InvalidDataModelError(
-                    f"Variable {code} declared as integer but range bounds '{values}' are not whole numbers."
+                    f"Variable {code} declared as discrete but range bounds '{values}' are not whole numbers."
                 )
             # Safe to cast to int
             variable["minValue"] = int(min_val)
             variable["maxValue"] = int(max_val)
-        else:  # real
+        else:  # continuous
             variable["minValue"] = _parse_number_preserving_integer(min_str)
             variable["maxValue"] = _parse_number_preserving_integer(max_str)
 
-    elif variable_type == "nominal":
-        if not values:
+    elif variable_type in CATEGORICAL_TYPES:
+        enumerations = process_enumerations(values) if values else []
+        if variable_type == "binary" and len(enumerations) != 2:
             raise InvalidDataModelError(
-                f"The 'values' should not be empty for variable {code} when type is 'nominal'"
+                f"Variable {code} declared as binary must have exactly two values but got '{values}'."
             )
-        variable["enumerations"] = process_enumerations(values)
+        if enumerations:
+            variable["enumerations"] = enumerations
 
 
 def validate_variable_type(row):
-    valid_types = set(EXCEL_TYPE_2_SQL_TYPE_ISCATEGORICAL_MAP.keys())
-    if "type" not in row or row["type"] not in valid_types:
-        valid_types_str = ", ".join(valid_types)
+    if "type" not in row or row["type"] not in VARIABLE_TYPES:
+        valid_types_str = ", ".join(VARIABLE_TYPES)
         raise InvalidDataModelError(
             f"The row must have a 'type' field with a valid value."
             f" Valid values are: {valid_types_str}, got '{row.get('type')}' instead."
@@ -163,11 +170,6 @@ def process_variable(row):
 
     # Process 'values' based on variable type, which might modify 'variable' in-place
     process_values_based_on_type(row, variable)
-
-    (
-        variable["sql_type"],
-        variable["isCategorical"],
-    ) = EXCEL_TYPE_2_SQL_TYPE_ISCATEGORICAL_MAP[variable["type"]]
 
     return variable
 
@@ -229,8 +231,8 @@ def clean_empty_fields(data):
 
 def convert_excel_to_json(df):
     """
-    Converts a DataFrame from Excel into a JSON structure, handling enumerations specifically,
-    and adds 'isCategorical' and 'sql_type' based on the 'type'.
+    Converts a DataFrame from Excel into a JSON structure, handling enumerations specifically.
+    The 'type' carries the full variable classification.
     """
     df = df.where(pd.notna(df), None)
 

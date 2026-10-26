@@ -16,8 +16,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                     "code": "dataset",
                     "label": "Dataset Variable",
                     "description": "An example variable description",
-                    "sql_type": "text",
-                    "isCategorical": True,
                     "enumerations": [{"code": "enum1", "label": "Enumeration 1"}],
                     "type": "nominal",
                     "methodology": "example methodology",
@@ -44,8 +42,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                         {"code": "1", "label": "yes"},
                                         {"code": "9", "label": "unknown"},
                                     ],
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                 },
                                 {
                                     "label": "LAA",
@@ -57,8 +53,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                         {"code": "1", "label": "yes"},
                                         {"code": "9", "label": "unknown"},
                                     ],
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                 },
                                 {
                                     "label": "Mimic",
@@ -70,8 +64,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                         {"code": "1", "label": "yes"},
                                         {"code": "9", "label": "unknown"},
                                     ],
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                 },
                                 {
                                     "label": "More than one",
@@ -83,8 +75,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                         {"code": "1", "label": "yes"},
                                         {"code": "9", "label": "unknown"},
                                     ],
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                 },
                                 {
                                     "label": "PFO",
@@ -96,8 +86,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                         {"code": "1", "label": "yes"},
                                         {"code": "9", "label": "unknown"},
                                     ],
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                 },
                                 {
                                     "label": "SVD",
@@ -109,8 +97,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                         {"code": "1", "label": "yes"},
                                         {"code": "9", "label": "unknown"},
                                     ],
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                 },
                                 {
                                     "label": "Unknown etiology despite complete evaluation",
@@ -122,8 +108,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                         {"code": "1", "label": "yes"},
                                         {"code": "9", "label": "unknown"},
                                     ],
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                 },
                                 {
                                     "label": "Unknown etiology with incomplete evaluation",
@@ -135,8 +119,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                         {"code": "1", "label": "yes"},
                                         {"code": "9", "label": "unknown"},
                                     ],
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                 },
                                 {
                                     "label": "CE without PFO",
@@ -148,8 +130,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                         {"code": "1", "label": "yes"},
                                         {"code": "9", "label": "unknown"},
                                     ],
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                 },
                                 {
                                     "label": "Other",
@@ -161,8 +141,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                         {"code": "1", "label": "yes"},
                                         {"code": "9", "label": "unknown"},
                                     ],
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                 },
                             ],
                         },
@@ -185,8 +163,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                                 {"code": "1", "label": "yes"},
                                                 {"code": "9", "label": "unknown"},
                                             ],
-                                            "sql_type": "text",
-                                            "isCategorical": True,
                                         },
                                         {
                                             "label": "MCA",
@@ -198,8 +174,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                                 {"code": "1", "label": "yes"},
                                                 {"code": "9", "label": "unknown"},
                                             ],
-                                            "sql_type": "text",
-                                            "isCategorical": True,
                                         },
                                         {
                                             "label": "PCA",
@@ -211,8 +185,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                                 {"code": "1", "label": "yes"},
                                                 {"code": "9", "label": "unknown"},
                                             ],
-                                            "sql_type": "text",
-                                            "isCategorical": True,
                                         },
                                         {
                                             "label": "Side",
@@ -225,8 +197,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                                 {"code": "3", "label": "bilateral"},
                                                 {"code": "9", "label": "unknown"},
                                             ],
-                                            "sql_type": "text",
-                                            "isCategorical": True,
                                         },
                                         {
                                             "label": "Side",
@@ -239,8 +209,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                                 {"code": "3", "label": "bilateral"},
                                                 {"code": "9", "label": "unknown"},
                                             ],
-                                            "sql_type": "text",
-                                            "isCategorical": True,
                                         },
                                         {
                                             "label": "Side",
@@ -253,8 +221,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                                 {"code": "3", "label": "bilateral"},
                                                 {"code": "9", "label": "unknown"},
                                             ],
-                                            "sql_type": "text",
-                                            "isCategorical": True,
                                         },
                                     ],
                                 }
@@ -270,8 +236,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                         {"code": "1", "label": "yes"},
                                         {"code": "9", "label": "unknown"},
                                     ],
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                 },
                                 {
                                     "label": "Infratentorial side",
@@ -284,8 +248,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                         {"code": "3", "label": "bilateral"},
                                         {"code": "9", "label": "unknown"},
                                     ],
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                 },
                             ],
                         },
@@ -304,8 +266,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                     "code": "dataset",
                     "label": "Dataset Variable",
                     "description": "An example variable description",
-                    "sql_type": "text",
-                    "isCategorical": True,
                     "enumerations": [{"code": "enum1", "label": "Enumeration 1"}],
                     "type": "nominal",
                     "methodology": "example methodology",
@@ -332,8 +292,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                         {"code": "1", "label": "yes"},
                                         {"code": "9", "label": "unknown"},
                                     ],
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                 },
                                 {
                                     "label": "LAA",
@@ -345,8 +303,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                         {"code": "1", "label": "yes"},
                                         {"code": "9", "label": "unknown"},
                                     ],
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                 },
                                 {
                                     "label": "Mimic",
@@ -358,8 +314,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                         {"code": "1", "label": "yes"},
                                         {"code": "9", "label": "unknown"},
                                     ],
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                 },
                                 {
                                     "label": "More than one",
@@ -371,8 +325,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                         {"code": "1", "label": "yes"},
                                         {"code": "9", "label": "unknown"},
                                     ],
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                 },
                                 {
                                     "label": "PFO",
@@ -384,8 +336,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                         {"code": "1", "label": "yes"},
                                         {"code": "9", "label": "unknown"},
                                     ],
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                 },
                                 {
                                     "label": "SVD",
@@ -397,8 +347,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                         {"code": "1", "label": "yes"},
                                         {"code": "9", "label": "unknown"},
                                     ],
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                 },
                                 {
                                     "label": "Unknown etiology despite complete evaluation",
@@ -410,8 +358,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                         {"code": "1", "label": "yes"},
                                         {"code": "9", "label": "unknown"},
                                     ],
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                 },
                                 {
                                     "label": "Unknown etiology with incomplete evaluation",
@@ -423,8 +369,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                         {"code": "1", "label": "yes"},
                                         {"code": "9", "label": "unknown"},
                                     ],
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                 },
                                 {
                                     "label": "CE without PFO",
@@ -436,8 +380,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                         {"code": "1", "label": "yes"},
                                         {"code": "9", "label": "unknown"},
                                     ],
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                 },
                                 {
                                     "label": "Other",
@@ -449,8 +391,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                         {"code": "1", "label": "yes"},
                                         {"code": "9", "label": "unknown"},
                                     ],
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                 },
                             ],
                         },
@@ -473,8 +413,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                                 {"code": "1", "label": "yes"},
                                                 {"code": "9", "label": "unknown"},
                                             ],
-                                            "sql_type": "text",
-                                            "isCategorical": True,
                                         },
                                         {
                                             "label": "MCA",
@@ -486,8 +424,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                                 {"code": "1", "label": "yes"},
                                                 {"code": "9", "label": "unknown"},
                                             ],
-                                            "sql_type": "text",
-                                            "isCategorical": True,
                                         },
                                         {
                                             "label": "PCA",
@@ -499,8 +435,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                                 {"code": "1", "label": "yes"},
                                                 {"code": "9", "label": "unknown"},
                                             ],
-                                            "sql_type": "text",
-                                            "isCategorical": True,
                                         },
                                         {
                                             "label": "Side",
@@ -513,8 +447,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                                 {"code": "3", "label": "bilateral"},
                                                 {"code": "9", "label": "unknown"},
                                             ],
-                                            "sql_type": "text",
-                                            "isCategorical": True,
                                         },
                                         {
                                             "label": "Side",
@@ -527,8 +459,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                                 {"code": "3", "label": "bilateral"},
                                                 {"code": "9", "label": "unknown"},
                                             ],
-                                            "sql_type": "text",
-                                            "isCategorical": True,
                                         },
                                         {
                                             "label": "Side",
@@ -541,8 +471,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                                 {"code": "3", "label": "bilateral"},
                                                 {"code": "9", "label": "unknown"},
                                             ],
-                                            "sql_type": "text",
-                                            "isCategorical": True,
                                         },
                                     ],
                                 }
@@ -558,8 +486,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                         {"code": "1", "label": "yes"},
                                         {"code": "9", "label": "unknown"},
                                     ],
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                 },
                                 {
                                     "label": "Infratentorial side",
@@ -572,8 +498,6 @@ class TestCleanEmptyFields(unittest.TestCase):
                                         {"code": "3", "label": "bilateral"},
                                         {"code": "9", "label": "unknown"},
                                     ],
-                                    "sql_type": "text",
-                                    "isCategorical": True,
                                 },
                             ],
                         },
