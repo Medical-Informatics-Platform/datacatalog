@@ -10,7 +10,7 @@ class TestConvertExcelToJson(unittest.TestCase):
     def setUp(self):
         # Basic setup for DataFrame used in multiple tests
         self.data = {
-            "type": ["nominal", "integer"],
+            "type": ["nominal", "discrete"],
             "values": ['{"code1", "label1"}, {"code2", "label2"}', "1-100"],
             "name": ["Nominal Variable", "Integer Variable"],
             "code": ["NomVar", "IntVar"],
@@ -55,7 +55,7 @@ class TestConvertExcelToJson(unittest.TestCase):
     def test_partially_missing_data(self):
         # Scenario where some rows have missing 'conceptPath' or other critical fields
         data = {
-            "type": ["nominal", "integer", "text"],
+            "type": ["nominal", "discrete", "nominal"],
             "values": [
                 '{"code1", "label1"}',
                 "1-100",
@@ -98,7 +98,7 @@ class TestConvertExcelToJson(unittest.TestCase):
     def test_variables_without_group_nesting(self):
         # Variables that should be placed directly under the root due to lack of conceptPath or other logic
         data = {
-            "type": ["text", "real"],
+            "type": ["nominal", "continuous"],
             "values": [None, "0.1-100.0"],
             "name": ["Ungrouped Text Variable", "Ungrouped Real Variable"],
             "code": ["UngroupedTextVar", "UngroupedRealVar"],

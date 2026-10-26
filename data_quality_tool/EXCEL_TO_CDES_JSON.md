@@ -21,10 +21,10 @@ and how each Excel column maps to the output JSON.
 | --- | --- | --- |
 | `name` | yes | non-empty |
 | `code` | yes | non-empty |
-| `type` | yes | one of `nominal`, `real`, `integer`, `text` |
+| `type` | yes | one of `continuous`, `discrete` (numerical) or `nominal`, `ordinal`, `binary` (categorical) |
 | `conceptPath` | yes | non-empty, formatted `level1/level2/...` |
-| `values` | when `type=nominal` | `"{"code", "label"}"` pairs; codes must be unique |
-| `values` | when `type=real`/`integer` | `<min>-<max>` range; `min` < `max`; whole numbers for `integer` |
+| `values` | categorical types | `"{"code", "label"}"` pairs; codes must be unique; required with exactly two pairs for `binary`, optional for `nominal`/`ordinal` (free text) |
+| `values` | numerical types | optional `<min>-<max>` range; `min` < `max`; whole numbers for `discrete` |
 | `unit`, `description`, `canBeNull`, `comments`, `methodology` | no | any non-empty value is kept; empty values are dropped |
 
 ## Column → JSON mapping
@@ -34,7 +34,7 @@ and how each Excel column maps to the output JSON.
 | `name` | `label` | |
 | `code` | `code` | |
 | `type` | `type` | |
-| `values` | `enumerations` (nominal) / `minValue` + `maxValue` (real, integer) | |
+| `values` | `enumerations` (nominal, ordinal, binary) / `minValue` + `maxValue` (continuous, discrete) | |
 | `unit` | `units` | |
 | `description` | `description` | |
 | `canBeNull` | `canBeNull` | |
@@ -46,6 +46,10 @@ and how each Excel column maps to the output JSON.
 
 - The `groups` tree is built from `conceptPath`: each `/`-separated level becomes
   a nested group.
-- `sql_type` and `isCategorical` are derived from `type`.
+- `type` carries the full classification; `sql_type` and `isCategorical` are not
+  emitted.
+- Migrating old files: `real` → `continuous`, `integer` → `discrete`, `nominal`
+  stays `nominal`, `text` → `nominal` (or `ordinal` when the categories are
+  ordered).
 - Empty fields and empty `groups`/`variables`/`enumerations` lists are removed
   from the output.

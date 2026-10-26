@@ -8,8 +8,6 @@ public record CommonDataElementDTO(
         String code,
         String label,
         String description,
-        String sql_type,
-        Boolean isCategorical,
         List<EnumerationDTO> enumerations,
         Integer minValue,
         Integer maxValue,
@@ -20,26 +18,34 @@ public record CommonDataElementDTO(
     public CommonDataElementDTO {
         validateField(code, "code", code);
         validateField(label, "label", code);
-        validateField(sql_type, "sql_type", code);
         validateField(type, "type", code);
 
+        // Validate 'type' field against valid types
+        if (!NUMERICAL_TYPES.contains(type) && !CATEGORICAL_TYPES.contains(type)) {
+            throw new InvalidDataModelError("The CDE " + code + " has an invalid 'type'. Valid types are: "
+                    + List.of("continuous", "discrete", "nominal", "ordinal", "binary"));
+        }
 
-        if (Boolean.TRUE.equals(isCategorical) && (enumerations == null || enumerations.isEmpty())) {
-            throw new InvalidDataModelError("The CDE " + code + " has 'is_categorical' set to True but there are no enumerations.");
+        boolean hasEnumerations = enumerations != null && !enumerations.isEmpty();
+        if (NUMERICAL_TYPES.contains(type) && hasEnumerations) {
+            throw new InvalidDataModelError("The CDE " + code + " is " + type + " and cannot have enumerations.");
+        }
+        if (CATEGORICAL_TYPES.contains(type) && (minValue != null || maxValue != null)) {
+            throw new InvalidDataModelError("The CDE " + code + " is " + type + " and cannot have minValue/maxValue.");
+        }
+        if ("binary".equals(type) && (!hasEnumerations || enumerations.size() != 2)) {
+            throw new InvalidDataModelError("The CDE " + code + " is binary and must have exactly two enumerations.");
         }
 
         // Check minValue and maxValue values
         if (minValue != null && maxValue != null && minValue >= maxValue) {
             throw new InvalidDataModelError("The CDE " + code + " has minValue greater than or equal to maxValue.");
         }
-
-        // Validate 'type' field against valid types
-        Set<String> validTypes = Set.of("nominal", "real", "integer", "text");
-        if (!validTypes.contains(type)) {
-            throw new InvalidDataModelError("The CDE " + code + " has an invalid 'type'. Valid types are: " + validTypes);
-        }
     }
     
+    private static final Set<String> NUMERICAL_TYPES = Set.of("continuous", "discrete");
+    private static final Set<String> CATEGORICAL_TYPES = Set.of("nominal", "ordinal", "binary");
+
     private static void validateField(Object field, String fieldName, String code) {
         if (field == null || (field instanceof String && ((String) field).isEmpty())) {
             throw new InvalidDataModelError(String.format("Element: '%s' is missing from the CDE %s", fieldName, code));

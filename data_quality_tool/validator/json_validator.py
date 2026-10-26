@@ -1,15 +1,13 @@
-from common_entities import InvalidDataModelError
-
-TYPE_2_SQL = {
-    "nominal": ("text", True),
-    "real": ("real", False),
-    "integer": ("int", False),
-    "text": ("text", False),
-}
+from common_entities import (
+    CATEGORICAL_TYPES,
+    NUMERICAL_TYPES,
+    VARIABLE_TYPES,
+    InvalidDataModelError,
+)
 
 
 def validate_common_data_element(cde, path):
-    required_fields = ["code", "sql_type", "isCategorical", "type"]
+    required_fields = ["code", "type"]
 
     for field in required_fields:
         if field not in cde:
@@ -17,23 +15,30 @@ def validate_common_data_element(cde, path):
                 f"Missing required field '{field}' in CommonDataElement at path: '{path}'. Please ensure all required fields are provided."
             )
     type_key = cde.get("type")
-    if type_key not in TYPE_2_SQL:
+    if type_key not in VARIABLE_TYPES:
         raise InvalidDataModelError(
-            f"Invalid 'type' value '{type_key}' in CommonDataElement at path: '{path}'. Must be one of {list(TYPE_2_SQL.keys())}."
+            f"Invalid 'type' value '{type_key}' in CommonDataElement at path: '{path}'. Must be one of {list(VARIABLE_TYPES)}."
         )
 
-    expected_sql_type, expected_is_categorical = TYPE_2_SQL[type_key]
-    if (
-        cde.get("sql_type") != expected_sql_type
-        or cde.get("isCategorical") != expected_is_categorical
-    ):
+    bounds = [cde[key] for key in ("minValue", "maxValue") if cde.get(key) is not None]
+    if type_key in CATEGORICAL_TYPES and bounds:
         raise InvalidDataModelError(
-            f"Incorrect 'sql_type' or 'isCategorical' for type '{type_key}' in CommonDataElement at path: '{path}'. Expected ('{expected_sql_type}', {expected_is_categorical}), but got ('{cde.get('sql_type')}', {cde.get('isCategorical')})."
+            f"Categorical type '{type_key}' cannot have 'minValue' or 'maxValue' in CommonDataElement at path: '{path}'."
         )
 
-    if cde.get("isCategorical") and not cde.get("enumerations"):
+    if type_key in NUMERICAL_TYPES and cde.get("enumerations"):
         raise InvalidDataModelError(
-            f"'enumerations' is required for categorical CommonDataElement at path: '{path}', but it is missing."
+            f"Numerical type '{type_key}' cannot have 'enumerations' in CommonDataElement at path: '{path}'."
+        )
+
+    if type_key == "binary" and len(cde.get("enumerations") or []) != 2:
+        raise InvalidDataModelError(
+            f"'binary' CommonDataElement at path: '{path}' must have exactly two 'enumerations'."
+        )
+
+    if type_key == "discrete" and any(float(bound) % 1 for bound in bounds):
+        raise InvalidDataModelError(
+            f"'discrete' CommonDataElement at path: '{path}' must have whole-number 'minValue' and 'maxValue'."
         )
 
     if cde.get("minValue") is not None and cde.get("maxValue") is not None:
@@ -127,7 +132,7 @@ def validate_json(data_model):
 
     if not contains_required_dataset(data_model["variables"], data_model["groups"]):
         raise InvalidDataModelError(
-            "The DataModel must include at least one dataset CommonDataElement with code 'dataset', 'sql_type' as 'text', and 'isCategorical' set to true."
+            "The DataModel must include at least one dataset CommonDataElement with code 'dataset', 'type' as 'nominal', and 'enumerations'."
         )
 
     if data_model.get("longitudinal"):
@@ -144,8 +149,8 @@ def contains_required_dataset(variables, groups, path=""):
 
     dataset_present = any(
         v.get("code") == "dataset"
-        and v.get("sql_type") == "text"
-        and v.get("isCategorical")
+        and v.get("type") == "nominal"
+        and v.get("enumerations")
         for v in variables
     )
     if dataset_present:
