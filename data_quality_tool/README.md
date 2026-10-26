@@ -25,6 +25,40 @@ Responses:
 - `500` with `{"error": "Internal server error"}` for unexpected failures, which are logged with
   their traceback and never returned to the caller
 
+## Excel File Requirements (Excel → CDEs JSON)
+
+Hard requirements for `POST /excel-to-json` / `POST /validate-excel`, enforced by
+`excel_validator.py` and `converter/excel_to_json.py`.
+
+- **File**: real `.xlsx` (openpyxl), ≤ `MAX_UPLOAD_SIZE_MB` (default 20), one variable per row
+- **Columns**: header must be exactly these 11 — `csvFile`, `name`, `code`, `type`, `values`,
+  `unit`, `description`, `canBeNull`, `comments`, `conceptPath`, `methodology`
+- **Required per row**: `name`, `code`, `type`, `conceptPath`
+- **`type`**: `nominal`, `real`, `integer`, or `text`
+- **`values`** (only when filled): `"{"code", "label"}"` pairs for `nominal` (no duplicate codes);
+  `<min>-<max>` for `real`/`integer` (min < max; whole numbers for `integer`)
+- **`conceptPath`**: `level1/level2/...` — builds the group hierarchy, then dropped
+
+**Column → CDEs JSON mapping**
+
+| Excel column | CDEs JSON key | Notes |
+| --- | --- | --- |
+| `name` | `label` | |
+| `code` | `code` | |
+| `type` | `type` | |
+| `values` | `enumerations` / `minValue`+`maxValue` | nominal → enumerations; real/integer → range |
+| `unit` | `units` | |
+| `description` | `description` | |
+| `canBeNull` | `canBeNull` | |
+| `comments` | `comments` | |
+| `methodology` | `methodology` | |
+| `conceptPath` | — | consumed to build the tree |
+| `csvFile` | — | **not used** in this direction |
+
+`sql_type` and `isCategorical` are derived from `type`; empty fields and empty
+`groups`/`variables`/`enumerations` lists are stripped. Failures return `400` with a single
+bounded error line naming the variable.
+
 ## Validation Rules
 
 Excel workbooks must contain exactly these columns: `csvFile`, `name`, `code`, `type`, `values`,
