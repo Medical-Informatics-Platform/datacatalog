@@ -70,6 +70,7 @@ def validate_min_max(values):
         raise InvalidDataModelError(
             f"Min value must be smaller than max value {min_str=} and {max_str=}."
         )
+    return min_val, max_val
 
 
 def validate_concept_path(concept_path):
@@ -97,7 +98,13 @@ def validate_variable_type(row):
                 f"Type 'binary' requires exactly two values but got {codes=}."
             )
     elif type_val in NUMERICAL_TYPES and row.get("values"):
-        validate_min_max(row["values"])
+        min_val, max_val = validate_min_max(row["values"])
+        if type_val == "discrete" and not (
+            min_val.is_integer() and max_val.is_integer()
+        ):
+            raise InvalidDataModelError(
+                f"Type 'discrete' requires whole-number bounds but got '{row['values']}'."
+            )
 
 
 def validate_variable(row):

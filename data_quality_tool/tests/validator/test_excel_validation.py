@@ -29,7 +29,7 @@ class TestValidationFunctions(unittest.TestCase):
         )
 
     def test_validate_min_max_valid(self):
-        self.assertIsNone(validate_min_max("1-2"))
+        self.assertEqual((1.0, 2.0), validate_min_max("1-2"))
 
     def test_validate_min_max_invalid_format(self):
         with self.assertRaises(InvalidDataModelError) as context:
@@ -73,6 +73,13 @@ class TestValidationFunctions(unittest.TestCase):
             "values": "10-100",
         }
         validate_variable(row)
+
+    def test_validate_variable_discrete_requires_whole_number_bounds(self):
+        base = {"name": "test", "code": "T01", "conceptPath": "valid/format"}
+        validate_variable({**base, "type": "continuous", "values": "1.5-2.5"})
+        with self.assertRaises(InvalidDataModelError) as context:
+            validate_variable({**base, "type": "discrete", "values": "1.5-2.5"})
+        self.assertIn("requires whole-number bounds", str(context.exception))
 
     def test_validate_variable_invalid_type(self):
         row = {

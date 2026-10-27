@@ -9,8 +9,8 @@ public record CommonDataElementDTO(
         String label,
         String description,
         List<EnumerationDTO> enumerations,
-        Integer minValue,
-        Integer maxValue,
+        Double minValue,
+        Double maxValue,
         String type,
         String methodology,
         String units
@@ -41,10 +41,17 @@ public record CommonDataElementDTO(
         if (minValue != null && maxValue != null && minValue >= maxValue) {
             throw new InvalidDataModelError("The CDE " + code + " has minValue greater than or equal to maxValue.");
         }
+        if ("discrete".equals(type) && (!isWholeNumber(minValue) || !isWholeNumber(maxValue))) {
+            throw new InvalidDataModelError("The CDE " + code + " is discrete and its minValue/maxValue must be whole numbers.");
+        }
     }
     
     private static final Set<String> NUMERICAL_TYPES = Set.of("continuous", "discrete");
     private static final Set<String> CATEGORICAL_TYPES = Set.of("nominal", "ordinal", "binary");
+
+    private static boolean isWholeNumber(Double value) {
+        return value == null || value % 1 == 0;
+    }
 
     private static void validateField(Object field, String fieldName, String code) {
         if (field == null || (field instanceof String && ((String) field).isEmpty())) {
