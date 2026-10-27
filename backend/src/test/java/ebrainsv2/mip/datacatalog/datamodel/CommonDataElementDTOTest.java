@@ -14,13 +14,13 @@ public class CommonDataElementDTOTest {
             new CommonDataElementDTO.EnumerationDTO("1", "Yes"));
 
     private static CommonDataElementDTO cde(String type, List<CommonDataElementDTO.EnumerationDTO> enumerations,
-                                            Integer minValue, Integer maxValue) {
+                                            Double minValue, Double maxValue) {
         return new CommonDataElementDTO("var", "Var", null, enumerations, minValue, maxValue, type, null, null);
     }
 
     @Test
     void acceptsTheFiveVariableTypes() {
-        assertDoesNotThrow(() -> cde("continuous", null, 0, 10));
+        assertDoesNotThrow(() -> cde("continuous", null, 0.0, 10.0));
         assertDoesNotThrow(() -> cde("discrete", null, null, null));
         assertDoesNotThrow(() -> cde("nominal", null, null, null));
         assertDoesNotThrow(() -> cde("ordinal", TWO.subList(0, 1), null, null));
@@ -37,8 +37,16 @@ public class CommonDataElementDTOTest {
     @Test
     void rejectsValuesThatDoNotMatchTheType() {
         assertThrows(InvalidDataModelError.class, () -> cde("continuous", TWO, null, null));
-        assertThrows(InvalidDataModelError.class, () -> cde("nominal", TWO, 0, 1));
+        assertThrows(InvalidDataModelError.class, () -> cde("nominal", TWO, 0.0, 1.0));
         assertThrows(InvalidDataModelError.class, () -> cde("binary", TWO.subList(0, 1), null, null));
         assertThrows(InvalidDataModelError.class, () -> cde("binary", null, null, null));
+    }
+
+    @Test
+    void acceptsFractionalBoundsOnlyForContinuous() {
+        assertDoesNotThrow(() -> cde("continuous", null, 0.01, 99.99));
+        assertDoesNotThrow(() -> cde("discrete", null, 0.0, 130.0));
+        assertThrows(InvalidDataModelError.class, () -> cde("discrete", null, 0.5, 10.0));
+        assertThrows(InvalidDataModelError.class, () -> cde("discrete", null, 0.0, 9.5));
     }
 }

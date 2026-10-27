@@ -22,8 +22,11 @@ def extract_values(variable):
         ]
         return ",".join(dict_strings)
 
-    min_value = variable.get("minValue", "")
-    max_value = variable.get("maxValue", "")
+    # The catalog backend sends bounds as doubles, so print 130.0 back as 130.
+    min_value, max_value = (
+        int(v) if isinstance(v, float) and v.is_integer() else v
+        for v in (variable.get("minValue", ""), variable.get("maxValue", ""))
+    )
     if min_value or max_value:
         return f"{min_value}-{max_value}"
     return ""

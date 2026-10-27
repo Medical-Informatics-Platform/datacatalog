@@ -20,6 +20,12 @@ class TestExtractValuesFunction(unittest.TestCase):
         expected = "1-10"
         self.assertEqual(extract_values(variable), expected)
 
+    def test_with_float_min_max_values(self):
+        self.assertEqual(extract_values({"minValue": 0.0, "maxValue": 130.0}), "0-130")
+        self.assertEqual(
+            extract_values({"minValue": 0.01, "maxValue": 99.99}), "0.01-99.99"
+        )
+
     def test_with_min_value_only(self):
         variable = {"minValue": "1"}
         expected = "1-"
