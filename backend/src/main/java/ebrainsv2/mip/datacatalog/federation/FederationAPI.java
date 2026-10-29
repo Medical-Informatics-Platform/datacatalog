@@ -49,7 +49,7 @@ public class FederationAPI {
     @PreAuthorize("hasAuthority('DC_ADMIN')")
     @DeleteMapping("/{code}")  // Updated from dataModel to code
     public ResponseEntity<Void> deleteFederation(Authentication authentication, @PathVariable String code) {
-        UserActionLogger logger = new UserActionLogger(authentication, "DELETE /federations/" + code);
+        UserActionLogger logger = new UserActionLogger(authentication, "DELETE /federations/" + code); // nosemgrep: tainted-sql-string -- log label, not SQL
         federationService.deleteFederation(code, logger);  // Use code instead of dataModel
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

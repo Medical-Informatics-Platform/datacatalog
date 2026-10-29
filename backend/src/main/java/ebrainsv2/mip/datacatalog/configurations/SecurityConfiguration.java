@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -94,8 +95,19 @@ public class SecurityConfiguration {
 
         http
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+        // Deny by default: only the read routes below are public, and every other request needs a
+        // login on top of the role check each write handler carries with @PreAuthorize. The OAuth2
+        // login and logout endpoints are served by filters that run before this check.
         .authorizeHttpRequests(auth -> auth
-                .anyRequest().permitAll() // Allow access to any endpoint unless restricted by @PreAuthorize
+                .requestMatchers(HttpMethod.GET,
+                        "/datamodels/**",
+                        "/federations/**",
+                        "/user",
+                        "/actuator/health/**",
+                        "/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers("/error").permitAll()
+                .anyRequest().authenticated()
         )
         .csrf(csrf -> csrf
                 .csrfTokenRepository(csrfTokenRepository())
