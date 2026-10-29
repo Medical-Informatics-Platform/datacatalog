@@ -93,7 +93,8 @@ Angular CLI 22 requires Node `^22.22.3 || ^24.15.0 || >=26.0.0`. `src/proxy.conf
 The backend needs JDK `21` and Maven.
 
 The `DB_URL`, `PUBLIC_HOST`, and `DQT_URL` variables are only read by the container image, which
-renders `backend/config/application.tmpl` with `dockerize`. `mvn spring-boot:run` uses
+ships `backend/config/application.yml` and lets Spring resolve its `${VAR:default}` placeholders.
+`mvn spring-boot:run` uses
 `backend/src/main/resources/application.yml` instead, and that file points at the Compose host names
 (`datacatalogdb`, `data_quality_tool`). To run the service on the host against local PostgreSQL and
 data quality tool, override the Spring properties:
