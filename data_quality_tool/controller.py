@@ -77,7 +77,7 @@ def excel_to_json():
 @app.route("/json-to-excel", methods=["POST"])
 def json_to_excel():
     logger.info("json_to_excel endpoint accessed")
-    if not request.is_json:
+    if not request.is_json:  # nosemgrep: is-function-without-parentheses
         logger.error("No JSON provided in request")
         return jsonify({"error": "No JSON provided"}), 400
 
@@ -115,7 +115,7 @@ def json_to_excel():
 def validate_json():
     logger.info("validate_json endpoint accessed")
     try:
-        if not request.is_json:
+        if not request.is_json:  # nosemgrep: is-function-without-parentheses
             logger.error("No JSON provided in request")
             return jsonify({"error": "No JSON provided"}), 400
 
@@ -181,4 +181,4 @@ def validate_excel():
 
 if __name__ == "__main__":
     logger.info("Starting Flask server...")
-    app.run(host="0.0.0.0", port=8000)
+    app.run(port=8000)
