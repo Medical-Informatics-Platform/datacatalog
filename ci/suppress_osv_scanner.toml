@@ -1,5 +1,13 @@
-# No active suppressions.
 # GHSA-5jmj-h7xm-6q6v was suppressed while the fixed Jackson release did not
 # exist; it is fixed upstream and Spring Boot 4.1.2 manages Jackson
 # 2.21.7 / 3.1.7, so the suppression is gone. Add entries here only with an
 # id, reason and an ignoreUntil date.
+
+[[IgnoredVulns]]
+# glibc stack-guard bypass in every Debian base image, here python:*-slim for
+# the data quality tool. Upstream treats it as a
+# non-security bug and Debian rates it "unimportant" with no fixed version in
+# bookworm, trixie or forky, so no image bump can clear it. Recheck on expiry.
+id = "DEBIAN-CVE-2019-1010022"
+ignoreUntil = 2027-04-29
+reason = "Disputed glibc stack-guard bypass; Debian urgency unimportant, no fixed version in any Debian release"
