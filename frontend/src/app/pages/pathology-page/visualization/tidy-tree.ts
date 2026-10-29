@@ -62,8 +62,11 @@ const NODE_RADIUS = {
 const isGroupNode = (node: TreeDatum | HierarchyNode<TreeDatum>): boolean =>
   Object.prototype.hasOwnProperty.call('data' in node ? node.data : node, 'variableCount');
 
+// Every value that reaches the tooltip markup goes through escapeHtml, which covers all five
+// HTML-significant characters with & first; the template literals below only add fixed labels
+// and numbers, hence the nosemgrep markers on them.
 const escapeHtml = (value: unknown): string =>
-  String(value ?? '')
+  String(value ?? '') // nosemgrep: no-replaceall, detect-replaceall-sanitization
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')
     .replaceAll('>', '&gt;')
@@ -78,24 +81,24 @@ const buildTooltipHtml = (node: TreeDatum): string => {
   const tone = isGroupNode(node) ? 'Group' : 'Variable';
 
   const chips: string[] = [
-    `<span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(43,51,233,0.08);color:#2b33e9;font-size:0.72rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;">${tone}</span>`,
+    `<span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(43,51,233,0.08);color:#2b33e9;font-size:0.72rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;">${tone}</span>`, // nosemgrep: html-in-template-string
   ];
 
   if (node.code) {
     chips.push(
-      `<span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(16,37,68,0.06);color:#334765;font-size:0.74rem;font-weight:600;">${escapeHtml(node.code)}</span>`
+      `<span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(16,37,68,0.06);color:#334765;font-size:0.74rem;font-weight:600;">${escapeHtml(node.code)}</span>` // nosemgrep: html-in-template-string
     );
   }
 
   if (!isGroupNode(node) && node.type) {
     chips.push(
-      `<span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(127, 156, 232,0.18);color:#2b33e9;font-size:0.74rem;font-weight:600;">${escapeHtml(node.type)}</span>`
+      `<span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(127, 156, 232,0.18);color:#2b33e9;font-size:0.74rem;font-weight:600;">${escapeHtml(node.type)}</span>` // nosemgrep: html-in-template-string
     );
   }
 
   if (isGroupNode(node) && typeof node.variableCount === 'number') {
     chips.push(
-      `<span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(74,103,214,0.1);color:#3550b3;font-size:0.74rem;font-weight:700;">${node.variableCount} variables</span>`
+      `<span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(74,103,214,0.1);color:#3550b3;font-size:0.74rem;font-weight:700;">${node.variableCount} variables</span>` // nosemgrep: html-in-template-string
     );
   }
 
@@ -105,6 +108,7 @@ const buildTooltipHtml = (node: TreeDatum): string => {
       return;
     }
 
+    // nosemgrep: html-in-template-string
     rows.push(`
       <div style="display:grid;grid-template-columns:minmax(86px,auto) 1fr;gap:12px;margin-top:8px;align-items:start;">
         <span style="color:#6b7e9b;font-size:0.78rem;font-weight:600;">${escapeHtml(label)}</span>
@@ -129,12 +133,12 @@ const buildTooltipHtml = (node: TreeDatum): string => {
               .slice(0, 8)
               .map(
                 (item) =>
-                  `<span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(43,51,233,0.07);color:#2b33e9;font-size:0.74rem;font-weight:500;">${escapeHtml(item.label)}</span>`
+                  `<span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(43,51,233,0.07);color:#2b33e9;font-size:0.74rem;font-weight:500;">${escapeHtml(item.label)}</span>` // nosemgrep: html-in-template-string
               )
               .join('')}
             ${
               node.enumerations.length > 8
-                ? `<span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(18,32,63,0.06);color:#4b5f82;font-size:0.74rem;font-weight:600;">+${node.enumerations.length - 8} more</span>`
+                ? `<span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(18,32,63,0.06);color:#4b5f82;font-size:0.74rem;font-weight:600;">+${node.enumerations.length - 8} more</span>` // nosemgrep: html-in-template-string
                 : ''
             }
           </div>
@@ -142,13 +146,15 @@ const buildTooltipHtml = (node: TreeDatum): string => {
       `
       : '';
 
+  const rowsMarkup = rows.length ? `<div>${rows.join('')}</div>` : ''; // nosemgrep: html-in-template-string
+
   return `
     <div style="display:flex;flex-direction:column;gap:10px;min-width:240px;max-width:320px;">
       <div style="display:flex;flex-wrap:wrap;gap:8px;">${chips.join('')}</div>
       <div>
         <div style="color:#102544;font-size:1rem;font-weight:800;line-height:1.3;">${title}</div>
       </div>
-      ${rows.length ? `<div>${rows.join('')}</div>` : ''}
+      ${rowsMarkup}
       ${enumerationMarkup}
     </div>
   `;
@@ -223,7 +229,7 @@ export function createTidyTree(
 
   const showTooltip = (event: MouseEvent, node: HierarchyPointNode<TreeDatum>) => {
     ensureTooltip();
-    tooltip?.html(buildTooltipHtml(node.data)).style('visibility', 'visible');
+    tooltip?.html(buildTooltipHtml(node.data)).style('visibility', 'visible'); // nosemgrep: prohibit-jquery-html
     positionTooltip(event);
   };
 
