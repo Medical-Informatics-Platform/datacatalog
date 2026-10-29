@@ -1,31 +1,31 @@
-FROM python:3.12.15-slim
-
+# Resolve the locked runtime dependencies into a virtualenv. Poetry stays in
+# this stage, so neither it nor pip ends up in the image that runs.
+# Base images are pinned by tag, not digest: a digest pin would stop picking up
+# the patched rebuilds published under the same tag.
+# nosemgrep: dockerfile-source-not-pinned
+FROM python:3.12.15-alpine AS build
 WORKDIR /app
+ENV POETRY_NO_INTERACTION=1 \
+    POETRY_VIRTUALENVS_IN_PROJECT=true \
+    POETRY_VIRTUALENVS_OPTIONS_NO_PIP=true
+RUN pip install --no-cache-dir "poetry==2.5.1"
+COPY pyproject.toml poetry.lock ./
+RUN poetry install --without dev --no-root
+
+# nosemgrep: dockerfile-source-not-pinned
+FROM python:3.12.15-alpine
+WORKDIR /app
+# The interpreter's own pip and the pip wheel bundled for ensurepip are not
+# needed to run the service, and both carry vendored packages behind their fixes
+RUN pip uninstall -y pip \
+    && rm -rf /usr/local/lib/python3.12/ensurepip/_bundled \
+    && adduser -D -u 1001 appuser
+COPY --from=build /app/.venv /app/.venv
 COPY . .
+USER 1001
 
-# Patch OS packages and pip shipped in the base image
-RUN apt-get update && apt-get upgrade -y \
-    && rm -rf /var/lib/apt/lists/* \
-    && pip install --no-cache-dir --upgrade pip
-
-# Install Poetry
-RUN pip install "poetry>=2.4,<3.0"
-
-# Disable virtualenvs
-RUN poetry config virtualenvs.create false
-
-# Install project dependencies, then remove pip: nothing runs it after this
-# point, and its vendored msgpack, urllib3 and setuptools trail their fixes
-RUN poetry install --without dev \
-    && pip uninstall -y pip
-
-RUN useradd --create-home --uid 1001 appuser
-USER appuser
-
+# gunicorn binds to 0.0.0.0:$PORT when PORT is set
+ENV PATH="/app/.venv/bin:$PATH" \
+    PORT=8000
 EXPOSE 8000
-
-ENV MODULE_NAME=data_quality_tool.controller
-ENV VARIABLE_NAME=app
-ENV PORT=8000
-
-CMD ["sh", "-c", "poetry run gunicorn --bind 0.0.0.0:${PORT} controller:app"]
+CMD ["gunicorn", "controller:app"]
