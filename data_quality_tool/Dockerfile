@@ -14,8 +14,10 @@ RUN pip install "poetry>=2.4,<3.0"
 # Disable virtualenvs
 RUN poetry config virtualenvs.create false
 
-# Install project dependencies
-RUN poetry install --without dev
+# Install project dependencies, then remove pip: nothing runs it after this
+# point, and its vendored msgpack, urllib3 and setuptools trail their fixes
+RUN poetry install --without dev \
+    && pip uninstall -y pip
 
 RUN useradd --create-home --uid 1001 appuser
 USER appuser
