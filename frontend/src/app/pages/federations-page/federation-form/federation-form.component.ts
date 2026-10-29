@@ -158,7 +158,7 @@ export class FederationFormComponent implements OnInit, OnDestroy {
   }
 
   private handleSaveError(error: unknown, action: 'create' | 'update'): void {
-    console.error(`Error ${action === 'create' ? 'creating' : 'updating'} federation:`, error);
+    console.error('Error %s federation:', action === 'create' ? 'creating' : 'updating', error);
     if (error instanceof HttpErrorResponse && error.status === 403) {
       window.alert(this.saveErrorMessage(action, true));
       return;
