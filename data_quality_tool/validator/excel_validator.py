@@ -6,7 +6,9 @@ from common_entities import (
     InvalidDataModelError,
     REQUIRED_COLUMNS,
     EXCEL_COLUMNS,
-    EXCEL_TYPE_2_SQL_TYPE_ISCATEGORICAL_MAP,
+    CATEGORICAL_TYPES,
+    NUMERICAL_TYPES,
+    VARIABLE_TYPES,
 )
 
 # Regex for validation
@@ -42,6 +44,7 @@ def validate_enumerations(values):
         raise InvalidDataModelError(
             f"Duplicate codes found in enumeration values {codes=}."
         )
+    return codes
 
 
 def validate_min_max(values):
@@ -67,6 +70,7 @@ def validate_min_max(values):
         raise InvalidDataModelError(
             f"Min value must be smaller than max value {min_str=} and {max_str=}."
         )
+    return min_val, max_val
 
 
 def validate_concept_path(concept_path):
@@ -80,16 +84,27 @@ def validate_concept_path(concept_path):
 def validate_variable_type(row):
     """Validate the type and values of a variable based on its type."""
     type_val = row.get("type")
-    valid_excel_types = EXCEL_TYPE_2_SQL_TYPE_ISCATEGORICAL_MAP.keys()
-    if type_val not in valid_excel_types:
-        valid_types_str = ", ".join(valid_excel_types)
+    if type_val not in VARIABLE_TYPES:
+        valid_types_str = ", ".join(VARIABLE_TYPES)
         raise InvalidDataModelError(
             f"Invalid 'type': {type_val}. Valid types: {valid_types_str}."
         )
-    if type_val == "nominal":
-        validate_enumerations(row.get("values", ""))
-    elif type_val in ["real", "integer"] and row.get("values"):
-        validate_min_max(row["values"])
+    if type_val == "binary" and not row.get("values"):
+        raise InvalidDataModelError("Type 'binary' requires exactly two values.")
+    if type_val in CATEGORICAL_TYPES and row.get("values"):
+        codes = validate_enumerations(row["values"])
+        if type_val == "binary" and len(codes) != 2:
+            raise InvalidDataModelError(
+                f"Type 'binary' requires exactly two values but got {codes=}."
+            )
+    elif type_val in NUMERICAL_TYPES and row.get("values"):
+        min_val, max_val = validate_min_max(row["values"])
+        if type_val == "discrete" and not (
+            min_val.is_integer() and max_val.is_integer()
+        ):
+            raise InvalidDataModelError(
+                f"Type 'discrete' requires whole-number bounds but got '{row['values']}'."
+            )
 
 
 def validate_variable(row):

@@ -19,7 +19,7 @@ class TestCleanEmptyFields(unittest.TestCase):
                             "label": "Group Variable",
                             "description": "",
                             "enumerations": [],
-                            "type": "integer",
+                            "type": "discrete",
                         }
                     ],
                     "groups": [],
@@ -36,7 +36,7 @@ class TestCleanEmptyFields(unittest.TestCase):
                         {
                             "code": "group_variable",
                             "label": "Group Variable",
-                            "type": "integer",
+                            "type": "discrete",
                         }
                     ],
                 }

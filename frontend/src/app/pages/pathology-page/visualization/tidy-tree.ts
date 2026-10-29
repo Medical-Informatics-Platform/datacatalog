@@ -120,7 +120,7 @@ const buildTooltipHtml = (node: TreeDatum): string => {
   addRow('Maximum', node.max);
 
   const enumerationMarkup =
-    node.type === 'nominal' && node.enumerations?.length
+    node.enumerations?.length
       ? `
         <div style="margin-top:12px;">
           <div style="margin-bottom:8px;color:#6b7e9b;font-size:0.78rem;font-weight:600;">Enumerations</div>

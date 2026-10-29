@@ -9,8 +9,6 @@
       "code": "dataset",
       "label": "Dataset Variable",
       "description": "An example variable description",
-      "sql_type": "text",
-      "isCategorical": true,
       "enumerations": [
         {
           "code": "enum1",
@@ -31,11 +29,9 @@
           "code": "group_variable",
           "label": "Group Variable",
           "description": "A variable within a group",
-          "sql_type": "int",
-          "isCategorical": false,
           "minValue": 0,
           "maxValue": 100,
-          "type": "integer",
+          "type": "discrete",
           "methodology": "group methodology",
           "units": "years"
         }
@@ -49,8 +45,6 @@
               "code": "nested_group_variable",
               "label": "Nested Group Variable",
               "description": "A nested group variable",
-              "sql_type": "text",
-              "isCategorical": true,
               "enumerations": [
                 {
                   "code": "nested_enum1",
