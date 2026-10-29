@@ -14,7 +14,6 @@
 .footer-shell {
   display: grid;
   grid-template-columns: minmax(0, 1.85fr) minmax(160px, 0.9fr) minmax(0, 1.35fr);
-  gap: 0;
   max-width: 1200px;
   margin: 0 auto;
   padding: 48px 28px 36px;
@@ -98,7 +97,6 @@
 /* Institutional column */
 .institutional-logos {
   display: flex;
-  flex-direction: row;
   align-items: center;
   flex-wrap: wrap;
   gap: 28px;
@@ -151,9 +149,6 @@
 }
 
 .athena-logo {
-  background: none;
-  padding: 0;
-  border-radius: 0;
   max-height: 28px;
 }
 
@@ -193,13 +188,7 @@
   align-items: center;
   justify-content: flex-start;
   gap: 12px;
-  width: auto;
   min-height: 0;
-  padding: 0;
-  border: none;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
 }
 
 .footer-funding-visual-seri {
@@ -241,7 +230,6 @@
 .seri-mark {
   display: inline-flex;
   align-items: center;
-  gap: 0;
   min-width: 0;
   flex-shrink: 0;
 }
