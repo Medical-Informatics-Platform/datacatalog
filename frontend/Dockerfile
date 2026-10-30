@@ -1,8 +1,6 @@
 # Step 1: Build the Angular app
-# Base images are pinned by tag, not digest: a digest pin would stop picking up
-# the patched rebuilds published under the same tag.
-# nosemgrep: dockerfile-source-not-pinned
-FROM node:24.22.1-trixie AS build
+# Base images are pinned by digest; Dependabot bumps the digest when the tag is rebuilt.
+FROM node:24.22.1-trixie@sha256:f1e034976f948cf212ef1f659c12e5dd58ac7eab947831813e81a62401ca38be AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -10,8 +8,7 @@ COPY . .
 RUN npm run build -- --configuration production
 
 # Step 2: Use Nginx to serve the Angular app
-# nosemgrep: dockerfile-source-not-pinned
-FROM nginx:1.31.8-alpine
+FROM nginx:1.31.8-alpine@sha256:785835ea65db4bba6f021acc0f3be91b0fef76a53fe41f8588c6698d2aed0606
 COPY --chown=nginx:nginx nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build --chown=nginx:nginx /app/dist/datacatalog-frontend /usr/share/nginx/html
 

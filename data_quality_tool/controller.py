@@ -77,7 +77,7 @@ def excel_to_json():
 @app.route("/json-to-excel", methods=["POST"])
 def json_to_excel():
     logger.info("json_to_excel endpoint accessed")
-    if not request.is_json:  # nosemgrep: is-function-without-parentheses
+    if request.mimetype != "application/json":
         logger.error("No JSON provided in request")
         return jsonify({"error": "No JSON provided"}), 400
 
@@ -115,7 +115,7 @@ def json_to_excel():
 def validate_json():
     logger.info("validate_json endpoint accessed")
     try:
-        if not request.is_json:  # nosemgrep: is-function-without-parentheses
+        if request.mimetype != "application/json":
             logger.error("No JSON provided in request")
             return jsonify({"error": "No JSON provided"}), 400
 
