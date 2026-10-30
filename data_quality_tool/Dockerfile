@@ -1,9 +1,7 @@
 # Resolve the locked runtime dependencies into a virtualenv. Poetry stays in
 # this stage, so neither it nor pip ends up in the image that runs.
-# Base images are pinned by tag, not digest: a digest pin would stop picking up
-# the patched rebuilds published under the same tag.
-# nosemgrep: dockerfile-source-not-pinned
-FROM python:3.12.15-alpine AS build
+# Base images are pinned by digest; Dependabot bumps the digest when the tag is rebuilt.
+FROM python:3.12.15-alpine@sha256:b658b05ce9c4eb97ec6fc19424818a1f31993659c2b505a532f470e83807815d AS build
 WORKDIR /app
 ENV POETRY_NO_INTERACTION=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=true \
@@ -12,8 +10,7 @@ RUN pip install --no-cache-dir "poetry==2.5.1"
 COPY pyproject.toml poetry.lock ./
 RUN poetry install --without dev --no-root
 
-# nosemgrep: dockerfile-source-not-pinned
-FROM python:3.12.15-alpine
+FROM python:3.12.15-alpine@sha256:b658b05ce9c4eb97ec6fc19424818a1f31993659c2b505a532f470e83807815d
 WORKDIR /app
 # The interpreter's own pip and the pip wheel bundled for ensurepip are not
 # needed to run the service, and both carry vendored packages behind their fixes

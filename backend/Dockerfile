@@ -1,10 +1,8 @@
 #######################################################
 # Build the Spring Boot application with Maven
 #######################################################
-# Base images are pinned by tag, not digest: a digest pin would stop picking up
-# the patched rebuilds published under the same tag.
-# nosemgrep: dockerfile-source-not-pinned
-FROM maven:3.9.16-eclipse-temurin-21 AS build-env
+# Base images are pinned by digest; Dependabot bumps the digest when the tag is rebuilt.
+FROM maven:3.9.16-eclipse-temurin-21@sha256:99e61abcff91a9b1333463bd8451fb18495d6eba9250ac66a338b518f8278320 AS build-env
 LABEL maintainer="Kostas Filippopolitis <kfilippopolitis@athenarc.gr>"
 
 # Define build environment variables
@@ -22,8 +20,7 @@ RUN mvn clean package -DskipTests
 #######################################################
 # Setup the runtime container
 #######################################################
-# nosemgrep: dockerfile-source-not-pinned
-FROM amazoncorretto:21.0.12-alpine3.24
+FROM amazoncorretto:21.0.12-alpine3.24@sha256:d5a42afb372d2bf5d937d7e6fb65b39c21b62a3f2af3cbcef46848a2f8364c6f
 
 #######################################################
 # Setting up timezone

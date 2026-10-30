@@ -169,7 +169,7 @@ public class DataModelAPI {
     @DeleteMapping("{uuid}")
     public ResponseEntity<?> deleteDataModel(Authentication authentication, @PathVariable String uuid) {
         try {
-            UserActionLogger logger = new UserActionLogger(authentication, "DELETE /datamodels/" + uuid); // nosemgrep: tainted-sql-string -- log label, not SQL
+            UserActionLogger logger = new UserActionLogger(authentication, String.format("%s /datamodels/%s", "DELETE", uuid));
             dataModelService.deleteDataModel(uuid, logger);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (IllegalArgumentException e) {
