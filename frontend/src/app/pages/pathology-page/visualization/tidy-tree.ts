@@ -62,59 +62,71 @@ const NODE_RADIUS = {
 const isGroupNode = (node: TreeDatum | HierarchyNode<TreeDatum>): boolean =>
   Object.prototype.hasOwnProperty.call('data' in node ? node.data : node, 'variableCount');
 
-// Every value that reaches the tooltip markup goes through escapeHtml, which covers all five
-// HTML-significant characters with & first; the template literals below only add fixed labels
-// and numbers, hence the nosemgrep markers on them.
-const escapeHtml = (value: unknown): string =>
-  String(value ?? '') // nosemgrep: no-replaceall, detect-replaceall-sanitization
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-
 const truncateLabel = (label: string, limit: number): string =>
   label.length > limit ? `${label.slice(0, Math.max(limit - 1, 1))}\u2026` : label;
 
-const buildTooltipHtml = (node: TreeDatum): string => {
-  const title = escapeHtml(node.name || 'Unnamed node');
+// The tooltip is built from DOM nodes and textContent, so node metadata is never parsed as markup.
+const CHIP_STYLE = 'display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;';
+
+const createElement = (tag: string, style: string, text?: string): HTMLElement => {
+  const element = document.createElement(tag);
+  element.style.cssText = style;
+  if (text !== undefined) {
+    element.textContent = text;
+  }
+  return element;
+};
+
+const buildTooltipElement = (node: TreeDatum): HTMLElement => {
   const tone = isGroupNode(node) ? 'Group' : 'Variable';
 
-  const chips: string[] = [
-    `<span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(43,51,233,0.08);color:#2b33e9;font-size:0.72rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;">${tone}</span>`, // nosemgrep: html-in-template-string
-  ];
+  const chips = createElement('div', 'display:flex;flex-wrap:wrap;gap:8px;');
+  chips.append(
+    createElement(
+      'span',
+      `${CHIP_STYLE}background:rgba(43,51,233,0.08);color:#2b33e9;font-size:0.72rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;`,
+      tone
+    )
+  );
 
   if (node.code) {
-    chips.push(
-      `<span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(16,37,68,0.06);color:#334765;font-size:0.74rem;font-weight:600;">${escapeHtml(node.code)}</span>` // nosemgrep: html-in-template-string
+    chips.append(
+      createElement('span', `${CHIP_STYLE}background:rgba(16,37,68,0.06);color:#334765;font-size:0.74rem;font-weight:600;`, String(node.code))
     );
   }
 
   if (!isGroupNode(node) && node.type) {
-    chips.push(
-      `<span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(127, 156, 232,0.18);color:#2b33e9;font-size:0.74rem;font-weight:600;">${escapeHtml(node.type)}</span>` // nosemgrep: html-in-template-string
+    chips.append(
+      createElement(
+        'span',
+        `${CHIP_STYLE}background:rgba(127, 156, 232,0.18);color:#2b33e9;font-size:0.74rem;font-weight:600;`,
+        String(node.type)
+      )
     );
   }
 
   if (isGroupNode(node) && typeof node.variableCount === 'number') {
-    chips.push(
-      `<span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(74,103,214,0.1);color:#3550b3;font-size:0.74rem;font-weight:700;">${node.variableCount} variables</span>` // nosemgrep: html-in-template-string
+    chips.append(
+      createElement(
+        'span',
+        `${CHIP_STYLE}background:rgba(74,103,214,0.1);color:#3550b3;font-size:0.74rem;font-weight:700;`,
+        `${node.variableCount} variables`
+      )
     );
   }
 
-  const rows: string[] = [];
+  const rows = createElement('div', '');
   const addRow = (label: string, value: unknown) => {
     if (value === undefined || value === null || value === '') {
       return;
     }
 
-    // nosemgrep: html-in-template-string
-    rows.push(`
-      <div style="display:grid;grid-template-columns:minmax(86px,auto) 1fr;gap:12px;margin-top:8px;align-items:start;">
-        <span style="color:#6b7e9b;font-size:0.78rem;font-weight:600;">${escapeHtml(label)}</span>
-        <span style="color:#102544;font-size:0.84rem;line-height:1.45;word-break:break-word;">${escapeHtml(value)}</span>
-      </div>
-    `);
+    const row = createElement('div', 'display:grid;grid-template-columns:minmax(86px,auto) 1fr;gap:12px;margin-top:8px;align-items:start;');
+    row.append(
+      createElement('span', 'color:#6b7e9b;font-size:0.78rem;font-weight:600;', label),
+      createElement('span', 'color:#102544;font-size:0.84rem;line-height:1.45;word-break:break-word;', String(value))
+    );
+    rows.append(row);
   };
 
   addRow('Description', node.description);
@@ -123,41 +135,37 @@ const buildTooltipHtml = (node: TreeDatum): string => {
   addRow('Minimum', node.min);
   addRow('Maximum', node.max);
 
-  const enumerationMarkup =
-    node.type === 'nominal' && node.enumerations?.length
-      ? `
-        <div style="margin-top:12px;">
-          <div style="margin-bottom:8px;color:#6b7e9b;font-size:0.78rem;font-weight:600;">Enumerations</div>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;">
-            ${node.enumerations
-              .slice(0, 8)
-              .map(
-                (item) =>
-                  `<span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(43,51,233,0.07);color:#2b33e9;font-size:0.74rem;font-weight:500;">${escapeHtml(item.label)}</span>` // nosemgrep: html-in-template-string
-              )
-              .join('')}
-            ${
-              node.enumerations.length > 8
-                ? `<span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:rgba(18,32,63,0.06);color:#4b5f82;font-size:0.74rem;font-weight:600;">+${node.enumerations.length - 8} more</span>` // nosemgrep: html-in-template-string
-                : ''
-            }
-          </div>
-        </div>
-      `
-      : '';
+  const root = createElement('div', 'display:flex;flex-direction:column;gap:10px;min-width:240px;max-width:320px;');
+  const heading = createElement('div', '');
+  heading.append(createElement('div', 'color:#102544;font-size:1rem;font-weight:800;line-height:1.3;', node.name || 'Unnamed node'));
+  root.append(chips, heading);
 
-  const rowsMarkup = rows.length ? `<div>${rows.join('')}</div>` : ''; // nosemgrep: html-in-template-string
+  if (rows.childElementCount) {
+    root.append(rows);
+  }
 
-  return `
-    <div style="display:flex;flex-direction:column;gap:10px;min-width:240px;max-width:320px;">
-      <div style="display:flex;flex-wrap:wrap;gap:8px;">${chips.join('')}</div>
-      <div>
-        <div style="color:#102544;font-size:1rem;font-weight:800;line-height:1.3;">${title}</div>
-      </div>
-      ${rowsMarkup}
-      ${enumerationMarkup}
-    </div>
-  `;
+  if (node.type === 'nominal' && node.enumerations?.length) {
+    const enumerations = createElement('div', 'margin-top:12px;');
+    const list = createElement('div', 'display:flex;flex-wrap:wrap;gap:6px;');
+    for (const item of node.enumerations.slice(0, 8)) {
+      list.append(
+        createElement('span', `${CHIP_STYLE}background:rgba(43,51,233,0.07);color:#2b33e9;font-size:0.74rem;font-weight:500;`, String(item.label))
+      );
+    }
+    if (node.enumerations.length > 8) {
+      list.append(
+        createElement(
+          'span',
+          `${CHIP_STYLE}background:rgba(18,32,63,0.06);color:#4b5f82;font-size:0.74rem;font-weight:600;`,
+          `+${node.enumerations.length - 8} more`
+        )
+      );
+    }
+    enumerations.append(createElement('div', 'margin-bottom:8px;color:#6b7e9b;font-size:0.78rem;font-weight:600;', 'Enumerations'), list);
+    root.append(enumerations);
+  }
+
+  return root;
 };
 
 export function createTidyTree(
@@ -229,7 +237,8 @@ export function createTidyTree(
 
   const showTooltip = (event: MouseEvent, node: HierarchyPointNode<TreeDatum>) => {
     ensureTooltip();
-    tooltip?.html(buildTooltipHtml(node.data)).style('visibility', 'visible'); // nosemgrep: prohibit-jquery-html
+    tooltip?.node()?.replaceChildren(buildTooltipElement(node.data));
+    tooltip?.style('visibility', 'visible');
     positionTooltip(event);
   };
 
