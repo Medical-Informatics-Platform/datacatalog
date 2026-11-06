@@ -1,6 +1,6 @@
 # Step 1: Build the Angular app
 # Base images are pinned by digest; Dependabot bumps the digest when the tag is rebuilt.
-FROM node:26.12.0-trixie@sha256:45a2bf9d9300e9cf47ecb375e38447c140c45ef5fbae869c430475b05b98d86e AS build
+FROM node:26.12.1-trixie@sha256:97fa0f1b59035c6072721a88d55be1371c7cb1cc942b521e1cc5c72ec87655f4 AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
