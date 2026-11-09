@@ -1,0 +1,68 @@
+# Configuration for the Datacatalog running inside a Docker container. Spring resolves
+# the ${VAR:default} placeholders from the container environment at startup.
+
+### EMBEDDED SERVER CONFIGURATION ###
+server:
+  servlet:
+    context-path: "/services"
+  port: 8090
+  forward-headers-strategy: native
+
+### AUTHENTICATION ###
+authentication:
+  enabled: ${AUTHENTICATION:1}
+  domain_expert: "DC_DOMAIN_EXPERT"
+
+### LOG LEVELS ###
+logging:
+  level:
+    root: "INFO"
+    eu:
+      ebrainsv2: "DEBUG"
+
+
+### DATABASE CONFIGURATION ###
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://datacatalogdb:5432/postgres}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:test}
+    driver-class-name: org.postgresql.Driver
+  flyway:
+      url: ${DB_URL:jdbc:postgresql://datacatalogdb:5432/postgres}
+      username: ${DB_USER:postgres}
+      password: ${DB_PASSWORD:test}
+      baseline-on-migrate: true
+  data:
+    jpa:
+      repositories:
+        bootstrap-mode: default
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  jackson:
+    default-property-inclusion: non_null
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            authorization-grant-type: authorization_code
+            client-id: ${KEYCLOAK_CLIENT_ID:}
+            client-secret: ${KEYCLOAK_CLIENT_SECRET:}
+            scope: openid
+        provider:
+          keycloak:
+            issuer-uri: ${KEYCLOAK_AUTH_URL:}realms/${KEYCLOAK_REALM:}
+            user-name-attribute: preferred_username
+app:
+  frontend:
+    auth-callback-url: ${PUBLIC_HOST:}/auth-callback
+    base-url: ${PUBLIC_HOST:}
+  data_quality_tool:
+    json-to-excel-url: ${DQT_URL:}/json-to-excel
+    excel-to-json-url: ${DQT_URL:}/excel-to-json
+    validate-json-url: ${DQT_URL:}/validate-json

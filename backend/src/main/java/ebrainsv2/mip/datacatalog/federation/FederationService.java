@@ -8,9 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class FederationService {
@@ -25,14 +23,8 @@ public class FederationService {
         logger.info("Creating Federation with code: " + federationDTO.code());
         FederationDAO federationDAO = FederationConverter.dtoToDao(federationDTO);
 
-        // Convert UUIDs to Strings and fetch DataModel entities
-        List<String> dataModelIdsAsStrings = federationDTO.dataModelIds().stream()
-                .map(UUID::toString) // Convert UUID to String
-                .collect(Collectors.toList());
-        List<DataModelDAO> dataModelEntities = (List<DataModelDAO>) dataModelRepository.findAllById(dataModelIdsAsStrings);
-
-        // Validate that all provided UUIDs exist in the database
-        validateDataModelIds(dataModelIdsAsStrings, dataModelEntities, federationDTO.code(), logger);
+        List<DataModelDAO> dataModelEntities = resolveReleasedDataModels(
+                federationDTO.dataModelIds(), federationDTO.code(), logger);
 
         federationDAO.setDataModels(dataModelEntities);
         FederationDAO savedFederation = federationRepository.save(federationDAO);
@@ -55,15 +47,8 @@ public class FederationService {
         existingFederation.setRecords(federationDTO.records());
         existingFederation.setInstitutions(federationDTO.institutions());
 
-        // Handle DataModel IDs
-        List<String> dataModelIdsAsStrings = federationDTO.dataModelIds()
-                .stream()
-                .map(UUID::toString)
-                .collect(Collectors.toList());
-
-        List<DataModelDAO> dataModelEntities = (List<DataModelDAO>) dataModelRepository.findAllById(dataModelIdsAsStrings);
-
-        validateDataModelIds(dataModelIdsAsStrings, dataModelEntities, code, logger);
+        List<DataModelDAO> dataModelEntities = resolveReleasedDataModels(
+                federationDTO.dataModelIds(), code, logger);
 
         existingFederation.setDataModels(dataModelEntities);
 
@@ -75,6 +60,18 @@ public class FederationService {
         return FederationConverter.daoToDto(updatedFederation);
     }
 
+
+    private List<DataModelDAO> resolveReleasedDataModels(
+            List<UUID> dataModelIds, String federationCode, UserActionLogger logger) {
+        List<UUID> ids = dataModelIds == null ? List.of() : dataModelIds;
+        List<DataModelDAO> dataModelEntities = (List<DataModelDAO>) dataModelRepository.findAllById(ids);
+        validateDataModelIds(
+                ids.stream().map(UUID::toString).toList(),
+                dataModelEntities,
+                federationCode,
+                logger);
+        return dataModelEntities;
+    }
 
     /**
      * Helper method to validate that all provided UUIDs exist in the database.

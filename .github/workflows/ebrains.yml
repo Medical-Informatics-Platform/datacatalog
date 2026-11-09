@@ -9,6 +9,8 @@ on:
 jobs:
   to_ebrains:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: syncmaster
         uses: wei/git-sync@v3

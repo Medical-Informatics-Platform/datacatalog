@@ -1,59 +1,103 @@
 # Kubernetes Deployment Guide
 
-This guide explains how to deploy the **Datacatalog** using **MicroK8s** and **Helm**.
-
----
+This chart deploys the frontend, backend, data quality tool, and PostgreSQL for DataCatalog. It
+creates four `ClusterIP` services (`frontend`, `backend`, `data-quality-tool`, `datacatalogdb`) and
+one Ingress that points at the frontend.
 
 ## Prerequisites
 
-1. **MicroK8s**: A lightweight Kubernetes distribution.
-2. **Helm**: A package manager for Kubernetes (already included in MicroK8s).
+- Kubernetes cluster
+- Helm 3
+- A namespace where the release will run
+- An Ingress controller matching `frontend.ingress.className` and cert-manager with a `ClusterIssuer`
+  matching `frontend.ingress.clusterIssuer`, which are `haproxy-public` and `letsencrypt-public` by
+  default
 
----
-
-## Deployment Steps
-
-### 1. Install MicroK8s
-
-To install MicroK8s, run the following command:
+For local MicroK8s usage:
 
 ```bash
 sudo snap install microk8s --classic
+microk8s enable dns ingress helm3 storage
 ```
 
-### 2. Enable Required MicroK8s Add-ons
+## Required Configuration
 
-Enable the necessary MicroK8s add-ons for DNS, ingress, and Helm:
+The chart takes its namespace from the Helm release, not from `values.yaml`. Update `values.yaml` or
+provide overrides for:
+
+- `cluster.managed`: `false` for microk8s/local storage, `true` for managed-cluster storage classes
+- `cluster.storageClasses.local` and `cluster.storageClasses.managed`: storage classes selected by
+  `cluster.managed`; the local one is `k8s-local-storage`
+- `images.repository` and `images.tag`: single tag shared by all three images, rendered as
+  `<repository>/datacatalog_frontend`, `<repository>/datacatalog_backend`, and
+  `<repository>/datacatalog_data_quality_tool` (defaults `hbpmip` and `2.0.0`)
+- `global.publicHost`: bare public hostname, used as the Ingress and TLS host and as
+  `PUBLIC_HOST=https://<publicHost>` for the backend; the Ingress is only rendered when it is set
+- `frontend.ingress.className`, `frontend.ingress.clusterIssuer`, and
+  `frontend.ingress.tlsSecretName` (default `datacatalog-tls`, created by cert-manager)
+- `datacatalogDb.image`: PostgreSQL image, currently `postgres:18.6`
+- `datacatalogDb.db`: database name, also the name in the backend `DB_URL` (default `datacatalog`)
+- `datacatalogDb.storage`: size requested by the `db-pvc` volume claim (default `5Gi`)
+- `backend.authentication`: renders `AUTHENTICATION=1` or `0` in the backend
+- `backend.keycloak.authUrl`, `backend.keycloak.realm`, and `backend.keycloak.sslRequired`
+- `dqt.flaskEnv` and `dqt.flaskDebug`: Flask flags passed to the data quality tool
+- `dqt.maxUploadSizeMb`: upload limit rendered as `MAX_UPLOAD_SIZE_MB` in the data quality tool
+  (default `20`, matching `compose.yaml` and the image default)
+
+The chart expects a secret named `datacatalog-secrets` with:
+
+- `db.user`
+- `db.password`
+- `keycloak.client-id`
+- `keycloak.client-secret`
+
+Create it before installing: the backend references all four keys unconditionally, so it will not
+start without them even when `backend.authentication` is `false`.
+
+Example:
 
 ```bash
-microk8s enable dns ingress helm3
+kubectl -n default create secret generic datacatalog-secrets \
+  --from-literal=db.user=postgres \
+  --from-literal=db.password=test \
+  --from-literal=keycloak.client-id=datacatalogue \
+  --from-literal=keycloak.client-secret=change-me
 ```
 
-### 3. Configure the `values.yaml` File
+## Install Or Upgrade
 
-Before deploying the **Datacatalog**, update the `values.yaml` file with your Keycloak configuration details for authentication. Here’s an example:
-
-```yaml
-backend:
-  authentication: "true"
-  keycloak:
-    authUrl: "https://keycloak.example.com"
-    realm: "your-realm"
-    clientId: "your-client-id"
-    clientSecret: "your-client-secret"
-```
-
-- Replace `https://keycloak.example.com` with your Keycloak server URL.
-- Replace `your-realm`, `your-client-id`, and `your-client-secret` with your actual Keycloak configuration.
-
-### 4. Deploy the Application
-
-Navigate to the directory containing your Helm chart and deploy the **Datacatalog** using:
+Render and lint first when you change values:
 
 ```bash
-microk8s helm3 install datacatalog .
+helm lint .
+helm template datacatalog . > /dev/null
 ```
 
-Here:
-- `datacatalog` is the release name for your deployment.
-- `.` refers to the current directory containing the Helm chart.
+From the `kubernetes/` directory:
+
+```bash
+helm upgrade --install datacatalog . -n default --create-namespace
+```
+
+With MicroK8s:
+
+```bash
+microk8s helm3 upgrade --install datacatalog . -n default --create-namespace
+```
+
+## Access Model
+
+- The frontend is exposed through Ingress when `global.publicHost` is set; TLS is issued by the
+  configured `ClusterIssuer`.
+- Frontend and backend services are internal `ClusterIP` services in both managed and microk8s
+  deployments, as are `data-quality-tool` and `datacatalogdb`.
+- The frontend container proxies `/services/` to `http://backend:8090`, and the backend reaches the
+  converter at `http://data-quality-tool:8000`.
+- `cluster.managed` only controls storage-class selection and whether the microk8s local
+  `StorageClass` is rendered.
+
+The database uses the `db-pvc` PVC and mounts storage at `/var/lib/postgresql`. With
+`cluster.managed` set to `true` the claim is annotated so Argo CD will not prune it.
+
+All containers are probed: the backend on `/services/actuator/health`, the data quality tool on `/`,
+the frontend on `/`, and PostgreSQL with `pg_isready`.

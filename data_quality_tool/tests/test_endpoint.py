@@ -2,11 +2,15 @@ import json
 import unittest
 from io import BytesIO
 from pathlib import Path
+from unittest.mock import patch
 
 import pandas as pd
 
 from data_quality_tool.common_entities import EXCEL_COLUMNS
-from controller import app
+
+# The controller catches the class from its own module, so the tests raise that one.
+from controller import InvalidDataModelError, app
+from error_reporting import GENERIC_VALIDATION_ERROR, MAX_CLIENT_ERROR_LENGTH
 
 FIXTURES_DIR = Path(__file__).resolve().parent
 
@@ -139,6 +143,91 @@ class TestController(unittest.TestCase):
             ["example methodology", "group methodology", "nested methodology"],
         )
 
+    def test_json_to_excel_conversion_with_null_top_level_variables(self):
+        json_data = {
+            "code": "DM001",
+            "version": "1.0",
+            "label": "Test Model",
+            "variables": None,
+            "groups": [
+                {
+                    "code": "G001",
+                    "label": "Group 1",
+                    "variables": [
+                        {
+                            "label": "Dataset Variable",
+                            "code": "dataset",
+                            "sql_type": "text",
+                            "isCategorical": True,
+                            "type": "nominal",
+                            "enumerations": [
+                                {"code": "dataset1", "label": "Dataset 1"}
+                            ],
+                        }
+                    ],
+                    "groups": [],
+                }
+            ],
+        }
+
+        response = self.client.post(
+            "/json-to-excel", json=json_data, content_type="application/json"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        excel_file = BytesIO(response.data)
+        df = pd.read_excel(excel_file)
+
+        self.assertEqual(df["code"].tolist(), ["dataset"])
+        self.assertEqual(df["conceptPath"].tolist(), ["Test Model/Group 1/dataset"])
+
+    def test_json_to_excel_conversion_with_null_first_level_group_variables(self):
+        json_data = {
+            "code": "DM002",
+            "version": "1.0",
+            "label": "Test Model",
+            "variables": [],
+            "groups": [
+                {
+                    "code": "G001",
+                    "label": "Group 1",
+                    "variables": None,
+                    "groups": [
+                        {
+                            "code": "G002",
+                            "label": "Group 2",
+                            "variables": [
+                                {
+                                    "label": "Dataset Variable",
+                                    "code": "dataset",
+                                    "sql_type": "text",
+                                    "isCategorical": True,
+                                    "type": "nominal",
+                                    "enumerations": [
+                                        {"code": "dataset1", "label": "Dataset 1"}
+                                    ],
+                                }
+                            ],
+                            "groups": [],
+                        }
+                    ],
+                }
+            ],
+        }
+
+        response = self.client.post(
+            "/json-to-excel", json=json_data, content_type="application/json"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        excel_file = BytesIO(response.data)
+        df = pd.read_excel(excel_file)
+
+        self.assertEqual(df["code"].tolist(), ["dataset"])
+        self.assertEqual(
+            df["conceptPath"].tolist(), ["Test Model/Group 1/Group 2/dataset"]
+        )
+
     def test_excel_to_json_conversion_no_excel(self):
         response = self.client.post(
             "/excel-to-json", content_type="multipart/form-data", data={}
@@ -238,6 +327,82 @@ class TestController(unittest.TestCase):
                 "On :dataset got: Missing value for required column 'name'.",
                 response_data["error"],
             )
+
+    def _excel_payload(self):
+        with open(FIXTURES_DIR / "MinimalDataModelExample.xlsx", "rb") as file:
+            return {"file": (BytesIO(file.read()), "MinimalDataModelExample.xlsx")}
+
+    def test_validate_json_hides_stack_traces(self):
+        with patch(
+            "controller.json_validator.validate_json",
+            side_effect=InvalidDataModelError(
+                "Traceback (most recent call last):\n"
+                '  File "/app/controller.py", line 42, in validate_json\n'
+                "KeyError: 'csvFile'"
+            ),
+        ):
+            response = self.client.post(
+                "/validate-json", json={"code": "DM"}, content_type="application/json"
+            )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json, {"error": GENERIC_VALIDATION_ERROR})
+
+    def test_validate_json_bounds_validation_detail(self):
+        with patch(
+            "controller.json_validator.validate_json",
+            side_effect=InvalidDataModelError("y" * (MAX_CLIENT_ERROR_LENGTH * 2)),
+        ):
+            response = self.client.post(
+                "/validate-json", json={"code": "DM"}, content_type="application/json"
+            )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(len(response.json["error"]), MAX_CLIENT_ERROR_LENGTH)
+
+    def test_validate_json_never_reports_an_empty_error(self):
+        with patch(
+            "controller.json_validator.validate_json",
+            side_effect=InvalidDataModelError("\n  \n"),
+        ):
+            response = self.client.post(
+                "/validate-json", json={"code": "DM"}, content_type="application/json"
+            )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json, {"error": GENERIC_VALIDATION_ERROR})
+
+    def test_validate_excel_hides_stack_traces(self):
+        with patch(
+            "controller.excel_validator.validate_excel",
+            side_effect=InvalidDataModelError(
+                "Traceback (most recent call last):\n"
+                '  File "/app/controller.py", line 42, in validate_excel\n'
+                "KeyError: 'csvFile'"
+            ),
+        ):
+            response = self.client.post(
+                "/validate-excel",
+                content_type="multipart/form-data",
+                data=self._excel_payload(),
+            )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json, {"error": GENERIC_VALIDATION_ERROR})
+
+    def test_validate_excel_bounds_validation_detail(self):
+        with patch(
+            "controller.excel_validator.validate_excel",
+            side_effect=InvalidDataModelError("y" * (MAX_CLIENT_ERROR_LENGTH * 2)),
+        ):
+            response = self.client.post(
+                "/validate-excel",
+                content_type="multipart/form-data",
+                data=self._excel_payload(),
+            )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(len(response.json["error"]), MAX_CLIENT_ERROR_LENGTH)
 
     def test_excel_to_json_invalid_excel_format(self):
         response = self.client.post(

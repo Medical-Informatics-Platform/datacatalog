@@ -98,7 +98,7 @@ def validate_json(data_model):
                 f"'{field}' in DataModel must be a non-empty string. Current value: '{data_model[field]}'."
             )
 
-    if "variables" not in data_model:
+    if "variables" not in data_model or data_model["variables"] is None:
         data_model["variables"] = []
 
     variables = data_model["variables"]
@@ -137,6 +137,8 @@ def validate_json(data_model):
 
 
 def contains_required_dataset(variables, groups, path=""):
+    if variables is None:
+        variables = []
     if groups is None:
         groups = []
 
@@ -151,8 +153,8 @@ def contains_required_dataset(variables, groups, path=""):
 
     for i, group in enumerate(groups, start=1):
         if contains_required_dataset(
-            group.get("variables", []),
-            group.get("groups", []),
+            group.get("variables") or [],
+            group.get("groups") or [],
             path=f"{path}/groups[{i}]",
         ):
             return True
@@ -161,6 +163,11 @@ def contains_required_dataset(variables, groups, path=""):
 
 
 def validate_longitudinal_elements(variables, groups, path):
+    if variables is None:
+        variables = []
+    if groups is None:
+        groups = []
+
     subjectid_present = any(v.get("code") == "subjectid" for v in variables)
     visitid_present = any(v.get("code") == "visitid" for v in variables)
 
@@ -186,11 +193,13 @@ def validate_longitudinal_elements(variables, groups, path):
 
 
 def has_valid_cde_in_group(cde_code, group, path):
-    valid_cde_found = any(v.get("code") == cde_code for v in group.get("variables", []))
+    valid_cde_found = any(
+        v.get("code") == cde_code for v in (group.get("variables") or [])
+    )
     if valid_cde_found:
         return True
 
-    for i, nested_group in enumerate(group.get("groups", []), start=1):
+    for i, nested_group in enumerate(group.get("groups") or [], start=1):
         if has_valid_cde_in_group(cde_code, nested_group, path=f"{path}/groups[{i}]"):
             return True
 

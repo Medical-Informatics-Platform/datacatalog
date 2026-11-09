@@ -1,0 +1,35 @@
+@if (showPopup) {
+  <div class="popup-container">
+    <div class="guide-popup">
+      <div class="popup-header">
+        <div>
+          <p class="popup-eyebrow">Quick start</p>
+          <h2>Explore Brain Pathologies</h2>
+        </div>
+        <button class="close-btn" (click)="closePopup()">×</button>
+      </div>
+      <div class="popup-body">
+        <p class="mobile-warning">The full workspace works best on desktop or tablet.</p>
+        <p class="intro-copy">Use this panel as a starting point, then close it and work directly in the explorer.</p>
+        <ul>
+          <li>
+            Use the selectors above the workspace to narrow the federation and pathology context first.
+          </li>
+          <li>
+            Search helps you jump directly to variables or groups without browsing the full hierarchy manually.
+          </li>
+          <li>
+            Breadcrumbs, depth, zoom, and export let you progressively move from overview to detail.
+          </li>
+        </ul>
+      </div>
+      <div class="popup-footer">
+        <label class="footer-checkbox">
+          <input type="checkbox" [(ngModel)]="dontShowAgain" />
+          <span>Don't show this again</span>
+        </label>
+        <button class="dismiss-btn" type="button" (click)="closePopup()">Start exploring</button>
+      </div>
+    </div>
+  </div>
+}

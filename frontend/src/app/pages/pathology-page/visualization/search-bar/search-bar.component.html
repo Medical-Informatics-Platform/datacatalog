@@ -1,0 +1,70 @@
+<div class="search-container" [class.expanded]="isSearchExpanded">
+  <button
+    type="button"
+    class="search-icon-circle"
+    (click)="toggleSearch($event)"
+    [attr.aria-expanded]="isSearchExpanded"
+    aria-haspopup="dialog"
+    title="Search"
+    aria-label="Search"
+  >
+    <span class="material-icons">search</span>
+  </button>
+
+  @if (isSearchExpanded) {
+    <div class="search-expanded" role="dialog" aria-label="Pathology search">
+      <div class="search-input-container">
+        <input
+          #searchInput
+          type="text"
+          id="search-bar"
+          placeholder="Search groups or variables"
+          [(ngModel)]="searchQuery"
+          (focus)="onSearchFocus()"
+          (input)="handleSearch(searchQuery)"
+        />
+        <div class="inline-filters">
+          <select [(ngModel)]="filterType" (change)="applyFilter(filterType)">
+            <option value="variables">Variables</option>
+            <option value="groups">Groups</option>
+          </select>
+          @if (filterType === 'variables') {
+            <div class="additional-filter">
+              <select [(ngModel)]="variableTypeFilter" (change)="applyVariableTypeFilter(variableTypeFilter)">
+                <option value="">All Types</option>
+                @for (type of variableTypes; track type) {
+                  <option [value]="type">{{ type }}</option>
+                }
+              </select>
+            </div>
+          }
+        </div>
+      </div>
+
+      @if (searchSuggestionsVisible) {
+        <div class="suggestions-container">
+          @if (filteredItems.length > 0) {
+            <ul>
+              @for (item of filteredItems; track item.path) {
+                <li
+                  (click)="onItemClick(item)"
+                  [title]="generateTooltip(item)"
+                >
+                  <div class="suggestion-main">
+                    <strong>{{ item.name || item }}</strong>
+                    <span class="suggestion-badge" [class.group-badge]="!('type' in item)">
+                      {{ 'type' in item ? item.type : 'Group' }}
+                    </span>
+                  </div>
+                  <div class="suggestion-path">{{ item.path }}</div>
+                </li>
+              }
+            </ul>
+          } @else {
+            <div class="no-results">No matching groups or variables</div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

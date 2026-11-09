@@ -1,0 +1,39 @@
+.breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.breadcrumb {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border: 1px solid var(--mip-border);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--mip-ink);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.breadcrumb:hover:not(.active) {
+  background: rgba(43, 51, 233, 0.06);
+  color: var(--mip-dark-blue);
+  border-color: rgba(43, 51, 233, 0.2);
+}
+
+.breadcrumb.active {
+  background: rgba(43, 51, 233, 0.08);
+  color: var(--mip-dark-blue);
+  border: 1px solid rgba(43, 51, 233, 0.15);
+  font-weight: 700;
+  cursor: default;
+}
+
+.separator {
+  color: rgba(18, 32, 63, 0.38);
+  font-size: 0.9rem;
+}
