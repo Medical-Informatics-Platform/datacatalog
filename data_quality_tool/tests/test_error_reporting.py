@@ -1,9 +1,11 @@
 import unittest
 
+from common_entities import InvalidDataModelError
 from error_reporting import (
     GENERIC_VALIDATION_ERROR,
     MAX_CLIENT_ERROR_LENGTH,
     client_error_message,
+    validation_message,
 )
 
 STACK_TRACE = (
@@ -68,6 +70,19 @@ class TestClientErrorMessage(unittest.TestCase):
         message = client_error_message("x" * (MAX_CLIENT_ERROR_LENGTH * 2))
         self.assertEqual(len(message), MAX_CLIENT_ERROR_LENGTH)
         self.assertTrue(message.endswith("…"))
+
+    def test_validation_message_reads_the_validator_text(self):
+        error = InvalidDataModelError(
+            "On :dataset got: Missing value for required column 'name'."
+        )
+        self.assertEqual(
+            validation_message(error),
+            "On :dataset got: Missing value for required column 'name'.",
+        )
+
+    def test_validation_message_ignores_non_string_args(self):
+        self.assertEqual(validation_message(Exception(1)), "")
+        self.assertEqual(validation_message(Exception()), "")
 
 
 if __name__ == "__main__":

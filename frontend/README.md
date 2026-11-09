@@ -49,9 +49,11 @@ Build the production image from this directory:
 docker build -t datacatalog-frontend .
 ```
 
-The container compiles the Angular app with Node 24 and serves the built output with Nginx on port
+The container compiles the Angular app with Node and serves the built output with Nginx on port
 `80`. `nginx.conf` proxies `/services/` to `http://backend:8090`, the service name used by both
 `compose.yaml` and the Helm chart, and falls back to `index.html` for client-side routing.
+The proxied `Host` is `PUBLIC_HOSTNAME` (or the host in `PUBLIC_HOST`), not the request's Host
+header. Compose passes `PUBLIC_HOST`; the chart sets `PUBLIC_HOSTNAME` from `global.publicHost`.
 
 ## Project Layout
 
