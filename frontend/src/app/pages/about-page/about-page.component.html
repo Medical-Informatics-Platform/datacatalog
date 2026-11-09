@@ -1,34 +1,62 @@
-<div class="about-container">
-  <!-- Logo Section -->
-  <div class="header">
-    <img src="assets/mip-logo.png" alt="MIP Logo" class="logo" />
-    <h1 class="title">The Medical Informatics Platform</h1>
-  </div>
+<div class="about-page">
+  @if (!isEmbedded) {
+  <div class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">Project documentation</p>
+      <h1 class="title">The Medical Informatics <span class="text-gradient">Platform</span></h1>
+      <p class="subtitle">
+        A federated environment for decentralized clinical data analysis fits large multi-site
+        studies.
+      </p>
+    </div>
 
-  <!-- About Section -->
-  <div class="about-content">
-    <h2>About</h2>
-    <p>
-      The Medical Informatics Platform (MIP) is the most advanced, fully
-      operational, open-source platform for sharing decentralized clinical
-      data.
-    </p>
-    <p>
-      Clinical data that cannot be shared, transferred, and stored in a
-      centralized way can be federated and collaboratively analyzed.
-    </p>
-    <p>
-      Data Owners have full control of accessibility and sharing of their data
-      through a tightly controlled accreditation, access control, and user
-      management system.
-    </p>
-    <p>
-      Documentation about the project can be found on
-      <a href="https://github.com/hbpmedical/mip-docs" target="_blank">GitHub</a>.
-    </p>
-    <p>
-      For more detailed information:
-      <a href="https://www.ebrains.eu/tools/medical-informatics-platform" target="_blank">EBRAINS website</a>.
-    </p>
+    <div class="hero-card">
+      <img src="assets/mip-logo-short-compact.png" alt="MIP logo" class="logo" />
+      <p>
+        MIP connects institutions, pathology catalogs, and research tooling through a privacy-first
+        infrastructure that fits large multi-site studies.
+      </p>
+    </div>
+  </div>
+}
+
+  <div class="about-grid">
+    <article class="about-card">
+      <h2>What it does</h2>
+      <p>
+        The Medical Informatics Platform (MIP) is a fully operational open-source platform for
+        sharing decentralized clinical data.
+      </p>
+      <p>
+        Clinical data that cannot be shared, transferred, or stored in a centralized way can still
+        be federated and collaboratively analyzed.
+      </p>
+    </article>
+
+    <article class="about-card">
+      <h2>Why it matters</h2>
+      <p>
+        Data owners keep full control of access and sharing through controlled accreditation,
+        access control, and user management.
+      </p>
+      <p>
+        This makes large-scale, privacy-preserving research practical across institutions and
+        disease domains.
+      </p>
+    </article>
+
+    <article class="about-card about-card-wide">
+      <h2>Documentation</h2>
+      <p>
+        Project documentation is available on
+        <a href="https://github.com/Medical-Informatics-Platform/mip" target="_blank"
+          rel="noopener noreferrer">GitHub</a>.
+      </p>
+      <p>
+        More detailed information is available on the
+        <a href="https://www.ebrains.eu/tools/medical-informatics-platform" target="_blank"
+          rel="noopener noreferrer">EBRAINS website</a>.
+      </p>
+    </article>
   </div>
 </div>

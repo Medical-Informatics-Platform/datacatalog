@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: frontend
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
 spec:
   replicas: 1
   selector:
@@ -15,15 +15,34 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: "{{ .Values.datacatalog_images.repository }}/datacatalog_frontend:{{ .Values.datacatalog_images.tag }}"
+        image: {{ printf "%s/datacatalog_frontend:%s" .Values.images.repository .Values.images.tag | quote }}
         ports:
         - containerPort: 80
+        startupProbe:
+          httpGet:
+            path: /
+            port: 80
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 12
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          periodSeconds: 10
+          timeoutSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          periodSeconds: 30
+          timeoutSeconds: 5
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: frontend
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
 spec:
   selector:
     app: frontend
@@ -31,29 +50,24 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 80
-  {{- if not .Values.managed_cluster }}
-      nodePort: 30080  # Static NodePort for frontend
-  type: NodePort
-  {{- end }}
-{{- if .Values.managed_cluster }}
+  type: ClusterIP
+{{- if .Values.global.publicHost }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-
   name: datacatalog-ingress
+  namespace: {{ .Release.Namespace }}
   annotations:
-    kubernetes.io/ingress.class: {{ .Values.frontend.ingress }}
-    cert-manager.io/cluster-issuer: {{ .Values.frontend.cert_manager }}
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: {{ .Values.frontend.ingress.clusterIssuer }}
 spec:
-  ingressClassName:  {{ .Values.frontend.ingress }}
+  ingressClassName: {{ .Values.frontend.ingress.className }}
   tls:
     - hosts:
-      - {{ .Values.backend.publicHost }}
-      secretName: datacatalog-tls
+      - {{ .Values.global.publicHost }}
+      secretName: {{ .Values.frontend.ingress.tlsSecretName }}
   rules:
-    - host: {{ .Values.backend.publicHost }}
+    - host: {{ .Values.global.publicHost }}
       http:
         paths:
           - path: /

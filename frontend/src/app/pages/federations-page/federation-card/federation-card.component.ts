@@ -17,11 +17,12 @@ export class FederationCardComponent {
   @Input() isAdmin = false;
   @Output() updateFederation = new EventEmitter<string>();
   @Output() deleteFederation = new EventEmitter<string>();
-  @Output() visualizeDataModel = new EventEmitter<string>();
+  @Output() visualizePathology = new EventEmitter<string>();
   showMore: boolean = false;
+  showAllPathologies: boolean = false;
 
-  viewDataModel() {
-    this.visualizeDataModel.emit(this.federation.code);
+  viewPathology() {
+    this.visualizePathology.emit(this.federation.code);
   }
 
   navigateToFederation(url: string): void {

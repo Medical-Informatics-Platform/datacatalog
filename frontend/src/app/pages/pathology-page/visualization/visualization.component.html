@@ -1,0 +1,73 @@
+<div id="chart-container">
+  <div id="toolbar">
+    <!-- 1. Visible Path (Breadcrumbs) -->
+    <div id="breadcrumbs">
+      <app-breadcrumb
+        [breadcrumbs]="breadcrumbPath"
+        (breadcrumbClick)="handleBreadcrumbClick($event)"
+      ></app-breadcrumb>
+    </div>
+
+    <!-- Right-aligned Actions Grouped in a Pill -->
+    <div id="toolbar-actions" class="action-pill">
+      <!-- 1. Search Bar -->
+      <app-search-bar
+        [pathologyHierarchy]="pathologyHierarchy || undefined"
+        (searchResultSelected)="onSearchResult($event)"
+      ></app-search-bar>
+
+      <div class="toolbar-divider"></div>
+
+      <!-- 2. Pan & Zoom Toggle -->
+      <button 
+        class="toolbar-btn" 
+        [class.active]="isZoomEnabled"
+        (click)="isZoomEnabled = !isZoomEnabled; onZoomToggleChange()"
+        title="Toggle Pan & Zoom"
+      >
+        <span class="material-icons">explore</span>
+      </button>
+
+      <!-- 3. Visible Depth -->
+      <div id="depth-control">
+        <span class="control-label">Depth</span>
+        <select class="minimal-select" [(ngModel)]="maxDepth" (change)="onMaxDepthChange()">
+          @for (depth of createArray(newAvailableDepths); track depth) {
+            <option [value]="depth">{{ depth }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="toolbar-divider"></div>
+
+      <!-- 4. Fullscreen -->
+      <button 
+        class="toolbar-btn" 
+        (click)="toggleFullscreen()"
+        [title]="isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'"
+      >
+        <span class="material-icons">
+          {{ isFullscreen ? 'fullscreen_exit' : 'fullscreen' }}
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <div class="chart-meta" aria-hidden="true">
+    <p class="chart-hint">Double-click a group to focus the tree. Use breadcrumbs to step back or search to jump directly to a variable.</p>
+    <div class="chart-legend">
+      <span class="legend-item"><span class="legend-dot legend-root"></span>Root</span>
+      <span class="legend-item"><span class="legend-dot legend-group"></span>Groups</span>
+      <span class="legend-item"><span class="legend-dot legend-variable"></span>Variables</span>
+      <span class="legend-item"><span class="legend-dot legend-highlight"></span>Search focus</span>
+    </div>
+  </div>
+
+  @if (!error) {
+    <div id="chart" style="width: 100%; height: 100%;"></div>
+  } @else {
+    <div class="error-message">
+      {{ error }}
+    </div>
+  }
+</div>

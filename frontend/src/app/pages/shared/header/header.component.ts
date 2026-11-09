@@ -27,8 +27,7 @@ export class HeaderComponent implements OnInit {
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
-        this.currentRoute = event.urlAfterRedirects; // Update to the latest route
-        console.log("Updated current route:", this.currentRoute);
+        this.currentRoute = event.urlAfterRedirects;
       });
   }
 

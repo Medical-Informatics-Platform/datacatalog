@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { User } from '../interfaces/user.interface';
 import { map } from "rxjs/operators";
 
@@ -10,7 +10,6 @@ import { map } from "rxjs/operators";
 })
 export class UserService {
   private userUrl = `/services/user`;
-  private userRoles: string[] = [];
 
   constructor(private http: HttpClient) {}
 
@@ -19,16 +18,8 @@ export class UserService {
   }
 
   getUserRoles(): Observable<string[]> {
-    if (this.userRoles.length) {
-      return new Observable((observer) => observer.next(this.userRoles));
-    } else {
-      return this.http.get<{ roles: string[] }>(this.userUrl).pipe(
-        map((response) => {
-          this.userRoles = response.roles || [];
-          console.log(this.userRoles);
-          return this.userRoles;
-        })
-      );
-    }
+    return this.http.get<{ roles: string[] }>(this.userUrl).pipe(
+      map((response) => response.roles || [])
+    );
   }
 }

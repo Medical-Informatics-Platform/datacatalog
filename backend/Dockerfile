@@ -1,8 +1,9 @@
 #######################################################
 # Build the Spring Boot application with Maven
 #######################################################
-FROM maven:3.9.5-eclipse-temurin-21 AS build-env
-MAINTAINER Kostas Filippopolitis <kfilippopolitis@athenarc.gr>
+# Base images are pinned by digest; Dependabot bumps the digest when the tag is rebuilt.
+FROM maven:3.9.16-eclipse-temurin-21@sha256:99e61abcff91a9b1333463bd8451fb18495d6eba9250ac66a338b518f8278320 AS build-env
+LABEL maintainer="Kostas Filippopolitis <kfilippopolitis@athenarc.gr>"
 
 # Define build environment variables
 ENV CODE_PATH="/opt/code"
@@ -19,7 +20,7 @@ RUN mvn clean package -DskipTests
 #######################################################
 # Setup the runtime container
 #######################################################
-FROM amazoncorretto:21-alpine3.18
+FROM amazoncorretto:27.0.0-alpine3.24@sha256:be4c1d0fd29cfa5db577c9fd5196b9812d4517e04e1ade48e41629177931e7a6
 
 #######################################################
 # Setting up timezone
@@ -30,8 +31,6 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 #######################################################
 # Setting up environment
 #######################################################
-ENV APP_CONFIG_TEMPLATE="/opt/config/application.tmpl"
-ENV APP_CONFIG_LOCATION="/opt/config/application.yml"
 ENV SPRING_CONFIG_LOCATION="file:/opt/config/application.yml"
 
 ENV SERVICE="datacatalog-backend"
@@ -40,31 +39,28 @@ ENV FRAMEWORK_LOG_LEVEL="INFO"
 
 WORKDIR /opt
 
-# Install necessary utilities
-RUN apk add --no-cache curl
-
-#######################################################
-# Install dockerize (for config templating)
-#######################################################
-ENV DOCKERIZE_VERSION=v0.10.1
-RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
-    && tar -C /usr/local/bin -xzvf dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
-    && rm dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+# Install necessary utilities. Versions come from the base image's Alpine
+# release; pinning them would break the build whenever Alpine ships a fix.
+# hadolint ignore=DL3018
+RUN apk add --no-cache --upgrade libcrypto3 libssl3 curl
 
 #######################################################
 # Prepare the Spring Boot application files
 #######################################################
-COPY config/application.tmpl $APP_CONFIG_TEMPLATE
-COPY --from=build-env /opt/code/target/datacatalog-0.0.1-SNAPSHOT.jar /usr/share/jars/
+RUN addgroup -S appgroup && adduser -S -u 1001 appuser -G appgroup
+
+COPY config/application.yml /opt/config/application.yml
+COPY --from=build-env --chown=appuser:appgroup /opt/code/target/datacatalog-0.0.1-SNAPSHOT.jar /usr/share/jars/
 
 #######################################################
 # Set up entrypoint and expose port
 #######################################################
+USER 1001
 
-ENTRYPOINT ["sh", "-c", "dockerize -template $APP_CONFIG_TEMPLATE:$APP_CONFIG_LOCATION java -jar /usr/share/jars/datacatalog-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "/usr/share/jars/datacatalog-0.0.1-SNAPSHOT.jar"]
 EXPOSE 8090
 
 #######################################################
 # Healthcheck
 #######################################################
-HEALTHCHECK --start-period=60s CMD curl -f http://localhost:8090/services/actuator/health || exit 1
+HEALTHCHECK --start-period=60s CMD ["sh", "-c", "curl -f http://localhost:8090/services/actuator/health || exit 1"]

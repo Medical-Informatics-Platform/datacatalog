@@ -1,92 +1,60 @@
-/* =============================== */
-/* DESKTOP NAVBAR */
-/* =============================== */
-
 .navbar {
   margin-left: auto;
-  display: flex;
-  align-items: center;
 }
 
 .navbar ul {
   display: flex;
-  justify-content: flex-end;
-  list-style: none;
-  margin: 25px;
-  padding: 0;
-}
-
-.navbar ul li {
-  margin-left: 15px;
-}
-
-.navbar ul li a {
-  color: #c0c0c0;
-  text-decoration: none;
-  font-size: 0.85em;
-  transition: color 0.3s ease;
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  font-family: 'Roboto', sans-serif;
-  font-weight: 300;
-}
-
-.navbar ul li a:hover {
-  color: #18a2b8;
-}
-
-.navbar ul li a i {
-  font-size: 1.7em;
-  margin-bottom: 3px;
-}
-
-.navbar ul li a.active {
-  color: #18a2b8;
-  font-weight: bold;
-}
-
-/* =============================== */
-/* TABLET (768px–1024px) */
-/* =============================== */
-
-@media (max-width: 1024px) {
-  .navbar ul {
-    margin: 15px;
-  }
-
-  .navbar ul li a {
-    font-size: 0.95em;
-  }
-
-  .navbar ul li a i {
-    font-size: 1.5em;
-  }
-}
-
-/* =============================== */
-/* MOBILE MENU — CENTERED */
-/* =============================== */
-
-.mobile-menu .navbar ul {
-  flex-direction: column !important;
-  align-items: center !important;
+  gap: 6px;
   margin: 0;
-  padding: 15px 0;
+  padding: 0;
+  list-style: none;
 }
 
-.mobile-menu .navbar ul li {
-  margin: 12px 0;
+.navbar a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 16px;
+  border-radius: 8px;
+  color: rgba(18, 32, 63, 0.88);
+  text-decoration: none;
+  font-family: var(--mip-font-brand);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.2s ease;
 }
 
-.mobile-menu .navbar ul li a {
-  flex-direction: column !important;
-  align-items: center !important;
-  font-size: 1.05em;
-  text-align: center !important;
+.navbar a:hover {
+  background: rgba(0, 230, 242, 0.08); /* mip-accent at 8% */
+  color: var(--mip-dark-blue);
 }
 
-.mobile-menu .navbar ul li a i {
-  font-size: 1.8em;
-  margin-bottom: 6px;
+.navbar a.active {
+  background: rgba(0, 230, 242, 0.15); /* mip-accent at 15% */
+  color: var(--mip-ink);
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    width: 100%;
+  }
+
+  .navbar ul {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .navbar a {
+    width: 100%;
+    justify-content: flex-start;
+    min-height: 40px;
+    padding: 0 14px;
+    border-radius: 12px;
+    font-size: 0.92rem;
+  }
 }
