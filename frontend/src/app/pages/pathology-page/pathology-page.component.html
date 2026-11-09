@@ -1,0 +1,66 @@
+<app-guide-popup></app-guide-popup>
+@if(!isChildRouteActive()){
+<div class="pathology-page">
+  <section class="page-hero">
+    <div class="page-copy">
+      <p class="eyebrow">Medical Informatics Platform</p>
+      <h1 class="title">Pathology <span class="text-gradient">workspace</span></h1>
+      <p class="subtitle">
+        Explore clinical variables. Navigate the pathology hierarchy 
+        with integrated search, filtering, and secure export.
+      </p>
+    </div>
+  </section>
+
+  <section class="workspace-shell">
+    <div class="top-bar">
+      <div class="dropdown-container">
+        <app-federation-selector
+          [isDomainExpert]="isDomainExpert"
+          [defaultFederation]="selectedFederation"
+          (federationChange)="onSelectedFederationChange($event)"
+        ></app-federation-selector>
+
+        @if(selectedPathology && (crossSectionalModels.length > 0 ||
+        longitudinalModels.length > 0)){
+        <app-pathology-selector
+          [crossSectionalModels]="crossSectionalModels"
+          [longitudinalModels]="longitudinalModels"
+          [defaultModel]="selectedPathology"
+          (pathologyChange)="onSelectedPathologyChange($event)"
+        ></app-pathology-selector>
+        }
+      </div>
+
+      <div class="top-bar-actions">
+        <app-export-options
+          [selectedFileType]="selectedFileType()"
+          (export)="exportPathology($event)"
+        ></app-export-options>
+
+        @if(isDomainExpert){
+        <div class="action-divider"></div>
+        <app-action-menu
+          [isSelectedPathologyReleased]="selectedPathology?.released ?? false"
+          (action)="handleAction($event)"
+          (menuVisibleChange)="handleMenuToggle($event)"
+        ></app-action-menu>
+        }
+      </div>
+    </div>
+
+    <div class="workspace-content">
+      @if (isLoading()) {
+        <div class="loading-overlay">
+          <div class="spinner"></div>
+          <p>Loading pathology hierarchy...</p>
+        </div>
+      }
+      <app-visualization [pathologyHierarchy]="d3Data"></app-visualization>
+    </div>
+  </section>
+</div>
+}
+
+<!-- Child route outlet for add and update forms -->
+<router-outlet></router-outlet>

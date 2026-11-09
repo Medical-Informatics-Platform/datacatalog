@@ -1,8 +1,11 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { DataModelService } from '../../../services/data-model.service';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
+import { PathologyService } from '../../../services/pathology.service';
 import { FederationService } from '../../../services/federation.service';
+import { Federation } from '../../../interfaces/federations.interface';
 
 @Component({
   selector: 'app-federation-form',
@@ -10,21 +13,24 @@ import { FederationService } from '../../../services/federation.service';
   styleUrls: ['./federation-form.component.css'],
   imports: [
     ReactiveFormsModule,
+    RouterLink,
   ],
   standalone: true
 })
-export class FederationFormComponent implements OnInit {
-  @Output() federationUpdated = new EventEmitter<void>(); // Event to notify parent
-
+export class FederationFormComponent implements OnInit, OnDestroy {
   federationForm: FormGroup;
-  dataModels: any[] = [];
-  selectedDataModels: string[] = [];
+  pathologies: any[] = [];
+  selectedPathologies: string[] = [];
   isUpdateMode: boolean = false;
   federationCode: string | null = null;
+  submitted = false;
+  federationNotFound = false;
+
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
-    private dataModelService: DataModelService,
+    private pathologyService: PathologyService,
     private federationService: FederationService,
     private router: Router,
     private route: ActivatedRoute
@@ -34,92 +40,140 @@ export class FederationFormComponent implements OnInit {
       title: ['', Validators.required],
       url: ['', Validators.required],
       description: ['', Validators.required],
-      institutions: ['', Validators.required],
-      records: ['', Validators.required],
+      institutions: ['', [Validators.required, Validators.pattern(/^\d+$/)]],
+      records: ['', [Validators.required, Validators.pattern(/^\d+$/)]],
     });
   }
 
   ngOnInit(): void {
-    this.route.data.subscribe((data) => {
-      this.isUpdateMode = data['isUpdate'];
-    });
+    this.isUpdateMode = this.route.snapshot.data['isUpdate'] === true;
 
     if (this.isUpdateMode) {
-      this.route.queryParams.subscribe((params) => {
-        this.federationCode = params['federationCode'];
-        this.loadFederation(this.federationCode!);
+      this.route.queryParamMap
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((params) => {
+        const code = params.get('federationCode');
+        if (!code) {
+          return;
+        }
+
+        this.federationCode = code;
+        this.loadFederation(code);
       });
     }
 
-    this.loadDataModels();
+    this.loadPathologies();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   closeModal(): void {
-    this.router.navigate(['/federations']); // Navigate back to the federations list or previous page
+    void this.router.navigate(['/'], { fragment: 'federations' });
   }
 
   loadFederation(code: string): void {
-    this.federationService.getFederationsWithModels().subscribe((federations) => {
+    this.federationService.getFederationsWithPathologies().subscribe((federations) => {
       const federation = federations.find((f) => f.code === code);
-      if (federation) {
-        this.federationForm.patchValue({
-          code: federation.code,
-          title: federation.title,
-          url: federation.url,
-          description: federation.description,
-          institutions: federation.institutions,
-          records: federation.records,
-        });
-        this.selectedDataModels = [...federation.dataModelIds];
+      if (!federation) {
+        this.federationNotFound = true;
+        return;
       }
+
+      this.federationForm.patchValue({
+        code: federation.code,
+        title: federation.title,
+        url: federation.url,
+        description: federation.description,
+        institutions: federation.institutions,
+        records: federation.records,
+      });
+      this.selectedPathologies = [...federation.dataModelIds];
     });
   }
 
-  loadDataModels(): void {
-    this.dataModelService.getAllReleasedDataModels().subscribe((models) => {
-      this.dataModels = models;
+  loadPathologies(): void {
+    this.pathologyService.getAllReleasedPathologies().subscribe((pathologies) => {
+      this.pathologies = pathologies;
     });
   }
 
-  onDataModelChange(event: any): void {
+  onPathologyChange(event: any): void {
     const selectedModel = event.target.value;
     if (event.target.checked) {
-      if (!this.selectedDataModels.includes(selectedModel)) {
-        this.selectedDataModels.push(selectedModel);
+      if (!this.selectedPathologies.includes(selectedModel)) {
+        this.selectedPathologies.push(selectedModel);
       }
     } else {
-      this.selectedDataModels = this.selectedDataModels.filter(
+      this.selectedPathologies = this.selectedPathologies.filter(
         (model) => model !== selectedModel
       );
     }
   }
 
   submitForm(): void {
-    if (this.federationForm.valid) {
-      const federationData = {
-        ...this.federationForm.value,
-        dataModelIds: this.selectedDataModels,
-      };
+    this.submitted = true;
 
-      if (this.isUpdateMode && this.federationCode) {
-        this.federationService
-          .updateFederation(this.federationCode, federationData)
-          .subscribe({
-            next: () => {
-              this.federationUpdated.emit(); // Notify parent
-              this.router.navigate(['/federations']); // Navigate back to federations list
-            },
-            error: (error) => console.error('Error updating federation:', error),
-          });
-      } else {
-        this.federationService.createFederation(federationData).subscribe({
-          next: () => {
-            this.federationUpdated.emit(); // Notify parent
-            this.router.navigate(['/federations']); // Navigate back to federations list
-          },
-          error: (error) => console.error('Error creating federation:', error),
-        });
-      }
+    if (!this.federationForm.valid) {
+      this.federationForm.markAllAsTouched();
+      return;
     }
+
+    const federationData = this.buildFederationPayload();
+
+    if (this.isUpdateMode && this.federationCode) {
+      this.federationService
+        .updateFederation(this.federationCode, federationData)
+        .subscribe({
+          next: () => {
+            void this.router.navigate(['/'], { fragment: 'federations' });
+          },
+          error: (error) => this.handleSaveError(error, 'update'),
+        });
+    } else {
+      this.federationService.createFederation(federationData).subscribe({
+        next: () => {
+          void this.router.navigate(['/'], { fragment: 'federations' });
+        },
+        error: (error) => this.handleSaveError(error, 'create'),
+      });
+    }
+  }
+
+  private buildFederationPayload(): Federation {
+    const value = this.federationForm.value;
+    return {
+      ...value,
+      institutions: this.toInteger(value.institutions),
+      records: this.toInteger(value.records),
+      dataModelIds: this.selectedPathologies,
+    } as Federation;
+  }
+
+  private toInteger(value: unknown): number {
+    const parsed = parseInt(String(value), 10);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
+
+  private handleSaveError(error: unknown, action: 'create' | 'update'): void {
+    console.error('Error %s federation:', action === 'create' ? 'creating' : 'updating', error);
+    if (error instanceof HttpErrorResponse && error.status === 403) {
+      window.alert(this.saveErrorMessage(action, true));
+      return;
+    }
+
+    const details =
+      error instanceof HttpErrorResponse && typeof error.error?.message === 'string'
+        ? ` (${error.error.message})`
+        : '';
+    window.alert(this.saveErrorMessage(action, false) + details);
+  }
+
+  private saveErrorMessage(action: 'create' | 'update', unauthorized: boolean): string {
+    return unauthorized
+      ? `You are not authorized to ${action} federations.`
+      : `Failed to ${action} federation.`;
   }
 }

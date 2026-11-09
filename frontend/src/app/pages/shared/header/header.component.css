@@ -1,107 +1,91 @@
-/* General header styling */
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 20px;
-  width: 100%;
-  background-color: #2b2c2e;
-  box-sizing: border-box;
-  height: 65px;
-  color: #f0f0f0;
   position: fixed;
   top: 0;
   left: 0;
   z-index: 1000;
-  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 64px;
+  padding: 0 20px 0 16px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--mip-border);
+  box-shadow: 0 4px 18px rgba(18, 32, 63, 0.04);
 }
 
-/* Logo and Branding Styling */
 .branding {
   display: flex;
   align-items: center;
+  color: var(--mip-ink);
+  text-decoration: none;
+  flex-shrink: 0;
 }
 
 .logo {
-  width: 60px;
+  width: 112px;
   height: auto;
-  margin-right: 15px;
 }
 
-.branding-text {
-  display: block;
-  text-align: left;
-}
-
-.branding-text h1 {
-  margin: 0;
-  font-size: 1.3em;
-  font-family: 'Roboto', sans-serif;
-}
-
-/* Navbar Wrapper (desktop) */
 .navbar-wrapper {
   display: flex;
-  justify-content: flex-end;
-  align-items: center;
   flex: 1;
-  margin-left: 20px;
+  justify-content: flex-end;
+  margin-left: 24px;
 }
 
-/* User Icon Styling */
 .user-icon {
   display: flex;
   align-items: center;
   margin-left: 10px;
 }
 
-.account-picture {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #18a2b8;
-  background-color: transparent;
-}
-
-/* Sign In Button */
 .sign-in-btn {
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
 }
 
-.sign-in-btn img {
-  width: 40px;
-  height: 40px;
+.account-picture {
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(43, 51, 233, 0.18);
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #18a2b8;
-  background-color: transparent;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 4px 12px rgba(18, 32, 63, 0.08);
 }
 
-/* Mobile hamburger (hidden on desktop) */
 .mobile-menu-btn {
   display: none;
-  background: none;
-  border: none;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  margin-left: 8px;
+  border: 1px solid var(--mip-border);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--mip-dark-blue);
   cursor: pointer;
-  font-size: 28px;
-  margin-left: 10px;
-  color: #f0f0f0;
+  font-size: 1.3rem;
 }
 
-/* Mobile dropdown menu (hidden by default) */
 .mobile-menu {
   display: none;
   position: fixed;
-  top: 65px;            /* same as header height */
+  top: 64px;
   left: 0;
   width: 100%;
-  background: #2b2c2e;
-  padding: 10px 0;
+  padding: 10px 14px 14px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--mip-border);
+  box-shadow: 0 10px 22px rgba(18, 32, 63, 0.06);
   z-index: 999;
 }
 
@@ -109,51 +93,36 @@
   display: block;
 }
 
-/* Tablet Layout (768px - 1024px) */
 @media (max-width: 1024px) {
-  .branding-text h1 {
-    font-size: 1.1em;
-  }
-
-  .account-picture,
-  .sign-in-btn img {
-    width: 35px;
-    height: 35px;
+  .logo {
+    width: 106px;
   }
 }
 
-/* Mobile Layout (up to 768px) */
 @media (max-width: 768px) {
   .header {
-    padding: 0 10px;
-    height: 55px;
+    height: 60px;
+    padding: 0 14px;
   }
 
   .logo {
-    width: 45px;
-    margin-right: 8px;
+    width: 96px;
   }
 
-  .branding-text h1 {
-    font-size: 1em;
-  }
-
-  /* hide full navbar on mobile, show hamburger */
   .navbar-wrapper {
     display: none;
   }
 
   .mobile-menu-btn {
-    display: block;
+    display: inline-flex;
   }
 
-  .account-picture,
-  .sign-in-btn img {
-    width: 30px;
-    height: 30px;
+  .account-picture {
+    width: 32px;
+    height: 32px;
   }
 
   .mobile-menu {
-    top: 55px; /* match mobile header height */
+    top: 60px;
   }
 }

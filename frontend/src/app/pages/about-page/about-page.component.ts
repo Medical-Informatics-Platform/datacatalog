@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-about-page',
@@ -8,5 +8,5 @@ import { Component } from '@angular/core';
   styleUrl: './about-page.component.css'
 })
 export class AboutPageComponent {
-
+  @Input() isEmbedded = false;
 }

@@ -8,7 +8,9 @@ server:
 
 ### AUTHENTICATION ###
 authentication:
-  enabled: 1
+  # Matches the Compose default (AUTHENTICATION=0): a host-local run starts without Keycloak.
+  # Set to 1 and fill in a real client-secret below to exercise the OIDC login flow.
+  enabled: 0
   domain_expert: "DC_DOMAIN_EXPERT"
 
 ### LOG LEVELS ###
@@ -68,4 +70,5 @@ app:
   data_quality_tool:
     json-to-excel-url: "http://data_quality_tool:8000/json-to-excel"
     excel-to-json-url: "http://data_quality_tool:8000/excel-to-json"
+    validate-json-url: "http://data_quality_tool:8000/validate-json"
 

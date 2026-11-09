@@ -1,8 +1,40 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  /* Brand Colors from DESIGN_SYSTEM.yaml */
+  --mip-dark-blue: #2B33E9;
+  --mip-light-blue: #7F9CE8;
+  --mip-accent: #00E6F2;
+  --mip-accent-hover: #00c4cf;
+  --mip-light-green: #E8F7F8;
+  --mip-ink: #12203F;
+  --mip-surface: #F8F9FB;
+  --mip-border: rgba(18, 32, 63, 0.08);
+  --mip-shadow: 0 8px 32px rgba(18, 32, 63, 0.06);
+  --mip-glass-bg: rgba(255, 255, 255, 0.7);
+  --mip-glass-border: rgba(255, 255, 255, 0.5);
 
-html, body { height: 100%; }
+  /* Typography Fallbacks */
+  --mip-font-brand: 'Outfit', sans-serif; /* Fallback for Alaska Regular */
+  --mip-font-ui: 'Inter', sans-serif;
+}
 
-body { margin: 0; font-family: Roboto, sans-serif; }
+/* Global Box Sizing */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body { 
+  min-height: 100%;
+  margin: 0;
+  overflow-x: hidden; /* Prevent horizontal scroll from minor layout shifts */
+}
+
+body { 
+  font-family: var(--mip-font-ui); 
+  color: var(--mip-ink);
+  background-color: #F8F9FB;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
 /* Style all required fields */
 input:required, textarea:required, select:required {
@@ -74,4 +106,268 @@ input:required:valid, textarea:required:valid, select:required:valid {
   line-height: 1.4;
   pointer-events: none;
   z-index: 10000;
+}
+
+/* --- GLOBAL UI KIT --- */
+
+/* Typography */
+.text-gradient {
+  background: linear-gradient(135deg, var(--mip-dark-blue) 0%, #7F9CE8 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+h1, h2, h3, h4, h5, h6, .brand-font {
+  font-family: var(--mip-font-brand);
+  color: var(--mip-ink);
+  font-weight: 700;
+}
+
+.eyebrow {
+  margin: 0 0 16px;
+  color: var(--mip-dark-blue);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+h1.title, h1, .page-title {
+  margin: 0 0 24px;
+  color: var(--mip-ink);
+  font-family: var(--mip-font-brand);
+  font-size: clamp(2.8rem, 5vw, 4.2rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  margin: 0 0 32px;
+  color: rgba(18, 32, 63, 0.8);
+  font-size: 1.15rem;
+  line-height: 1.6;
+  max-width: 600px;
+}
+
+/* Base button styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--mip-dark-blue);
+  border-radius: 8px;
+  background: var(--mip-dark-blue);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  font-family: var(--mip-font-ui);
+}
+
+.btn-lg {
+  height: 56px;
+  padding: 0 32px;
+  font-size: 1rem;
+}
+
+.btn-sm {
+  height: 40px;
+  font-size: 0.85rem;
+  padding: 0 16px;
+}
+
+.btn-primary {
+  background: var(--mip-accent);
+  border-color: var(--mip-accent);
+  color: var(--mip-ink);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 230, 242, 0.2);
+}
+
+.btn-primary:hover {
+  background: var(--mip-accent-hover);
+  border-color: var(--mip-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(0, 230, 242, 0.4);
+}
+
+.btn-outline {
+  background: #ffffff;
+  border-color: transparent;
+  color: var(--mip-dark-blue);
+  box-shadow: 0 4px 12px rgba(18, 32, 63, 0.08);
+  transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+  background: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(18, 32, 63, 0.12);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  color: var(--mip-dark-blue);
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 0.95rem;
+  background: transparent;
+  border: none;
+  padding: 0;
+  min-height: auto;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn-ghost .material-icons, .btn .material-icons {
+  font-size: 1.1rem;
+  margin-left: 6px;
+  transition: transform 0.3s ease;
+}
+
+.btn-ghost:hover {
+  color: #1e25c9;
+}
+
+.btn-ghost:hover .material-icons {
+  transform: translateX(4px);
+}
+
+/* Metric Chips */
+.metric-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(43, 51, 233, 0.06);
+  color: var(--mip-dark-blue);
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border: 1px solid rgba(43, 51, 233, 0.1);
+}
+
+.metric-chip.secondary {
+  background: rgba(0, 230, 242, 0.08);
+  color: var(--mip-ink);
+  border: 1px solid rgba(0, 230, 242, 0.2);
+}
+
+.metric-chip .material-icons {
+  font-size: 1.1rem;
+  color: inherit;
+  margin-left: 0;
+}
+
+.metric-label {
+  opacity: 0.6;
+  font-weight: 400;
+}
+
+.metric-value {
+  color: var(--mip-dark-blue);
+}
+
+/* Custom Select Dropdowns */
+select.dropdown {
+  appearance: none;
+  background-color: #fff;
+  border: 1px solid var(--mip-border);
+  border-radius: 8px;
+  padding: 10px 36px 10px 14px;
+  font-family: var(--mip-font-ui);
+  font-size: 0.95rem;
+  color: var(--mip-ink);
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232B33E9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  box-shadow: 0 2px 8px rgba(18, 32, 63, 0.04);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+select.dropdown:focus {
+  outline: none;
+  border-color: var(--mip-dark-blue);
+  box-shadow: 0 0 0 3px rgba(43, 51, 233, 0.1);
+}
+
+.dropdown-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(18, 32, 63, 0.7);
+  margin-right: 8px;
+}
+
+/* Cards Design System */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.card-fed {
+  display: flex;
+  flex-direction: column;
+  padding: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 16px 32px rgba(18, 32, 63, 0.03);
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+}
+
+.card-fed:hover {
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: 0 32px 64px rgba(18, 32, 63, 0.08);
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
+.card-header {
+  margin-bottom: 20px;
+}
+
+.card-title {
+  margin: 0;
+  color: var(--mip-ink);
+  font-family: var(--mip-font-brand);
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.card-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.card-description-wrapper {
+  margin-bottom: 24px;
+  flex-grow: 1;
+}
+
+.card-description {
+  margin: 0;
+  color: rgba(18, 32, 63, 0.7);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.card-footer {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid var(--mip-border);
 }

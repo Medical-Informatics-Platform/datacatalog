@@ -7,7 +7,6 @@ from common_entities import (
     InvalidDataModelError,
 )
 
-
 EXCEL_JSON_FIELDS_MAP_WITHOUT_VALUES = {
     "name": "label",
     "code": "code",
@@ -293,4 +292,3 @@ def _parse_number_preserving_integer(value):
     if re.fullmatch(r"[+-]?\d+", value):
         return int(value)
     return float(value)
-

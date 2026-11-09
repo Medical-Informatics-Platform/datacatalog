@@ -1,0 +1,81 @@
+:host {
+  display: block;
+}
+
+.federations-section {
+  width: 100%;
+}
+
+.section-header {
+  max-width: 760px;
+  margin-bottom: 36px;
+}
+
+.federations-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 32px;
+}
+
+.loading-state,
+.error-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 24px;
+  border: 1px dashed var(--mip-border);
+  text-align: center;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(18, 32, 63, 0.1);
+  border-radius: 50%;
+  border-top-color: var(--mip-dark-blue);
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-icon,
+.empty-icon {
+  font-size: 48px;
+  color: #94a3b8;
+  margin-bottom: 16px;
+}
+
+.error-icon {
+  color: #ff5f56;
+}
+
+.error-state p,
+.empty-state p,
+.loading-state p {
+  color: rgba(18, 32, 63, 0.7);
+  font-weight: 500;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 900px) {
+  .federations-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1320px) {
+  .federations-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  /* Inherit padding from parent .container instead */
+}
