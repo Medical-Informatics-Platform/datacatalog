@@ -16,6 +16,11 @@ spec:
       containers:
       - name: frontend
         image: {{ printf "%s/datacatalog_frontend:%s" .Values.images.repository .Values.images.tag | quote }}
+        {{- if .Values.global.publicHost }}
+        env:
+        - name: PUBLIC_HOSTNAME
+          value: {{ .Values.global.publicHost | quote }}
+        {{- end }}
         ports:
         - containerPort: 80
         startupProbe:

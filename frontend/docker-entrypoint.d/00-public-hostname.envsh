@@ -1,0 +1,22 @@
+#!/bin/sh
+# Sourced by the nginx image entrypoint before templates are rendered.
+# PUBLIC_HOSTNAME becomes the server name. PUBLIC_HOST, when set, is the same
+# origin the backend uses (scheme://host[:port][/path]); only the host is kept,
+# matching the host nginx used to forward without a port.
+
+host="${PUBLIC_HOSTNAME:-localhost}"
+
+if [ -n "${PUBLIC_HOST:-}" ]; then
+    raw="${PUBLIC_HOST#*://}"
+    raw="${raw%%/*}"
+    raw="${raw%%:*}"
+    host="$raw"
+fi
+
+case "$host" in
+    ""|*[!A-Za-z0-9.-]*)
+        host=localhost
+        ;;
+esac
+
+export PUBLIC_HOSTNAME="$host"

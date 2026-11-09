@@ -9,7 +9,7 @@ import pandas as pd
 from werkzeug.exceptions import RequestEntityTooLarge
 
 from common_entities import InvalidDataModelError
-from error_reporting import client_error_message
+from error_reporting import client_error_message, validation_message
 from converter.excel_to_json import convert_excel_to_json
 from converter.json_to_excel import convert_json_to_excel
 from validator import json_validator, excel_validator
@@ -128,17 +128,12 @@ def validate_json():
         json_validator.validate_json(json_data)
         logger.info("JSON data is valid")
         return jsonify({"message": "Data model is valid."})
-    except InvalidDataModelError as e:
-        logger.error("JSON validation error: %s", e)
-        # The report describes the payload the caller just submitted, and the data model
-        # editor shows it to domain experts, so it goes back to them -- but only after
-        # client_error_message has reduced it to a single bounded line and replaced anything
-        # that looks like a stack trace. Unexpected failures never reach this branch: they
-        # are logged with their traceback and reported as a generic 500 below. Each marker
-        # has to share a line with the value it covers, and stay short enough that black
-        # never wraps that line somewhere else.
-        detail = client_error_message(e)  # codeql[py/stack-trace-exposure]
-        return jsonify({"error": detail}), 400  # codeql[py/stack-trace-exposure]
+    except InvalidDataModelError as error:
+        logger.error("JSON validation error: %s", error)
+        # Log the exception. The response gets the sanitized validator text only,
+        # never the exception object or its traceback.
+        detail = client_error_message(validation_message(error))
+        return jsonify({"error": detail}), 400
     except Exception:
         logger.exception("Unhandled error while validating JSON.")
         return jsonify({"error": "Internal server error"}), 500
@@ -163,14 +158,12 @@ def validate_excel():
             excel_validator.validate_excel(df)
             logger.info("Excel file is valid")
             return jsonify({"message": "Data model is valid."})
-        except InvalidDataModelError as e:
-            logger.error("Excel validation error: %s", e)
-            # Same as for /validate-json: the uploaded workbook is described back to
-            # whoever uploaded it, reduced to a single bounded line by
-            # client_error_message. BadZipFile, ValueError and any other unexpected failure
-            # are logged, never echoed, with the same markers beside both lines.
-            detail = client_error_message(e)  # codeql[py/stack-trace-exposure]
-            return jsonify({"error": detail}), 400  # codeql[py/stack-trace-exposure]
+        except InvalidDataModelError as error:
+            logger.error("Excel validation error: %s", error)
+            # Same as /validate-json: the exception stays in the log. The response
+            # is the sanitized validator text for the uploaded workbook.
+            detail = client_error_message(validation_message(error))
+            return jsonify({"error": detail}), 400
         except (BadZipFile, ValueError):
             logger.error("Invalid Excel file format.")
             return jsonify({"error": "Invalid Excel file format."}), 400
