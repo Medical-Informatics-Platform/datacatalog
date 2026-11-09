@@ -886,14 +886,14 @@ watchdog = ["watchdog (>=2.3)"]
 
 [[package]]
 name = "xlsxwriter"
-version = "3.3.0"
+version = "3.3.1"
 description = "A Python module for creating Excel XLSX files."
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "xlsxwriter-3.3.0-py3-none-any.whl", hash = "sha256:5f04772d43281da5109af66f39b65153359a203e896847c416476e709b024469"},
-    {file = "xlsxwriter-3.3.0.tar.gz", hash = "sha256:0a6bf2e4dcec8b29dd9b86d1e622132134c48bb6fd10f925fdfb229f0447199a"},
+    {file = "xlsxwriter-3.3.1-py3-none-any.whl", hash = "sha256:8e2c89e59d733fe59e112317218c64fbbc276d90a8c144ebd6f7fa15e7ab184a"},
+    {file = "xlsxwriter-3.3.1.tar.gz", hash = "sha256:0867761912cceac76f97ffa76eeda18c623ae9217f601be8512f55b1af4bdb6e"},
 ]
 
 [metadata]
