@@ -21,6 +21,20 @@ _TRACEBACK_MARKER = re.compile(
 _CONTROL_CHARS = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 
 
+def validation_message(error: BaseException) -> str:
+    """Return the validator text stored on an exception, not the exception object.
+
+    Callers log the exception and pass this plain string through
+    client_error_message. The response must not render the exception itself.
+    """
+    if not error.args:
+        return ""
+    message = error.args[0]
+    if not isinstance(message, str):
+        return ""
+    return message
+
+
 def client_error_message(details: object) -> str:
     """Return a single-line, bounded rendering of validation details for an API response."""
     message = str(details)

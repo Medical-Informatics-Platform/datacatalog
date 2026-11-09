@@ -23,8 +23,7 @@
 - Follow PEP 8 with 4-space indentation.
 - Use `snake_case` for modules/functions/variables, `PascalCase` for classes, and `UPPER_SNAKE_CASE` for constants.
 - Keep route handlers lightweight; place conversion and validation business logic in `converter/` or `validator/`.
-- Client-facing validation text goes through `error_reporting.client_error_message`, so responses stay one bounded line and never carry a stack trace; unexpected failures are logged and answered with a generic 500.
-- Keep the `# codeql[py/stack-trace-exposure]` markers on the same line as the value they cover, short enough that Black does not re-wrap them.
+- Client-facing validation text goes through `error_reporting.validation_message` and then `client_error_message`. Log the exception; do not pass the exception object itself into the response. Responses stay one bounded line and never carry a stack trace; unexpected failures are logged and answered with a generic 500.
 - Format code with Black before submitting changes: `poetry run black .`.
 
 ## Testing Guidelines
@@ -40,6 +39,6 @@
 
 ## Security & Configuration Tips
 - Do not commit sensitive real-world data in JSON or XLSX fixtures.
-- Never return raw exception text, tracebacks, or environment details to a caller; log them and answer with the bounded message from `client_error_message`.
+- Never return an exception object, traceback, or environment details to a caller. Log the exception and answer with the bounded message from `client_error_message(validation_message(...))`.
 - `MAX_UPLOAD_SIZE_MB` controls the upload limit; keep the `20` default aligned across `compose.yaml`, `kubernetes/values.yaml` (`dqt.maxUploadSizeMb`), the chart template, and docs if you change it.
 - The service is an internal API for the backend; it has no authentication of its own, so call out any new exposure, route, or validation rule change clearly in PR descriptions.

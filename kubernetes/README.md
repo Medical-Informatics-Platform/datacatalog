@@ -91,8 +91,8 @@ microk8s helm3 upgrade --install datacatalog . -n default --create-namespace
   configured `ClusterIssuer`.
 - Frontend and backend services are internal `ClusterIP` services in both managed and microk8s
   deployments, as are `data-quality-tool` and `datacatalogdb`.
-- The frontend container proxies `/services/` to `http://backend:8090`, and the backend reaches the
-  converter at `http://data-quality-tool:8000`.
+- The frontend container proxies `/services/` to `http://backend:8090` and sets the upstream `Host`
+  to `global.publicHost`, and the backend reaches the converter at `http://data-quality-tool:8000`.
 - `cluster.managed` only controls storage-class selection and whether the microk8s local
   `StorageClass` is rendered.
 
