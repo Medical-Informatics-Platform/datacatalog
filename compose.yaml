@@ -80,6 +80,10 @@ services:
     container_name: frontend
     ports:
       - "${FRONTEND_PORT:-80}:80"
+    environment:
+      # nginx server_name follows this origin (host only). The backend uses the
+      # same value for the OAuth redirect URI.
+      PUBLIC_HOST: ${PUBLIC_HOST:-http://localhost}
     depends_on:
       backend:
         condition: service_healthy
