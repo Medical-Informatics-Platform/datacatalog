@@ -1,76 +1,25 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FederationService } from '../../services/federation.service';
-import { Federation } from "../../interfaces/federations.interface";
-import { AuthService } from '../../services/auth.service';
-import { Router } from "@angular/router";
+import { EmbeddedFederationsComponent } from './embedded-federations/embedded-federations.component';
+import { AboutPageComponent } from '../about-page/about-page.component';
 
 @Component({
   selector: 'app-landing-page',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, EmbeddedFederationsComponent, AboutPageComponent],
   templateUrl: './landing-page.component.html',
   styleUrls: ['./landing-page.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LandingPageComponent implements OnInit {
-  federations: Federation[] = [];
-  selectedFederation!: Federation;
+export class LandingPageComponent {
+  isFullscreen = false;
 
-  private readonly SIGN_UP_URL = 'https://www.ebrains.eu/page/sign-up';
-
-  constructor(
-    private federationService: FederationService,
-    private authService: AuthService,
-    private router: Router
-
-  ) {}
-
-  isLoggedIn(): boolean {
-    return this.authService.isLoggedIn();
-  }
-
-  redirectToSignUp(): void {
-    window.open(this.SIGN_UP_URL, '_blank');
-  }
-
-  navigateToFederation(url: string): void {
-      window.open(url, '_blank');
-  }
-
-  learnMore(): void {
-    this.router.navigate(['/about']);
-  }
-
-  getStarted(): void {
-    this.router.navigate(['/federations']);
-  }
-
-  onCloseDisclaimer(): void {
-    const disclaimer = document.getElementById('disclaimer');
-    if (disclaimer) {
-      disclaimer.style.display = 'none';
+  toggleFullScreen() {
+    this.isFullscreen = !this.isFullscreen;
+    if (this.isFullscreen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
     }
-  }
-
-  ngOnInit(): void {
-    // Check if user is logged in
-
-    // Load federations
-    this.federationService.getFederationsWithModels().subscribe({
-      next: (federations) => {
-        this.federations = federations;
-      },
-      error: (error) => console.error('Error loading federations:', error)
-    });
-  }
-
-  selectDefaultFederation(): void {
-    if (this.federations.length > 0) {
-      this.selectedFederation = this.federations[0];
-    }
-  }
-
-  selectFederation(federation: Federation): void {
-    this.selectedFederation = federation;
   }
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable } from 'rxjs';
-import {map} from "rxjs/operators";
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { catchError, map } from "rxjs/operators";
 import {UserService} from "./user.service";
 import {HttpClient} from "@angular/common/http";
 
@@ -85,8 +85,13 @@ export class AuthService {
 
   // Check if the user has a specific role
   hasRole(role: string): Observable<boolean> {
+    if (!this.isLoggedIn()) {
+      return of(false);
+    }
+
     return this.userService.getUserRoles().pipe(
-      map((roles) => roles.includes(role))
+      map((roles) => roles.includes(role)),
+      catchError(() => of(false))
     );
   }
 }

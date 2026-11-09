@@ -32,24 +32,14 @@ public class DataModelService {
         logger.info("Listing data models. Released filter: " + released);
         List<DataModelDAO> dataModelDAOS;
 
-        boolean isDomainExpert = checkIsDomainExpert(authentication);
-        if (authentication == null)
-        {
+        if (!checkIsDomainExpert(authentication)) {
+            logger.info("Fetching only released data models for non-domain experts or unauthenticated users.");
+            dataModelDAOS = dataModelRepository.findByReleased(true);
+        } else {
             logger.info("Fetching all data models for domain experts.");
             dataModelDAOS = released == null ?
                     (List<DataModelDAO>) dataModelRepository.findAll() :
                     dataModelRepository.findByReleased(released);
-        }
-        else {
-            if (!isDomainExpert) {
-                logger.info("Fetching only released data models for non-domain experts or unauthenticated users.");
-                dataModelDAOS = dataModelRepository.findByReleased(true);
-            } else {
-                logger.info("Fetching all data models for domain experts.");
-                dataModelDAOS = released == null ?
-                        (List<DataModelDAO>) dataModelRepository.findAll() :
-                        dataModelRepository.findByReleased(released);
-            }
         }
 
         List<DataModelDTO> dataModels = dataModelDAOS.stream()

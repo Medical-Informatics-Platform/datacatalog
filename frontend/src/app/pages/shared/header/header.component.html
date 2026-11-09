@@ -1,23 +1,16 @@
 <header class="header">
-  <!-- Logo and Branding -->
-  <div class="branding">
-    <img src="assets/mip-logo.png" alt="Platform Logo" class="logo">
-    <div class="branding-text">
-      <h1>Medical Informatics Platform</h1>
-    </div>
-  </div>
+  <a class="branding" routerLink="/" aria-label="Open MIP home">
+    <img src="assets/mip-logo-short-compact.png" alt="MIP logo" class="logo">
+  </a>
 
-  <!-- Desktop Navigation -->
   <div class="navbar-wrapper">
     <app-navbar></app-navbar>
   </div>
 
-  <!-- Mobile hamburger button -->
-  <button class="mobile-menu-btn" (click)="toggleMobileMenu()">
+  <button class="mobile-menu-btn" type="button" (click)="toggleMobileMenu()" aria-label="Toggle navigation">
     ☰
   </button>
 
-  <!-- User icon for login/logout -->
   <div class="user-icon">
     @if (isLoggedIn()) {
       <button class="sign-in-btn" [routerLink]="['/account']">
@@ -31,7 +24,6 @@
   </div>
 </header>
 
-<!-- Mobile slide-down menu -->
 <div class="mobile-menu" [class.open]="menuOpen">
   <app-navbar></app-navbar>
 </div>

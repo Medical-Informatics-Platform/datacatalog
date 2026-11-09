@@ -56,6 +56,27 @@ class TestContainsRequiredDataset(unittest.TestCase):
         ]
         self.assertTrue(contains_required_dataset(variables, groups))
 
+    def test_null_group_variables_are_treated_as_empty(self):
+        variables = []
+        groups = [
+            {
+                "variables": None,
+                "groups": [
+                    {
+                        "variables": [
+                            {
+                                "code": "dataset",
+                                "sql_type": "text",
+                                "isCategorical": True,
+                            }
+                        ],
+                        "groups": [],
+                    }
+                ],
+            }
+        ]
+        self.assertTrue(contains_required_dataset(variables, groups))
+
     def test_deeply_nested_without_dataset(self):
         # Multiple nested levels without the dataset CDE
         variables = []

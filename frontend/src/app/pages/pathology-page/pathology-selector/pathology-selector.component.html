@@ -1,0 +1,39 @@
+<div class="dropdown-container">
+  <label for="pathology" class="dropdown-label">Pathology</label>
+  <select
+    class="dropdown"
+    id="pathology"
+    [(ngModel)]="selectedPathology"
+    (change)="onPathologyChange()"
+    aria-labelledby="pathology"
+  >
+
+    <!-- Cross-Sectional Pathology Group -->
+    @if(crossSectionalModels.length > 0){
+      <optgroup label="Cross-Sectional">
+        @for (model of crossSectionalModels; track model)
+        {
+          <option
+            [ngValue]="model"
+          >
+            {{ model.label + ' ' + model.version }}
+          </option>
+        }
+      </optgroup>
+    }
+
+    <!-- Longitudinal Pathology Group -->
+    @if(longitudinalModels.length > 0){
+      <optgroup label="Longitudinal">
+        @for (model of longitudinalModels; track model){
+          <option
+          [ngValue]="model"
+          >
+          {{ model.code + '_' + model.version }}
+          </option>
+        }
+    </optgroup>
+    }
+
+  </select>
+</div>

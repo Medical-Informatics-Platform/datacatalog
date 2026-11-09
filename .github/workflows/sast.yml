@@ -1,0 +1,110 @@
+name: Static Application Security Testing (SAST)
+
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * 1'
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  sast:
+    name: SAST (${{ matrix.slug }}, ${{ matrix.language }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # ===== backend: Java 21, Spring Boot ==============================
+          - slug: backend
+            language: java
+            project: ./backend
+            rulesets: >-
+              {0}/../tools/semgrep-rules/java
+              {0}/../tools/semgrep-rules/generic
+              {0}/../tools/semgrep-rules/problem-based-packs
+              {0}/../tools/semgrep-rules/bash
+              {0}/../tools/semgrep-rules/package_managers
+              p/default auto
+            exclude_paths: "*.sarif target/ src/test/ Dockerfile*"
+
+          # ===== frontend: Angular, TypeScript ==============================
+          - slug: frontend
+            language: typescript
+            project: ./frontend
+            rulesets: >-
+              {0}/../tools/semgrep-rules/typescript
+              {0}/../tools/semgrep-rules/javascript
+              {0}/../tools/semgrep-rules/html
+              {0}/../tools/semgrep-rules/generic
+              {0}/../tools/semgrep-rules/problem-based-packs
+              {0}/../tools/semgrep-rules/package_managers
+              p/default auto
+            exclude_paths: "*.sarif node_modules/ dist/ *.spec.ts package-lock.json Dockerfile*"
+
+          # ===== data quality tool: Python ===========================
+          - slug: dqt
+            language: python
+            project: ./data_quality_tool
+            rulesets: >-
+              {0}/../tools/semgrep-rules/python
+              {0}/../tools/semgrep-rules/generic
+              {0}/../tools/semgrep-rules/problem-based-packs
+              {0}/../tools/semgrep-rules/bash
+              {0}/../tools/semgrep-rules/package_managers
+              p/default auto
+            exclude_paths: "*.sarif tests/ target/ poetry.lock Dockerfile*"
+
+    env:
+      # --- what to scan ---
+      PROJECT: ${{ matrix.project }}
+
+      # --- rulesets, per language, from the matrix above ---
+      SEMGREP_CONFIG_RULESETS: ${{ format(matrix.rulesets, github.workspace) }}
+
+      # --- paths to skip, relative to PROJECT ---
+      OPENGREP_EXCLUDE: ${{ matrix.exclude_paths }}
+
+      # --- output, relative to PROJECT (identical names never collide) ---
+      OPENGREP_SARIF_OUTPUT: sast-opengrep.sarif
+
+      # --- must be unique per leg ---
+      SARIF_CATEGORY: sast-${{ matrix.slug }}
+      ARTIFACT_NAME: sast-report-${{ matrix.slug }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.14.9'
+
+      - name: Install scanner and rules
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/../tools" && cd "$GITHUB_WORKSPACE/../tools"
+          bash "$GITHUB_WORKSPACE/ci/setup-tools.sh" --install-tool opengrep,semgrep-rules
+
+      - name: Run SAST scan
+        working-directory: ${{ env.PROJECT }}
+        run: python3 "$GITHUB_WORKSPACE/ci/sast_scan.py"
+
+      - name: Upload SARIF to GitHub Security tab
+        if: ${{ !cancelled() && hashFiles(format('{0}/{1}', env.PROJECT, env.OPENGREP_SARIF_OUTPUT)) != '' }}
+        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          sarif_file: ${{ env.PROJECT }}/${{ env.OPENGREP_SARIF_OUTPUT }}
+          category: ${{ env.SARIF_CATEGORY }}
+
+      - name: Upload SARIF artifact
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ${{ env.PROJECT }}/*.sarif
+          retention-days: 30
+          if-no-files-found: warn

@@ -4,6 +4,7 @@ import pandas as pd
 
 from common_entities import EXCEL_JSON_FIELDS_MAP, EXCEL_COLUMNS, InvalidDataModelError
 
+
 def extract_values(variable):
     enumerations = variable.get("enumerations")
     if enumerations:
