@@ -165,6 +165,15 @@
 
 	<build>
 		<plugins>
+			<!-- JDK 26 javac does not run Lombok unless annotation processing is on. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<proc>full</proc>
+				</configuration>
+			</plugin>
+
 			<!-- Spring Boot Maven Plugin for creating an executable JAR -->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
