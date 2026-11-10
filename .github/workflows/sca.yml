@@ -45,7 +45,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
-          python-version: '3.14.9'
+          python-version: '3.15.2'
 
       # Maven is preinstalled on ubuntu-latest, only the download cache is warmed here.
       # if it's not preinstalled, setup-java@v
@@ -120,7 +120,7 @@ jobs:
 
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
-          python-version: '3.14.9'
+          python-version: '3.15.2'
 
       - name: Cache npm packages
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -188,7 +188,7 @@ jobs:
 
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
-          python-version: '3.14.9'
+          python-version: '3.15.2'
 
       # No dependency cache and no Poetry install: `generic` is a Trivy
       # filesystem scan that reads poetry.lock directly, nothing is resolved.
