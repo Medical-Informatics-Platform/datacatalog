@@ -20,7 +20,7 @@ RUN mvn clean package -DskipTests
 #######################################################
 # Setup the runtime container
 #######################################################
-FROM amazoncorretto:27.0.0-alpine3.24@sha256:be4c1d0fd29cfa5db577c9fd5196b9812d4517e04e1ade48e41629177931e7a6
+FROM amazoncorretto:27.0.1-alpine3.24@sha256:087dbef7ac8cac5edc0fcda6c93dab255620f2c2cedbabe8888d0e9430c6b7db
 
 #######################################################
 # Setting up timezone
