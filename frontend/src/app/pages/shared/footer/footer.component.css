@@ -13,7 +13,7 @@
 
 .footer-shell {
   display: grid;
-  grid-template-columns: minmax(0, 1.85fr) minmax(160px, 0.9fr) minmax(0, 1.35fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   max-width: 1200px;
   margin: 0 auto;
   padding: 48px 28px 36px;
@@ -28,7 +28,7 @@
 }
 
 .footer-column:not(:first-child) {
-  padding-left: 32px;
+  padding-left: 48px;
   border-left: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -53,10 +53,10 @@
   font-size: 0.96rem;
   line-height: 1.78;
   color: rgba(255, 255, 255, 0.68);
-  max-width: 34ch;
+  max-width: 44ch;
 }
 
-/* Resources column */
+/* Column title */
 .footer-col-title {
   margin: 0 0 24px;
   font-size: 0.77rem;
@@ -66,40 +66,12 @@
   color: rgba(255, 255, 255, 0.42);
 }
 
-.footer-links {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.footer-links li {
-  margin-bottom: 12px;
-}
-
-.footer-links a {
-  color: rgba(255, 255, 255, 0.74);
-  text-decoration: none;
-  font-size: 0.95rem;
-  transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.footer-links a:hover {
-  color: #fff;
-  transform: translateX(2px);
-}
-
-.footer-links a:focus-visible {
-  outline: 2px solid rgba(127, 156, 232, 0.5);
-  outline-offset: 4px;
-  border-radius: 4px;
-}
-
 /* Institutional column */
 .institutional-logos {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 28px;
+  gap: 40px;
   margin-bottom: 30px;
 }
 
@@ -165,7 +137,7 @@
 .footer-funding-logos {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
+  gap: 32px;
 }
 
 .footer-funding-item {
@@ -352,7 +324,7 @@
 
 @media (max-width: 1024px) {
   .footer-shell {
-    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    grid-template-columns: 1fr;
     gap: 32px 0;
   }
 

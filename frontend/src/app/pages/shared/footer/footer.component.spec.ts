@@ -20,22 +20,9 @@ describe('FooterComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should render only documentation and support links in resources', () => {
-    const resourceLinks = Array.from(
-      fixture.nativeElement.querySelectorAll('.footer-links a'),
-    ) as HTMLAnchorElement[];
-
-    expect(resourceLinks.length).toBe(2);
-
-    const documentationLink = resourceLinks.find((link) => link.textContent?.trim() === 'Documentation');
-    const supportLink = resourceLinks.find((link) => link.textContent?.trim() === 'Support');
-
-    expect(documentationLink?.getAttribute('href')).toBe('https://github.com/Medical-Informatics-Platform/mip');
-    expect(documentationLink?.getAttribute('target')).toBe('_blank');
-    expect(documentationLink?.getAttribute('rel')).toBe('noopener noreferrer');
-
-    expect(supportLink?.getAttribute('href')).toBe('mailto:mip@chuv.ch');
-
+  it('should not render a Resources column', () => {
+    expect(fixture.nativeElement.querySelector('.footer-links')).toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain('Resources');
     expect(fixture.nativeElement.textContent).not.toContain('Privacy Policy');
     expect(fixture.nativeElement.textContent).not.toContain('Terms of Use');
   });
