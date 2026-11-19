@@ -17,7 +17,7 @@ describe('LandingPageComponent', () => {
         {
           provide: FederationService,
           useValue: {
-            getFederationsWithPathologies: () =>
+            getFederationsWithPathologiesStrict: () =>
               of([
                 {
                   code: 'publicmip',

@@ -36,6 +36,33 @@ export class FederationService {
     );
   }
 
+
+  /**
+   * Like getFederationsWithPathologies but propagates HTTP errors
+   * so callers can show an error / retry UI instead of a silent empty list.
+   */
+
+  getFederationsWithPathologiesStrict(): Observable<Federation[]> {
+    return this.http.get<Federation[]>(this.apiUrl).pipe(
+      switchMap((federations) =>
+        forkJoin(
+          federations.map((federation) =>
+            this.pathologyService.getPathologiesByIds(federation.dataModelIds).pipe(
+              map((pathologies: Pathology[]) => ({
+                ...federation,
+                pathologies,
+              })),
+              catchError(() => of({
+                ...federation,
+                pathologies: [],
+              }))
+            )
+          )
+        )
+      )
+    );
+  }
+
   // Create a new federation
   createFederation(federation: Federation): Observable<Federation> {
     return this.http.post<Federation>(this.apiUrl, federation).pipe(

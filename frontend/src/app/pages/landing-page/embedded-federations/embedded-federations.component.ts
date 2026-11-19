@@ -43,7 +43,7 @@ export class EmbeddedFederationsComponent implements OnInit, OnDestroy {
   loadFederations(): void {
     this.isLoading = true;
     this.hasError = false;
-    this.federationService.getFederationsWithPathologies()
+    this.federationService.getFederationsWithPathologiesStrict()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (federations) => {
