@@ -9,7 +9,10 @@ class TestValidateCommonDataElement(unittest.TestCase):
         cde = {
             "code": "001",
             "type": "nominal",
-            "enumerations": ["value1", "value2"],
+            "enumerations": [
+                {"code": "1", "label": "value1"},
+                {"code": "2", "label": "value2"},
+            ],
         }
         path = "/test/nominal"
         # Should not raise an exception
@@ -40,32 +43,61 @@ class TestValidateCommonDataElement(unittest.TestCase):
                 )
 
     def test_numerical_with_enumerations(self):
-        cde = {"code": "004", "type": "continuous", "enumerations": ["a", "b"]}
+        cde = {
+            "code": "004",
+            "type": "continuous",
+            "enumerations": [{"code": "1", "label": "a"}, {"code": "2", "label": "b"}],
+        }
         with self.assertRaisesRegex(
             InvalidDataModelError, "cannot have 'enumerations'"
         ):
             validate_common_data_element(cde, "/test/numerical_enumerations")
 
     def test_categorical_with_range(self):
-        cde = {"code": "004", "type": "ordinal", "enumerations": ["a"], "minValue": 0}
+        cde = {
+            "code": "004",
+            "type": "ordinal",
+            "enumerations": [{"code": "1", "label": "a"}],
+            "minValue": 0,
+        }
         with self.assertRaisesRegex(InvalidDataModelError, "cannot have 'minValue'"):
             validate_common_data_element(cde, "/test/categorical_range")
 
-    def test_nominal_and_ordinal_without_enumerations_are_free_text(self):
-        for variable_type in ["nominal", "ordinal"]:
-            validate_common_data_element(
-                {"code": "005", "type": variable_type}, "/test/free_text"
-            )
+    def test_categorical_requires_enumerations(self):
+        for variable_type in ["nominal", "ordinal", "binary"]:
+            with self.assertRaisesRegex(InvalidDataModelError, "requires enumerations"):
+                validate_common_data_element(
+                    {"code": "005", "type": variable_type}, "/test/no_enumerations"
+                )
 
-    def test_binary_requires_two_enumerations(self):
-        for enumerations in [None, ["a"], ["a", "b", "c"]]:
-            cde = {"code": "005", "type": "binary", "enumerations": enumerations}
-            with self.assertRaisesRegex(InvalidDataModelError, "exactly two"):
-                validate_common_data_element(cde, "/test/binary")
-        validate_common_data_element(
-            {"code": "005", "type": "binary", "enumerations": ["a", "b"]},
-            "/test/binary",
-        )
+    def test_enumeration_codes_follow_exaflow_contract(self):
+        def enums(*codes):
+            return [{"code": code, "label": f"L{code}"} for code in codes]
+
+        rejected = [
+            ("binary", enums("0"), "exactly 0 and 1"),
+            ("binary", enums("1", "2"), "exactly 0 and 1"),
+            ("binary", enums("0", "1", "2"), "exactly 0 and 1"),
+            ("nominal", enums("0", "1"), "starting from 1"),
+            ("ordinal", enums("-1", "1"), "starting from 1"),
+            ("nominal", enums("a", "b"), "integer enumeration codes"),
+            ("ordinal", enums("01", "2"), "integer enumeration codes"),
+            ("nominal", [{"code": True, "label": "x"}], "integer enumeration codes"),
+        ]
+        for variable_type, enumerations, message in rejected:
+            cde = {"code": "005", "type": variable_type, "enumerations": enumerations}
+            with self.assertRaisesRegex(InvalidDataModelError, message):
+                validate_common_data_element(cde, "/test/codes")
+        for variable_type, enumerations in [
+            ("binary", enums("0", "1")),
+            ("binary", [{"code": 1, "label": "a"}, {"code": 0, "label": "b"}]),
+            ("nominal", enums("1", "2", "5")),
+            ("ordinal", enums("1", "2", "3")),
+        ]:
+            validate_common_data_element(
+                {"code": "005", "type": variable_type, "enumerations": enumerations},
+                "/test/codes",
+            )
 
     def test_discrete_requires_whole_number_range(self):
         cde = {"code": "005", "type": "discrete", "minValue": 0.5, "maxValue": 3}

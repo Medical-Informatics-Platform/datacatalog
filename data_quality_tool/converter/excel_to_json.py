@@ -7,6 +7,7 @@ from common_entities import (
     NUMERICAL_TYPES,
     VARIABLE_TYPES,
     InvalidDataModelError,
+    validate_enumeration_codes,
 )
 
 EXCEL_JSON_FIELDS_MAP_WITHOUT_VALUES = {
@@ -15,11 +16,16 @@ EXCEL_JSON_FIELDS_MAP_WITHOUT_VALUES = {
     "type": "type",
     "unit": "units",
     "description": "description",
-    "canBeNull": "canBeNull",
     "comments": "comments",
     "conceptPath": "conceptPath",
-    "methodology": "methodology",
 }
+
+
+def _cell(row, column):
+    value = row.get(column)
+    if value is not None and pd.isna(value):
+        return None
+    return value
 
 
 def process_enumerations(values):
@@ -36,7 +42,7 @@ def process_enumerations(values):
         enumerations = json.loads(transformed_values)
     except json.JSONDecodeError:
         raise InvalidDataModelError(
-            'Nominal values format error: \'{"code", "label"}, {"code", "label"}\' expected but got '
+            'Enumerations format error: \'{"code", "label"}, {"code", "label"}\' expected but got '
             + values
             + "."
         )
@@ -45,7 +51,7 @@ def process_enumerations(values):
         not isinstance(item, dict) for item in enumerations
     ):
         raise InvalidDataModelError(
-            'Nominal values format error: \'{"code", "label"}, {"code", "label"}\' expected but got '
+            'Enumerations format error: \'{"code", "label"}, {"code", "label"}\' expected but got '
             + str(values)
             + "."
         )
@@ -87,27 +93,24 @@ def insert_variable_into_structure(root, variable, path):
 
 def process_values_based_on_type(row, variable):
     """
-    Processes the 'values' field based on the variable's 'type':
-    - For 'continuous' or 'discrete', extracts 'minValue' and 'maxValue' from a range specified
-      in 'values' and ensures these values are of the appropriate type.
+    Processes Excel 'enumerations' and 'range' based on the variable's 'type':
+    - For 'continuous' or 'discrete', extracts 'minValue' and 'maxValue' from 'range'.
       If 'type' is 'discrete' but the parsed bounds aren't whole numbers, raises InvalidDataModelError.
-    - For 'nominal', 'ordinal' or 'binary', retrieves a list of 'enumerations' from 'values'.
-      'binary' requires exactly two enumerations; 'nominal' and 'ordinal' may omit values
-      (free-text variables).
+    - For 'nominal', 'ordinal' or 'binary', retrieves a list of 'enumerations'
+      whose integer codes follow the Exaflow contract (binary 0 and 1, others from 1).
     """
     code = row.get("code")
-    values = row.get("values")
-    if values is not None and pd.isna(values):
-        values = None
+    enumerations_value = _cell(row, "enumerations")
+    range_value = _cell(row, "range")
     variable_type = row.get("type")
 
-    if variable_type in NUMERICAL_TYPES and values:
-        values = str(values)
+    if variable_type in NUMERICAL_TYPES and range_value:
+        range_value = str(range_value)
         # Split on the last hyphen only
-        parts = values.rsplit("-", 1)
+        parts = range_value.rsplit("-", 1)
         if len(parts) != 2:
             raise InvalidDataModelError(
-                f"Values must match format '<float or integer>-<float or integer>' but got '{values}'."
+                f"Range must match format '<float or integer>-<float or integer>' but got '{range_value}'."
             )
 
         min_str, max_str = parts[0].strip(), parts[1].strip()
@@ -118,14 +121,14 @@ def process_values_based_on_type(row, variable):
             max_val = float(max_str)
         except ValueError:
             raise InvalidDataModelError(
-                f"Range values for variable {code} must be valid numbers but got '{values}'."
+                f"Range values for variable {code} must be valid numbers but got '{range_value}'."
             )
 
         if variable_type == "discrete":
             # If either bound has a fractional part, that's invalid for discrete variables
             if not min_val.is_integer() or not max_val.is_integer():
                 raise InvalidDataModelError(
-                    f"Variable {code} declared as discrete but range bounds '{values}' are not whole numbers."
+                    f"Variable {code} declared as discrete but range bounds '{range_value}' are not whole numbers."
                 )
             # Safe to cast to int
             variable["minValue"] = int(min_val)
@@ -135,13 +138,16 @@ def process_values_based_on_type(row, variable):
             variable["maxValue"] = _parse_number_preserving_integer(max_str)
 
     elif variable_type in CATEGORICAL_TYPES:
-        enumerations = process_enumerations(values) if values else []
-        if variable_type == "binary" and len(enumerations) != 2:
-            raise InvalidDataModelError(
-                f"Variable {code} declared as binary must have exactly two values but got '{values}'."
+        enumerations = (
+            process_enumerations(enumerations_value) if enumerations_value else []
+        )
+        try:
+            validate_enumeration_codes(
+                variable_type, [item["code"] for item in enumerations]
             )
-        if enumerations:
-            variable["enumerations"] = enumerations
+        except InvalidDataModelError as e:
+            raise InvalidDataModelError(f"Variable {code}: {e}") from e
+        variable["enumerations"] = enumerations
 
 
 def validate_variable_type(row):
@@ -168,7 +174,7 @@ def process_variable(row):
         if excel_col in row and pd.notnull(row[excel_col])
     }
 
-    # Process 'values' based on variable type, which might modify 'variable' in-place
+    # Process enumerations/range based on variable type, which might modify 'variable' in-place
     process_values_based_on_type(row, variable)
 
     return variable

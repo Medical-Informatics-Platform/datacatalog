@@ -11,7 +11,7 @@ class TestRecursiveParseJsonFunction(unittest.TestCase):
             "variables": [{"code": "V1", "label": "Variable 1"}],
             "groups": [{"code": "subgroup1", "label": "Subgroup 1"}],
         }
-        expected = [["", "Variable 1", "V1", "", "", "", "", "", "", "Group 1/V1", ""]]
+        expected = [["Variable 1", "V1", "", "", "", "", "", "", "Group 1/V1"]]
         self.assertEqual(recursive_parse_json(json_data), expected)
 
     def test_nested_groups(self):
@@ -32,7 +32,6 @@ class TestRecursiveParseJsonFunction(unittest.TestCase):
         }
         expected = [
             [
-                "",
                 "Variable 1",
                 "V1",
                 "",
@@ -42,7 +41,6 @@ class TestRecursiveParseJsonFunction(unittest.TestCase):
                 "",
                 "",
                 "Group 1/Subgroup 1/V1",
-                "",
             ]
         ]
         self.assertEqual(recursive_parse_json(json_data), expected)
@@ -69,10 +67,9 @@ class TestRecursiveParseJsonFunction(unittest.TestCase):
             ],
         }
         expected = [
-            ["", "Variable Root", "VR", "", "", "", "", "", "", "root/VR", ""],
-            ["", "Variable 1", "V1", "", "", "", "", "", "", "root/group1/V1", ""],
+            ["Variable Root", "VR", "", "", "", "", "", "", "root/VR"],
+            ["Variable 1", "V1", "", "", "", "", "", "", "root/group1/V1"],
             [
-                "",
                 "Variable 2",
                 "V2",
                 "",
@@ -82,7 +79,6 @@ class TestRecursiveParseJsonFunction(unittest.TestCase):
                 "",
                 "",
                 "root/group1/subgroup1/V2",
-                "",
             ],
         ]
         self.assertEqual(recursive_parse_json(json_data), expected)
@@ -118,7 +114,5 @@ class TestRecursiveParseJsonFunction(unittest.TestCase):
             "label": "Group &1",
             "variables": [{"code": "V@1", "label": "Variable *1"}],
         }
-        expected = [
-            ["", "Variable *1", "V@1", "", "", "", "", "", "", "Group &1/V@1", ""]
-        ]
+        expected = [["Variable *1", "V@1", "", "", "", "", "", "", "Group &1/V@1"]]
         self.assertEqual(recursive_parse_json(json_data), expected)

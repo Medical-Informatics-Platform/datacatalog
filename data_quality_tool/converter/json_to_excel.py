@@ -5,23 +5,26 @@ import pandas as pd
 from common_entities import EXCEL_JSON_FIELDS_MAP, EXCEL_COLUMNS, InvalidDataModelError
 
 
-def extract_values(variable):
+def extract_enumerations(variable):
     enumerations = variable.get("enumerations")
-    if enumerations:
-        for elem in enumerations:
-            if "code" not in elem or "label" not in elem:
-                raise InvalidDataModelError(
-                    "Each enumeration must have both 'code' and 'label' fields."
-                )
-
-        dict_strings = [
-            '{{"{}","{}"}}'.format(
-                elem["code"].replace('"', '\\"'), elem["label"].replace('"', '\\"')
+    if not enumerations:
+        return ""
+    for elem in enumerations:
+        if "code" not in elem or "label" not in elem:
+            raise InvalidDataModelError(
+                "Each enumeration must have both 'code' and 'label' fields."
             )
-            for elem in enumerations
-        ]
-        return ",".join(dict_strings)
 
+    dict_strings = [
+        '{{"{}","{}"}}'.format(
+            elem["code"].replace('"', '\\"'), elem["label"].replace('"', '\\"')
+        )
+        for elem in enumerations
+    ]
+    return ",".join(dict_strings)
+
+
+def extract_range(variable):
     # The catalog backend sends bounds as doubles, so print 130.0 back as 130.
     min_value, max_value = (
         int(v) if isinstance(v, float) and v.is_integer() else v
@@ -36,8 +39,10 @@ def parse_variables(variable, concept_path):
     """Parse individual variables from the json data, handling special cases and constructing the concept path."""
     data_row = []
     for excel_field, json_key in EXCEL_JSON_FIELDS_MAP.items():
-        if excel_field == "values":
-            value = extract_values(variable)
+        if excel_field == "enumerations":
+            value = extract_enumerations(variable)
+        elif excel_field == "range":
+            value = extract_range(variable)
         elif json_key == "conceptPath":
             variable_code = variable.get("code", "")
             if variable_code is None:
@@ -86,9 +91,8 @@ def recursive_parse_json(json_data, concept_path=None):
 def convert_json_to_excel(cdes_data):
 
     # Parse the json data to a list of dict items with
-    # "csvFile", "name", "code", "type", "values", "unit",
-    # "description", "canBeNull", "comments", "conceptPath",
-    # and "methodology keys that can be used to create a pandas
-    # dataframe
+    # "name", "code", "type", "enumerations", "range", "unit",
+    # "description", "comments", and "conceptPath" keys that can be used
+    # to create a pandas dataframe
     result = recursive_parse_json(cdes_data)
     return pd.DataFrame(result, columns=EXCEL_COLUMNS)

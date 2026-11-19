@@ -48,10 +48,9 @@ class TestController(unittest.TestCase):
                                         "code": "nested_group_variable",
                                         "type": "nominal",
                                         "description": "A nested group variable",
-                                        "methodology": "nested methodology",
                                         "enumerations": [
                                             {
-                                                "code": "nested_enum1",
+                                                "code": "1",
                                                 "label": "Nested Enumeration 1",
                                             }
                                         ],
@@ -66,7 +65,6 @@ class TestController(unittest.TestCase):
                                 "type": "discrete",
                                 "units": "years",
                                 "description": "A variable within a group",
-                                "methodology": "group methodology",
                                 "minValue": -10,
                                 "maxValue": 100,
                             }
@@ -80,8 +78,7 @@ class TestController(unittest.TestCase):
                         "type": "nominal",
                         "units": "unit",
                         "description": "An example variable description",
-                        "methodology": "example methodology",
-                        "enumerations": [{"code": "enum1", "label": "Enumeration 1"}],
+                        "enumerations": [{"code": "1", "label": "Enumeration 1"}],
                     }
                 ],
                 "version": "to be defined",
@@ -117,12 +114,20 @@ class TestController(unittest.TestCase):
         )
         self.assertEqual(df["type"].tolist(), ["nominal", "discrete", "nominal"])
         self.assertEqual(
-            df["values"].tolist(),
+            df["enumerations"].fillna("").tolist(),
             [
-                '{"enum1","Enumeration 1"}',
-                "-10-100",
-                '{"nested_enum1","Nested Enumeration 1"}',
+                '{"1","Enumeration 1"}',
+                "",
+                '{"1","Nested Enumeration 1"}',
             ],
+        )
+        self.assertEqual(
+            df["range"].fillna("").tolist(),
+            ["", "-10-100", ""],
+        )
+        self.assertEqual(
+            df["unit"].fillna("").tolist(),
+            ["unit", "years", ""],
         )
         self.assertEqual(
             df["conceptPath"].tolist(),
@@ -132,10 +137,9 @@ class TestController(unittest.TestCase):
                 "Minimal Example/Example Group/Nested Group/nested_group_variable",
             ],
         )
-        self.assertEqual(
-            df["methodology"].tolist(),
-            ["example methodology", "group methodology", "nested methodology"],
-        )
+        self.assertNotIn("csvFile", df.columns)
+        self.assertNotIn("canBeNull", df.columns)
+        self.assertNotIn("methodology", df.columns)
 
     def test_json_to_excel_conversion_with_null_top_level_variables(self):
         json_data = {
@@ -152,9 +156,7 @@ class TestController(unittest.TestCase):
                             "label": "Dataset Variable",
                             "code": "dataset",
                             "type": "nominal",
-                            "enumerations": [
-                                {"code": "dataset1", "label": "Dataset 1"}
-                            ],
+                            "enumerations": [{"code": "1", "label": "Dataset 1"}],
                         }
                     ],
                     "groups": [],
@@ -194,7 +196,7 @@ class TestController(unittest.TestCase):
                                     "code": "dataset",
                                     "type": "nominal",
                                     "enumerations": [
-                                        {"code": "dataset1", "label": "Dataset 1"}
+                                        {"code": "1", "label": "Dataset 1"}
                                     ],
                                 }
                             ],

@@ -3,6 +3,7 @@ from common_entities import (
     NUMERICAL_TYPES,
     VARIABLE_TYPES,
     InvalidDataModelError,
+    validate_enumeration_codes,
 )
 
 
@@ -31,10 +32,17 @@ def validate_common_data_element(cde, path):
             f"Numerical type '{type_key}' cannot have 'enumerations' in CommonDataElement at path: '{path}'."
         )
 
-    if type_key == "binary" and len(cde.get("enumerations") or []) != 2:
-        raise InvalidDataModelError(
-            f"'binary' CommonDataElement at path: '{path}' must have exactly two 'enumerations'."
-        )
+    if type_key in CATEGORICAL_TYPES:
+        codes = [
+            item.get("code") if isinstance(item, dict) else None
+            for item in cde.get("enumerations") or []
+        ]
+        try:
+            validate_enumeration_codes(type_key, codes)
+        except InvalidDataModelError as e:
+            raise InvalidDataModelError(
+                f"{e} CommonDataElement at path: '{path}'."
+            ) from e
 
     if type_key == "discrete" and any(float(bound) % 1 for bound in bounds):
         raise InvalidDataModelError(

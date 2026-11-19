@@ -17,17 +17,15 @@ class TestParseVariablesFunction(unittest.TestCase):
     def test_complete_variable(self):
         concept_path = ["Group"]
         expected = [
-            "",  # csvFile is not present in the basic_variable
             "Variable 1",
             "V1",
             "discrete",
             '{"1","One"}',
+            "",  # range is empty when only enumerations are present
             "units",
             "A basic variable.",
-            "",  # canBeNull is not present in the basic_variable
             "",  # comments is not present in the basic_variable
             "Group/V1",
-            "",  # methodology is not present in the basic_variable
         ]
         self.assertEqual(parse_variables(self.basic_variable, concept_path), expected)
 
@@ -35,21 +33,41 @@ class TestParseVariablesFunction(unittest.TestCase):
         variable_missing_fields = {"code": "V2", "label": "Variable 2"}
         concept_path = ["Group"]
         expected = [
-            "",  # csvFile is not present
             "Variable 2",
             "V2",
             "",  # type is missing
-            "",  # values is handled by extract_values, expected to be empty
-            "",  # units is missing
+            "",  # enumerations
+            "",  # range
+            "",  # unit is missing
             "",  # description is missing
-            "",  # canBeNull is not present
             "",  # comments is not present
             "Group/V2",
-            "",  # methodology is missing
         ]
         self.assertEqual(
             parse_variables(variable_missing_fields, concept_path), expected
         )
+
+    def test_numerical_variable_writes_range_and_unit(self):
+        variable = {
+            "code": "age",
+            "label": "Age",
+            "type": "discrete",
+            "minValue": 0,
+            "maxValue": 120,
+            "units": "years",
+        }
+        expected = [
+            "Age",
+            "age",
+            "discrete",
+            "",
+            "0-120",
+            "years",
+            "",
+            "",
+            "Group/age",
+        ]
+        self.assertEqual(parse_variables(variable, ["Group"]), expected)
 
     def test_with_complex_concept_path(self):
         variable = {"code": "V3", "label": "Variable 3", "type": "string"}

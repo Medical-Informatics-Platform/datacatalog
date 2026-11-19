@@ -5,10 +5,11 @@ import pandas as pd
 from common_entities import (
     InvalidDataModelError,
     REQUIRED_COLUMNS,
-    EXCEL_COLUMNS,
+    REQUIRED_EXCEL_COLUMNS,
     CATEGORICAL_TYPES,
     NUMERICAL_TYPES,
     VARIABLE_TYPES,
+    validate_enumeration_codes,
 )
 
 # Regex for validation
@@ -25,7 +26,7 @@ def validate_enumerations(values):
         enumerations = json.loads(transformed_values)
     except json.JSONDecodeError:
         raise InvalidDataModelError(
-            'Nominal values format error: \'{"code", "label"}, {"code", "label"}\' expected but got '
+            'Enumerations format error: \'{"code", "label"}, {"code", "label"}\' expected but got '
             + values
             + "."
         )
@@ -34,7 +35,7 @@ def validate_enumerations(values):
         not isinstance(_enum, dict) for _enum in enumerations
     ):
         raise InvalidDataModelError(
-            'Nominal values format error: \'{"code", "label"}, {"code", "label"}\' expected but got '
+            'Enumerations format error: \'{"code", "label"}, {"code", "label"}\' expected but got '
             + str(values)
             + "."
         )
@@ -48,12 +49,12 @@ def validate_enumerations(values):
 
 
 def validate_min_max(values):
-    """Validate the format and logic of min-max values."""
+    """Validate the format and logic of min-max range values."""
     # Split on the last hyphen only, so "-10-100" → ["-10", "100"]
     parts = values.rsplit("-", 1)
     if len(parts) != 2:
         raise InvalidDataModelError(
-            f"Values must match format '<float or integer>-<float or integer>' but got '{values}'."
+            f"Range must match format '<float or integer>-<float or integer>' but got '{values}'."
         )
 
     min_str, max_str = parts[0].strip(), parts[1].strip()
@@ -63,7 +64,7 @@ def validate_min_max(values):
         max_val = float(max_str)
     except ValueError:
         raise InvalidDataModelError(
-            f"Values must match format '<float or integer>-<float or integer>' but got '{values}'."
+            f"Range must match format '<float or integer>-<float or integer>' but got '{values}'."
         )
 
     if min_val >= max_val:
@@ -89,21 +90,17 @@ def validate_variable_type(row):
         raise InvalidDataModelError(
             f"Invalid 'type': {type_val}. Valid types: {valid_types_str}."
         )
-    if type_val == "binary" and not row.get("values"):
-        raise InvalidDataModelError("Type 'binary' requires exactly two values.")
-    if type_val in CATEGORICAL_TYPES and row.get("values"):
-        codes = validate_enumerations(row["values"])
-        if type_val == "binary" and len(codes) != 2:
-            raise InvalidDataModelError(
-                f"Type 'binary' requires exactly two values but got {codes=}."
-            )
-    elif type_val in NUMERICAL_TYPES and row.get("values"):
-        min_val, max_val = validate_min_max(row["values"])
+    if type_val in CATEGORICAL_TYPES:
+        enumerations = row.get("enumerations")
+        codes = validate_enumerations(enumerations) if enumerations else []
+        validate_enumeration_codes(type_val, codes)
+    elif type_val in NUMERICAL_TYPES and row.get("range"):
+        min_val, max_val = validate_min_max(row["range"])
         if type_val == "discrete" and not (
             min_val.is_integer() and max_val.is_integer()
         ):
             raise InvalidDataModelError(
-                f"Type 'discrete' requires whole-number bounds but got '{row['values']}'."
+                f"Type 'discrete' requires whole-number bounds but got '{row['range']}'."
             )
 
 
@@ -123,9 +120,12 @@ def validate_variable(row):
 
 def validate_excel(df):
     """Validate the structure and data of an Excel file represented as a DataFrame."""
-    df = df.astype(str).replace("nan", None)
-    if set(df.columns) != set(EXCEL_COLUMNS):
-        missing_excel_columns = set(EXCEL_COLUMNS) - set(df.columns)
+    # pandas 3 makes astype(str) a nullable string dtype, so the old
+    # .replace("nan", None) silently no-ops; normalize nulls explicitly
+    df = df.astype(object)
+    df = df.where(pd.notna(df), None)
+    missing_excel_columns = set(REQUIRED_EXCEL_COLUMNS) - set(df.columns)
+    if missing_excel_columns:
         raise InvalidDataModelError(
             "Mismatch in Excel columns. Missing columns: "
             + ", ".join(missing_excel_columns)

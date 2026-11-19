@@ -11,7 +11,8 @@ class TestConvertExcelToJson(unittest.TestCase):
         # Basic setup for DataFrame used in multiple tests
         self.data = {
             "type": ["nominal", "discrete"],
-            "values": ['{"code1", "label1"}, {"code2", "label2"}', "1-100"],
+            "enumerations": ['{"1", "label1"}, {"2", "label2"}', None],
+            "range": [None, "1-100"],
             "name": ["Nominal Variable", "Integer Variable"],
             "code": ["NomVar", "IntVar"],
             "conceptPath": ["Group1/NomVar", "Group1/IntVar"],
@@ -35,7 +36,7 @@ class TestConvertExcelToJson(unittest.TestCase):
     def test_missing_conceptPath_raises_error(self):
         data_with_missing_path = {
             "type": ["nominal"],
-            "values": ['{"code1", "label1"}'],
+            "enumerations": ['{"1", "label1"}'],
             "name": ["Nominal Variable Missing Path"],
             "code": ["NomVarMissingPath"],
             # Missing conceptPath
@@ -56,11 +57,12 @@ class TestConvertExcelToJson(unittest.TestCase):
         # Scenario where some rows have missing 'conceptPath' or other critical fields
         data = {
             "type": ["nominal", "discrete", "nominal"],
-            "values": [
-                '{"code1", "label1"}',
-                "1-100",
+            "enumerations": [
+                '{"1", "label1"}',
                 None,
-            ],  # Text type usually doesn't have 'values'
+                None,
+            ],
+            "range": [None, "1-100", None],
             "name": ["Variable 1", "Variable 2", "Variable 3"],
             "code": ["Var1", "Var2", "Var3"],
             "conceptPath": [
@@ -81,7 +83,7 @@ class TestConvertExcelToJson(unittest.TestCase):
         # Scenario where a row has an invalid 'type' that fails validation
         data = {
             "type": ["invalid_type"],
-            "values": ["1-100"],
+            "range": ["1-100"],
             "name": ["Invalid Type Variable"],
             "code": ["InvalidTypeVar"],
             "conceptPath": ["Group1/InvalidTypeVar"],
@@ -99,7 +101,8 @@ class TestConvertExcelToJson(unittest.TestCase):
         # Variables that should be placed directly under the root due to lack of conceptPath or other logic
         data = {
             "type": ["nominal", "continuous"],
-            "values": [None, "0.1-100.0"],
+            "enumerations": ['{"1", "label1"}', None],
+            "range": [None, "0.1-100.0"],
             "name": ["Ungrouped Text Variable", "Ungrouped Real Variable"],
             "code": ["UngroupedTextVar", "UngroupedRealVar"],
             "conceptPath": [
@@ -111,3 +114,15 @@ class TestConvertExcelToJson(unittest.TestCase):
         expected_message = "The variable UngroupedTextVar is missing the conceptPath"
         with self.assertRaisesRegex(InvalidDataModelError, expected_message):
             convert_excel_to_json(df)
+
+    def test_conversion_maps_unit_to_units(self):
+        data = {
+            "type": ["discrete"],
+            "range": ["0-120"],
+            "name": ["Age"],
+            "code": ["age"],
+            "unit": ["years"],
+            "conceptPath": ["Group1/age"],
+        }
+        result = convert_excel_to_json(pd.DataFrame(data))
+        self.assertEqual(result["variables"][0]["units"], "years")

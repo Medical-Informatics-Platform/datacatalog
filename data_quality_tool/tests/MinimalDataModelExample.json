@@ -10,7 +10,7 @@
       "description": "An example variable description",
       "enumerations": [
         {
-          "code": "enum1",
+          "code": "1",
           "label": "Enumeration 1"
         }
       ],
@@ -46,7 +46,7 @@
               "description": "A nested group variable",
               "enumerations": [
                 {
-                  "code": "nested_enum1",
+                  "code": "1",
                   "label": "Nested Enumeration 1"
                 }
               ],

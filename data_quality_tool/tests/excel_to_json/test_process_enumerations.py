@@ -55,8 +55,8 @@ class TestProcessEnumerations(unittest.TestCase):
         self.assertEqual(result, expected_output)
 
     def test_nominal_with_incorrect_range_values(self):
-        row = {"type": "nominal", "values": "1-100", "code": "NominalWithRange"}
+        row = {"type": "nominal", "enumerations": "1-100", "code": "NominalWithRange"}
         variable = {}
         with self.assertRaises(InvalidDataModelError) as context:
             process_values_based_on_type(row, variable)
-        self.assertIn("Nominal values format error:", str(context.exception))
+        self.assertIn("Enumerations format error:", str(context.exception))

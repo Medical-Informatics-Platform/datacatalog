@@ -8,7 +8,7 @@ class TestProcessVariable(unittest.TestCase):
     def test_process_nominal_variable(self):
         row = {
             "type": "nominal",
-            "values": '{"code1", "label1"}, {"code2", "label2"}',
+            "enumerations": '{"1", "label1"}, {"2", "label2"}',
             "name": "Variable Name",
             "code": "VarCode",
         }
@@ -17,8 +17,8 @@ class TestProcessVariable(unittest.TestCase):
             "code": "VarCode",
             "type": "nominal",
             "enumerations": [
-                {"code": "code1", "label": "label1"},
-                {"code": "code2", "label": "label2"},
+                {"code": "1", "label": "label1"},
+                {"code": "2", "label": "label2"},
             ],
         }
         result_variable = process_variable(row)
@@ -27,7 +27,7 @@ class TestProcessVariable(unittest.TestCase):
     def test_process_integer_variable(self):
         row = {
             "type": "discrete",
-            "values": "1-100",
+            "range": "1-100",
             "name": "Integer Variable",
             "code": "IntVar",
         }
@@ -53,7 +53,7 @@ class TestProcessVariable(unittest.TestCase):
     def test_process_real_variable_with_range(self):
         row = {
             "type": "continuous",
-            "values": "0.01-99.99",
+            "range": "0.01-99.99",
             "name": "Real Variable",
             "code": "RealVar",
             "description": "A real number variable",
@@ -69,33 +69,30 @@ class TestProcessVariable(unittest.TestCase):
         result_variable = process_variable(row)
         self.assertEqual(result_variable, expected_variable)
 
-    def test_process_text_variable(self):
+    def test_nominal_without_enumerations_is_rejected(self):
         row = {
             "type": "nominal",
             "name": "Text Variable",
             "code": "TextVar",
             "description": "A text variable",
         }
-        expected_variable = {
-            "label": "Text Variable",
-            "code": "TextVar",
-            "type": "nominal",
-            "description": "A text variable",
-        }
-        result_variable = process_variable(row)
-        self.assertEqual(result_variable, expected_variable)
+        with self.assertRaisesRegex(
+            InvalidDataModelError,
+            "Variable TextVar: Type 'nominal' requires enumerations",
+        ):
+            process_variable(row)
 
     def test_variable_with_missing_values_field(self):
         row = {"type": "binary", "name": "Binary Variable", "code": "BinaryVar"}
         with self.assertRaises(InvalidDataModelError) as context:
             process_variable(row)
         self.assertIn(
-            "Variable BinaryVar declared as binary must have exactly two values",
+            "Variable BinaryVar: Type 'binary' requires enumerations",
             str(context.exception),
         )
 
     def test_variable_with_optional_fields_missing(self):
-        row = {"type": "discrete", "values": "1-100", "code": "IntVar"}
+        row = {"type": "discrete", "range": "1-100", "code": "IntVar"}
         expected_variable = {
             "code": "IntVar",
             "type": "discrete",
@@ -109,7 +106,7 @@ class TestProcessVariable(unittest.TestCase):
     def test_process_variable_with_additional_fields(self):
         row = {
             "type": "continuous",
-            "values": "10.5-20.5",
+            "range": "10.5-20.5",
             "name": "Additional Field Variable",
             "code": "AddFieldVar",
             "additional": "Extra info",
@@ -128,13 +125,25 @@ class TestProcessVariable(unittest.TestCase):
     def test_nominal_with_range_instead_of_enumerations(self):
         row = {
             "type": "nominal",
-            "values": "1-100",
+            "enumerations": "1-100",
             "name": "Incorrect Nominal Variable",
             "code": "IncorrNomVar",
         }
         with self.assertRaises(InvalidDataModelError) as context:
             process_variable(row)
         self.assertEqual(
-            """Nominal values format error: '{"code", "label"}, {"code", "label"}' expected but got 1-100.""",
+            """Enumerations format error: '{"code", "label"}, {"code", "label"}' expected but got 1-100.""",
             str(context.exception),
         )
+
+    def test_process_variable_maps_unit_to_units(self):
+        row = {
+            "type": "discrete",
+            "range": "0-120",
+            "name": "Age",
+            "code": "age",
+            "unit": "years",
+        }
+        result_variable = process_variable(row)
+        self.assertEqual(result_variable["units"], "years")
+        self.assertNotIn("unit", result_variable)

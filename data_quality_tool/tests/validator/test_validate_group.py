@@ -12,7 +12,10 @@ class TestValidateGroup(unittest.TestCase):
                 {
                     "code": "001",
                     "type": "nominal",
-                    "enumerations": ["yes", "no"],
+                    "enumerations": [
+                        {"code": "1", "label": "yes"},
+                        {"code": "2", "label": "no"},
+                    ],
                 },
                 {
                     "code": "002",
@@ -86,7 +89,11 @@ class TestValidateGroup(unittest.TestCase):
                                 {
                                     "code": "101",
                                     "type": "nominal",
-                                    "enumerations": ["A", "B", "C"],
+                                    "enumerations": [
+                                        {"code": "1", "label": "A"},
+                                        {"code": "2", "label": "B"},
+                                        {"code": "3", "label": "C"},
+                                    ],
                                 }
                             ],
                             "groups": [],
@@ -159,7 +166,10 @@ class TestValidateGroup(unittest.TestCase):
                         {
                             "code": "105",
                             "type": "nominal",
-                            "enumerations": ["X", "Y"],
+                            "enumerations": [
+                                {"code": "1", "label": "X"},
+                                {"code": "2", "label": "Y"},
+                            ],
                         }
                     ],
                     "groups": [],
@@ -179,7 +189,10 @@ class TestValidateGroup(unittest.TestCase):
                 {
                     "code": "001",
                     "type": "nominal",
-                    "enumerations": ["X", "Y"],
+                    "enumerations": [
+                        {"code": "1", "label": "X"},
+                        {"code": "2", "label": "Y"},
+                    ],
                 },
                 {
                     "code": "001",
@@ -202,7 +215,10 @@ class TestValidateGroup(unittest.TestCase):
                         {
                             "code": "002",
                             "type": "nominal",
-                            "enumerations": ["X", "Y"],
+                            "enumerations": [
+                                {"code": "1", "label": "X"},
+                                {"code": "2", "label": "Y"},
+                            ],
                         }
                     ],
                     "groups": [],

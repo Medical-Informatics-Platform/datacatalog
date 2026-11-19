@@ -9,11 +9,12 @@ and how each Excel column maps to the output JSON.
 - **Format**: real `.xlsx` (readable by openpyxl).
 - **Size**: ≤ 20 MB.
 - **One variable per row**: each spreadsheet row becomes one variable.
-- **Columns**: the header must contain **exactly** these 11 columns — no more,
-  no fewer:
+- **Columns**: the header must contain these required columns:
 
-  `csvFile`, `name`, `code`, `type`, `values`, `unit`, `description`,
-  `canBeNull`, `comments`, `conceptPath`, `methodology`
+  `name`, `code`, `type`, `enumerations`, `range`, `unit`, `description`,
+  `comments`, `conceptPath`
+
+  Extra columns are tolerated. JSON → Excel writes these 9 columns.
 
 ## Per-row requirements
 
@@ -23,9 +24,9 @@ and how each Excel column maps to the output JSON.
 | `code` | yes | non-empty |
 | `type` | yes | one of `continuous`, `discrete` (numerical) or `nominal`, `ordinal`, `binary` (categorical) |
 | `conceptPath` | yes | non-empty, formatted `level1/level2/...` |
-| `values` | categorical types | `"{"code", "label"}"` pairs; codes must be unique; required with exactly two pairs for `binary`, optional for `nominal`/`ordinal` (free text) |
-| `values` | numerical types | optional `<min>-<max>` range; `min` < `max`; whole numbers for `discrete` |
-| `unit`, `description`, `canBeNull`, `comments`, `methodology` | no | any non-empty value is kept; empty values are dropped |
+| `enumerations` | categorical types | required; `"{"code", "label"}"` pairs with unique integer codes per the Exaflow contract: `binary` exactly `0` and `1`, `nominal`/`ordinal` from `1` |
+| `range` | numerical types | optional `<min>-<max>`; `min` < `max`; whole numbers for `discrete` |
+| `unit`, `description`, `comments` | no | any non-empty value is kept; empty values are dropped |
 
 ## Column → JSON mapping
 
@@ -34,12 +35,11 @@ and how each Excel column maps to the output JSON.
 | `name` | `label` | |
 | `code` | `code` | |
 | `type` | `type` | |
-| `values` | `enumerations` (nominal, ordinal, binary) / `minValue` + `maxValue` (continuous, discrete) | |
+| `enumerations` | `enumerations` | nominal, ordinal, binary |
+| `range` | `minValue` + `maxValue` | continuous, discrete |
 | `unit` | `units` | |
 | `description` | `description` | |
-| `canBeNull` | `canBeNull` | |
 | `comments` | `comments` | |
-| `methodology` | `methodology` | |
 | `conceptPath` | (builds the group tree) | split on `/` to build the `groups` hierarchy |
 
 ## Output structure

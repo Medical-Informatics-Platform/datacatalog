@@ -31,12 +31,14 @@ Hard requirements for `POST /excel-to-json` / `POST /validate-excel`, enforced b
 `excel_validator.py` and `converter/excel_to_json.py`.
 
 - **File**: real `.xlsx` (openpyxl), ≤ `MAX_UPLOAD_SIZE_MB` (default 20), one variable per row
-- **Columns**: header must be exactly these 11 — `csvFile`, `name`, `code`, `type`, `values`,
-  `unit`, `description`, `canBeNull`, `comments`, `conceptPath`, `methodology`
+- **Columns**: header must include `name`, `code`, `type`, `enumerations`, `range`,
+  `unit`, `description`, `comments`, `conceptPath`. Extra columns are tolerated.
+  JSON → Excel writes those 9 columns.
 - **Required per row**: `name`, `code`, `type`, `conceptPath`
 - **`type`**: numerical `continuous` or `discrete`; categorical `nominal`, `ordinal`, or `binary`
-- **`values`** (only when filled): `"{"code", "label"}"` pairs for `nominal`/`ordinal`/`binary`
-  (no duplicate codes; `binary` requires exactly two); `<min>-<max>` for `continuous`/`discrete`
+- **`enumerations`** (required for `nominal`/`ordinal`/`binary`): `"{"code", "label"}"` pairs with
+  unique integer codes (`binary` exactly `0` and `1`; `nominal`/`ordinal` from `1`)
+- **`range`** (only when filled): `<min>-<max>` for `continuous`/`discrete`
   (min < max; whole numbers for `discrete`)
 - **`conceptPath`**: `level1/level2/...` — builds the group hierarchy, then dropped
 
@@ -47,14 +49,12 @@ Hard requirements for `POST /excel-to-json` / `POST /validate-excel`, enforced b
 | `name` | `label` | |
 | `code` | `code` | |
 | `type` | `type` | |
-| `values` | `enumerations` / `minValue`+`maxValue` | categorical → enumerations; numerical → range |
+| `enumerations` | `enumerations` | categorical types |
+| `range` | `minValue`+`maxValue` | numerical types |
 | `unit` | `units` | |
 | `description` | `description` | |
-| `canBeNull` | `canBeNull` | |
 | `comments` | `comments` | |
-| `methodology` | `methodology` | |
 | `conceptPath` | — | consumed to build the tree |
-| `csvFile` | — | **not used** in this direction |
 
 `type` is the only typing field (no `sql_type` or `isCategorical`); empty fields and empty
 `groups`/`variables`/`enumerations` lists are stripped. Failures return `400` with a single
@@ -62,19 +62,21 @@ bounded error line naming the variable.
 
 ## Validation Rules
 
-Excel workbooks must contain exactly these columns: `csvFile`, `name`, `code`, `type`, `values`,
-`unit`, `description`, `canBeNull`, `comments`, `conceptPath`, `methodology`. `name`, `code`, `type`,
-and `conceptPath` are required on every row, `type` must be `continuous`, `discrete`, `nominal`,
-`ordinal`, or `binary`, `values` is checked as `{"code", "label"}, ...` for the categorical types and
-as `<min>-<max>` for the numerical types whenever it is filled in, `binary` needs exactly two values,
-duplicate enumeration codes are rejected, and `conceptPath` must look like `characters/characters/...`.
+Excel workbooks must include these columns: `name`, `code`, `type`, `enumerations`, `range`,
+`unit`, `description`, `comments`, `conceptPath`. `name`, `code`, `type`, and `conceptPath` are
+required on every row, `type` must be
+`continuous`, `discrete`, `nominal`, `ordinal`, or `binary`, `enumerations` is checked as
+`{"code", "label"}, ...` for the categorical types and `range` as `<min>-<max>` for the numerical
+types whenever it is filled in, every categorical row needs enumerations with integer codes
+(`binary` exactly `0` and `1`, `nominal`/`ordinal` from `1`, as Exaflow requires), duplicate
+enumeration codes are rejected, and `conceptPath` must look like `characters/characters/...`.
 
 JSON data models must carry non-empty `code`, `version`, `label`, and a `groups` list. Every group
 needs a `code` that is unique within its path, and every Common Data Element needs `code` and a
 `type` of `continuous`, `discrete`, `nominal`, `ordinal`, or `binary`. Numerical elements cannot carry
-`enumerations` and categorical elements cannot carry `minValue`/`maxValue`; `binary` elements need
-exactly two `enumerations`, `discrete` bounds must be whole numbers, and `minValue` must be below
-`maxValue`. `nominal` and `ordinal` elements without `enumerations` are free-text variables. Element
+`enumerations` and categorical elements cannot carry `minValue`/`maxValue`; every categorical element
+needs `enumerations` with integer codes (`binary` exactly `0` and `1`, `nominal`/`ordinal` from `1`),
+`discrete` bounds must be whole numbers, and `minValue` must be below `maxValue`. Element
 codes must be unique inside a group, at least one dataset element (`code: dataset`, `type: nominal`,
 with `enumerations`) must exist, and longitudinal models must define `subjectid` and `visitid`.
 

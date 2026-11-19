@@ -14,7 +14,10 @@ class TestValidateDataModel(unittest.TestCase):
                 {
                     "code": "dataset",
                     "type": "nominal",
-                    "enumerations": ["dataset1", "dataset2"],
+                    "enumerations": [
+                        {"code": "1", "label": "dataset1"},
+                        {"code": "2", "label": "dataset2"},
+                    ],
                 }
             ],
             "groups": [
@@ -24,7 +27,10 @@ class TestValidateDataModel(unittest.TestCase):
                         {
                             "code": "001",
                             "type": "nominal",
-                            "enumerations": ["yes", "no"],
+                            "enumerations": [
+                                {"code": "1", "label": "yes"},
+                                {"code": "2", "label": "no"},
+                            ],
                         }
                     ],
                     "groups": [
@@ -34,7 +40,10 @@ class TestValidateDataModel(unittest.TestCase):
                                 {
                                     "code": "002",
                                     "type": "nominal",
-                                    "enumerations": ["yes", "no"],
+                                    "enumerations": [
+                                        {"code": "1", "label": "yes"},
+                                        {"code": "2", "label": "no"},
+                                    ],
                                 }
                             ],
                             "groups": [],
@@ -79,7 +88,10 @@ class TestValidateDataModel(unittest.TestCase):
                 {
                     "code": "000",
                     "type": "nominal",
-                    "enumerations": ["yes", "no"],
+                    "enumerations": [
+                        {"code": "1", "label": "yes"},
+                        {"code": "2", "label": "no"},
+                    ],
                 }
             ],
             "groups": [
@@ -89,7 +101,10 @@ class TestValidateDataModel(unittest.TestCase):
                         {
                             "code": "001",
                             "type": "nominal",
-                            "enumerations": ["yes", "no"],
+                            "enumerations": [
+                                {"code": "1", "label": "yes"},
+                                {"code": "2", "label": "no"},
+                            ],
                         }
                     ],
                     "groups": [],
@@ -110,15 +125,19 @@ class TestValidateDataModel(unittest.TestCase):
                 {
                     "code": "dataset",
                     "type": "nominal",
-                    "enumerations": ["dataset1", "dataset2"],
+                    "enumerations": [
+                        {"code": "1", "label": "dataset1"},
+                        {"code": "2", "label": "dataset2"},
+                    ],
                 },
                 {
                     "code": "subjectid",
-                    "type": "nominal",
+                    "type": "discrete",
                 },
                 {
                     "code": "visitid",
                     "type": "nominal",
+                    "enumerations": [{"code": "1", "label": "BL"}],
                 },
             ],
             "groups": [
@@ -128,7 +147,10 @@ class TestValidateDataModel(unittest.TestCase):
                         {
                             "code": "001",
                             "type": "nominal",
-                            "enumerations": ["yes", "no"],
+                            "enumerations": [
+                                {"code": "1", "label": "yes"},
+                                {"code": "2", "label": "no"},
+                            ],
                         }
                     ],
                     "groups": [],
@@ -156,7 +178,10 @@ class TestValidateDataModel(unittest.TestCase):
                         {
                             "code": "001",
                             "type": "nominal",
-                            "enumerations": ["yes", "no"],
+                            "enumerations": [
+                                {"code": "1", "label": "yes"},
+                                {"code": "2", "label": "no"},
+                            ],
                         }
                     ],
                     "groups": [],
@@ -177,11 +202,12 @@ class TestValidateDataModel(unittest.TestCase):
                 {
                     "code": "dataset",
                     "type": "nominal",
-                    "enumerations": ["dataset1"],
+                    "enumerations": [{"code": "1", "label": "dataset1"}],
                 },
                 {
                     "code": "visitid",
                     "type": "nominal",
+                    "enumerations": [{"code": "1", "label": "BL"}],
                 },
             ],
             "longitudinal": True,
@@ -192,7 +218,10 @@ class TestValidateDataModel(unittest.TestCase):
                         {
                             "code": "001",
                             "type": "nominal",
-                            "enumerations": ["yes", "no"],
+                            "enumerations": [
+                                {"code": "1", "label": "yes"},
+                                {"code": "2", "label": "no"},
+                            ],
                         }
                     ],
                     "groups": [],
@@ -213,7 +242,7 @@ class TestValidateDataModel(unittest.TestCase):
                 {
                     "code": "dataset",
                     "type": "nominal",
-                    "enumerations": ["dataset1"],
+                    "enumerations": [{"code": "1", "label": "dataset1"}],
                 }
             ],
             "groups": [
@@ -247,7 +276,10 @@ class TestValidateDataModel(unittest.TestCase):
                         {
                             "code": "001",
                             "type": "nominal",
-                            "enumerations": ["yes", "no"],
+                            "enumerations": [
+                                {"code": "1", "label": "yes"},
+                                {"code": "2", "label": "no"},
+                            ],
                         }
                     ],
                     "groups": [],
@@ -255,7 +287,7 @@ class TestValidateDataModel(unittest.TestCase):
             ],
         }
 
-        expected_message = "'binary' CommonDataElement at path: '/DM009/categorical_var' must have exactly two 'enumerations'."
+        expected_message = "Type 'binary' requires enumerations. CommonDataElement at path: '/DM009/categorical_var'."
         with self.assertRaisesRegex(InvalidDataModelError, expected_message):
             validate_json(data_model)
 
@@ -269,7 +301,10 @@ class TestValidateDataModel(unittest.TestCase):
                 {
                     "code": "001",
                     "type": "nominal",
-                    "enumerations": ["yes", "no"],
+                    "enumerations": [
+                        {"code": "1", "label": "yes"},
+                        {"code": "2", "label": "no"},
+                    ],
                 }
             ],
             "groups": [
@@ -295,7 +330,7 @@ class TestValidateDataModel(unittest.TestCase):
                 {
                     "code": "dataset",
                     "type": "nominal",
-                    "enumerations": ["dataset1"],
+                    "enumerations": [{"code": "1", "label": "dataset1"}],
                 }
             ],
             "groups": [
@@ -341,7 +376,7 @@ class TestValidateDataModel(unittest.TestCase):
                         {
                             "code": "dataset",
                             "type": "nominal",
-                            "enumerations": ["dataset1"],
+                            "enumerations": [{"code": "1", "label": "dataset1"}],
                         }
                     ],
                     "groups": [],
@@ -364,7 +399,7 @@ class TestValidateDataModel(unittest.TestCase):
                         {
                             "code": "dataset",
                             "type": "nominal",
-                            "enumerations": ["dataset1"],
+                            "enumerations": [{"code": "1", "label": "dataset1"}],
                         }
                     ],
                     "groups": [],
@@ -386,7 +421,7 @@ class TestValidateDataModel(unittest.TestCase):
                         {
                             "code": "dataset",
                             "type": "nominal",
-                            "enumerations": ["dataset1"],
+                            "enumerations": [{"code": "1", "label": "dataset1"}],
                         }
                     ],
                     "groups": [],
@@ -420,7 +455,10 @@ class TestValidateDataModel(unittest.TestCase):
                 {
                     "code": "V001",
                     "type": "nominal",
-                    "enumerations": ["example1", "example2"],  # Added enumerations
+                    "enumerations": [
+                        {"code": "1", "label": "example1"},
+                        {"code": "2", "label": "example2"},
+                    ],  # Added enumerations
                 }
             ],
             "groups": "Not a list",  # Invalid type for groups
@@ -441,7 +479,10 @@ class TestValidateDataModel(unittest.TestCase):
                 {
                     "code": "V001",
                     "type": "nominal",
-                    "enumerations": ["example1", "example2"],  # Added enumerations
+                    "enumerations": [
+                        {"code": "1", "label": "example1"},
+                        {"code": "2", "label": "example2"},
+                    ],  # Added enumerations
                 }
             ],
             "groups": [],  # Empty list for groups

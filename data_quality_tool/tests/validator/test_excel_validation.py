@@ -2,7 +2,11 @@ import unittest
 
 import pandas as pd
 
-from common_entities import REQUIRED_COLUMNS, EXCEL_COLUMNS
+from common_entities import (
+    REQUIRED_COLUMNS,
+    EXCEL_COLUMNS,
+    REQUIRED_EXCEL_COLUMNS,
+)
 from validator.excel_validator import (
     validate_enumerations,
     InvalidDataModelError,
@@ -15,14 +19,14 @@ from validator.excel_validator import (
 
 class TestValidationFunctions(unittest.TestCase):
     def test_validate_enumeration_valid(self):
-        validate_enumerations('{"code1", "label1"}, {"code2", "label2"}')
+        validate_enumerations('{"1", "label1"}, {"2", "label2"}')
 
     def test_validate_enumeration_invalid(self):
         with self.assertRaises(InvalidDataModelError) as context:
             validate_enumerations("Invalid format")
         self.assertEqual(
             (
-                'Nominal values format error: \'{"code", "label"}, {"code", "label"}\' '
+                'Enumerations format error: \'{"code", "label"}, {"code", "label"}\' '
                 "expected but got Invalid format."
             ),
             str(context.exception),
@@ -35,7 +39,7 @@ class TestValidationFunctions(unittest.TestCase):
         with self.assertRaises(InvalidDataModelError) as context:
             validate_min_max("Invalid format")
         self.assertEqual(
-            "Values must match format '<float or integer>-<float or integer>' but got 'Invalid format'.",
+            "Range must match format '<float or integer>-<float or integer>' but got 'Invalid format'.",
             str(context.exception),
         )
 
@@ -70,15 +74,15 @@ class TestValidationFunctions(unittest.TestCase):
             "code": "T01",
             "type": "discrete",
             "conceptPath": "valid/format",
-            "values": "10-100",
+            "range": "10-100",
         }
         validate_variable(row)
 
     def test_validate_variable_discrete_requires_whole_number_bounds(self):
         base = {"name": "test", "code": "T01", "conceptPath": "valid/format"}
-        validate_variable({**base, "type": "continuous", "values": "1.5-2.5"})
+        validate_variable({**base, "type": "continuous", "range": "1.5-2.5"})
         with self.assertRaises(InvalidDataModelError) as context:
-            validate_variable({**base, "type": "discrete", "values": "1.5-2.5"})
+            validate_variable({**base, "type": "discrete", "range": "1.5-2.5"})
         self.assertIn("requires whole-number bounds", str(context.exception))
 
     def test_validate_variable_invalid_type(self):
@@ -94,17 +98,24 @@ class TestValidationFunctions(unittest.TestCase):
 
     def test_validate_variable_categorical_types(self):
         base = {"name": "test", "code": "T01", "conceptPath": "valid/format"}
-        validate_variable({**base, "type": "nominal", "values": None})
-        validate_variable({**base, "type": "ordinal", "values": '{"1","Low"}'})
+        validate_variable({**base, "type": "nominal", "enumerations": '{"1","A"}'})
+        validate_variable({**base, "type": "ordinal", "enumerations": '{"1","Low"}'})
         validate_variable(
-            {**base, "type": "binary", "values": '{"0","No"}, {"1","Yes"}'}
+            {**base, "type": "binary", "enumerations": '{"0","No"}, {"1","Yes"}'}
         )
-        for values in [None, '{"0","No"}']:
+        for variable_type, enumerations, message in [
+            ("nominal", None, "requires enumerations"),
+            ("binary", None, "requires enumerations"),
+            ("binary", '{"0","No"}', "exactly 0 and 1"),
+            ("binary", '{"1","No"}, {"2","Yes"}', "exactly 0 and 1"),
+            ("nominal", '{"0","None"}, {"1","Some"}', "starting from 1"),
+            ("ordinal", '{"low","Low"}', "integer enumeration codes"),
+        ]:
             with self.assertRaises(InvalidDataModelError) as context:
-                validate_variable({**base, "type": "binary", "values": values})
-            self.assertIn(
-                "Type 'binary' requires exactly two values", str(context.exception)
-            )
+                validate_variable(
+                    {**base, "type": variable_type, "enumerations": enumerations}
+                )
+            self.assertIn(message, str(context.exception))
 
     def test_validate_variable_legacy_type(self):
         row = {"name": "test", "code": "T01", "type": "real", "conceptPath": "a/b"}
@@ -115,20 +126,57 @@ class TestValidationFunctions(unittest.TestCase):
         df = pd.DataFrame(
             [
                 {
-                    "csvFile": "csvFile",
                     "name": "test1",
                     "code": "T01",
                     "type": "nominal",
-                    "values": '{"code1", "label1"}, {"code2", "label2"}',
-                    "units": "",
+                    "enumerations": '{"1", "label1"}, {"2", "label2"}',
+                    "range": "",
+                    "unit": "",
                     "description": "",
-                    "canBeNull": "",
                     "comments": "",
                     "conceptPath": "valid/format",
-                    "methodology": "methodology",
                 }
             ],
             columns=EXCEL_COLUMNS,
+        )
+        validate_excel(df)
+
+    def test_validate_excel_optional_columns_absent(self):
+        """A workbook with only the required Excel columns is valid."""
+        df = pd.DataFrame(
+            [
+                {
+                    "name": "test3",
+                    "code": "T03",
+                    "type": "nominal",
+                    "enumerations": '{"1", "label1"}',
+                    "range": "",
+                    "unit": "",
+                    "description": "",
+                    "comments": "",
+                    "conceptPath": "valid/format",
+                }
+            ],
+            columns=REQUIRED_EXCEL_COLUMNS,
+        )
+        validate_excel(df)
+
+    def test_validate_excel_extra_columns_tolerated(self):
+        df = pd.DataFrame(
+            [
+                {
+                    "name": "test4",
+                    "code": "T04",
+                    "type": "nominal",
+                    "enumerations": '{"1", "label1"}',
+                    "range": "",
+                    "unit": "",
+                    "description": "",
+                    "comments": "",
+                    "conceptPath": "valid/format",
+                    "legacyValues": "(1-150)",
+                }
+            ]
         )
         validate_excel(df)
 
@@ -152,12 +200,12 @@ class TestValidationFunctions(unittest.TestCase):
 
     def test_valid_enumeration(self):
         """Test that a valid enumeration does not raise an error."""
-        valid_values = '{"code1", "label1"}, {"code2", "label2"}'
+        valid_values = '{"1", "label1"}, {"2", "label2"}'
         validate_enumerations(valid_values)
 
     def test_valid_enumeration_with_spaces(self):
         """Test that a valid enumeration does not raise an error."""
-        valid_values = '{"code1","label1"},{"code2","label2"}'
+        valid_values = '{"1","label1"},{"2","label2"}'
         validate_enumerations(valid_values)
 
     def test_invalid_format_enumeration(self):
@@ -165,11 +213,11 @@ class TestValidationFunctions(unittest.TestCase):
         invalid_values = "Invalid format"
         with self.assertRaises(InvalidDataModelError) as context:
             validate_enumerations(invalid_values)
-        self.assertIn("Nominal values format error", str(context.exception))
+        self.assertIn("Enumerations format error", str(context.exception))
 
     def test_duplicate_codes_enumeration(self):
         """Test that duplicate codes raise the correct error."""
-        duplicate_values = '{"code1", "label1"}, {"code1", "label2"}'
+        duplicate_values = '{"1", "label1"}, {"1", "label2"}'
         with self.assertRaises(InvalidDataModelError) as context:
             validate_enumerations(duplicate_values)
         self.assertIn("Duplicate codes found", str(context.exception))
