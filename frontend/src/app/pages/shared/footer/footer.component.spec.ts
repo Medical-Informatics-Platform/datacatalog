@@ -70,4 +70,15 @@ describe('FooterComponent', () => {
     expect(chuvLogo?.getAttribute('src')).toBe('assets/footer/CHUV_Logo_Simple_BLANC.png');
     expect(chuvLogo?.getAttribute('alt')).toBe('CHUV logo');
   });
+
+  it('should render the quick-links row (GitHub / EBRAINS / Support)', () => {
+    const quickLinks = Array.from(
+      fixture.nativeElement.querySelectorAll('.footer-quick-link'),
+    ) as HTMLAnchorElement[];
+    expect(quickLinks.length).toBe(3);
+    const hrefs = quickLinks.map((a) => a.getAttribute('href'));
+    expect(hrefs).toContain('https://github.com/Medical-Informatics-Platform/mip');
+    expect(hrefs).toContain('https://www.ebrains.eu/tools/medical-informatics-platform');
+    expect(hrefs).toContain('mailto:mip@chuv.ch');
+  });
 });
