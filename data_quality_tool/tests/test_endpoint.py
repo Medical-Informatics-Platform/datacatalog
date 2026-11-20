@@ -390,6 +390,26 @@ class TestController(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json, {"error": GENERIC_VALIDATION_ERROR})
 
+    def test_excel_to_json_reports_the_validation_detail(self):
+        # The UI shows this text; it used to be the generic "Invalid Excel payload".
+        with patch(
+            "controller.excel_validator.validate_excel",
+            side_effect=InvalidDataModelError(
+                "On :age got: Missing value for required column 'name'."
+            ),
+        ):
+            response = self.client.post(
+                "/excel-to-json",
+                content_type="multipart/form-data",
+                data=self._excel_payload(),
+            )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json,
+            {"error": "On :age got: Missing value for required column 'name'."},
+        )
+
     def test_validate_excel_bounds_validation_detail(self):
         with patch(
             "controller.excel_validator.validate_excel",

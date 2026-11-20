@@ -86,10 +86,17 @@ def validate_variable_type(row):
         raise InvalidDataModelError(
             f"Invalid 'type': {type_val}. Valid types: {valid_types_str}."
         )
+    values = row.get("values")
+    # An empty cell arrives as NaN, which is truthy and has no string methods.
+    values = None if pd.isnull(values) or not str(values).strip() else str(values)
     if type_val == "nominal":
-        validate_enumerations(row.get("values", ""))
-    elif type_val in ["real", "integer"] and row.get("values"):
-        validate_min_max(row["values"])
+        if values is None:
+            raise InvalidDataModelError(
+                "The 'values' should not be empty when type is 'nominal'."
+            )
+        validate_enumerations(values)
+    elif type_val in ["real", "integer"] and values is not None:
+        validate_min_max(values)
 
 
 def validate_variable(row):

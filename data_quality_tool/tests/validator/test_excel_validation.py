@@ -106,6 +106,46 @@ class TestValidationFunctions(unittest.TestCase):
         )
         validate_excel(df)
 
+    def _excel_with_values(self, var_type, values):
+        return pd.DataFrame(
+            [
+                {
+                    "csvFile": "csvFile",
+                    "name": "test1",
+                    "code": "T01",
+                    "type": var_type,
+                    "values": values,
+                    "unit": "",
+                    "description": "",
+                    "canBeNull": "",
+                    "comments": "",
+                    "conceptPath": "valid/format",
+                    "methodology": "methodology",
+                }
+            ],
+            columns=EXCEL_COLUMNS,
+        )
+
+    def test_validate_excel_numeric_variable_with_empty_values_is_valid(self):
+        # An empty cell reads as NaN; it used to crash with "'float' has no attribute 'rsplit'".
+        for var_type in ("real", "integer"):
+            for empty in (None, float("nan"), "", "  "):
+                with self.subTest(var_type=var_type, empty=empty):
+                    validate_excel(self._excel_with_values(var_type, empty))
+
+    def test_validate_excel_numeric_variable_with_number_only_reports_format(self):
+        with self.assertRaises(InvalidDataModelError) as context:
+            validate_excel(self._excel_with_values("real", 5))
+        self.assertIn("Values must match format", str(context.exception))
+
+    def test_validate_excel_nominal_without_values_reports_missing_values(self):
+        for empty in (None, float("nan"), ""):
+            with self.subTest(empty=empty):
+                with self.assertRaises(InvalidDataModelError) as context:
+                    validate_excel(self._excel_with_values("nominal", empty))
+                self.assertIn("T01", str(context.exception))
+                self.assertIn("should not be empty", str(context.exception))
+
     def test_validate_excel_invalid_columns(self):
         df = pd.DataFrame(
             [

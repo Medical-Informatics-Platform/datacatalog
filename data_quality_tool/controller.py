@@ -19,9 +19,6 @@ app.config["MAX_CONTENT_LENGTH"] = (
     int(os.getenv("MAX_UPLOAD_SIZE_MB", "20")) * 1024 * 1024
 )
 
-EXCEL_TO_JSON_VALIDATION_ERROR_MESSAGE = "Invalid Excel payload for conversion."
-JSON_TO_EXCEL_VALIDATION_ERROR_MESSAGE = "Invalid JSON payload for conversion."
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -65,7 +62,8 @@ def excel_to_json():
             return response
         except InvalidDataModelError as e:
             logger.error("Validation error while processing file: %s", e)
-            return jsonify({"error": EXCEL_TO_JSON_VALIDATION_ERROR_MESSAGE}), 400
+            detail = client_error_message(validation_message(e))
+            return jsonify({"error": detail}), 400
         except (BadZipFile, ValueError):
             logger.error("Invalid Excel file format.")
             return jsonify({"error": "Invalid Excel file format."}), 400
@@ -105,7 +103,8 @@ def json_to_excel():
         )
     except InvalidDataModelError as e:
         logger.error("Error processing JSON: %s", e)
-        return jsonify({"error": JSON_TO_EXCEL_VALIDATION_ERROR_MESSAGE}), 400
+        detail = client_error_message(validation_message(e))
+        return jsonify({"error": detail}), 400
     except Exception:
         logger.exception("Unhandled error while converting JSON to Excel.")
         return jsonify({"error": "Internal server error"}), 500

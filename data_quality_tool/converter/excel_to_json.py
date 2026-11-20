@@ -93,6 +93,9 @@ def process_values_based_on_type(row, variable):
     """
     code = row.get("code")
     values = row.get("values")
+    if pd.isnull(values) or not str(values).strip():
+        # An empty cell can arrive as NaN, which is truthy and has no string methods.
+        values = None
     variable_type = row.get("type")
 
     if variable_type in ["real", "integer"] and values:

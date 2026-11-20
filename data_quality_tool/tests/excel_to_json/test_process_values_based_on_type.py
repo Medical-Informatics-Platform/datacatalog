@@ -22,6 +22,24 @@ class TestProcessValuesBasedOnType(unittest.TestCase):
             str(context.exception),
         )
 
+    def test_empty_values_cell_means_no_range(self):
+        # An empty Excel cell can arrive as NaN, which is truthy.
+        for empty in (None, float("nan"), "", "  "):
+            for var_type in ("real", "integer"):
+                with self.subTest(empty=empty, var_type=var_type):
+                    variable = {}
+                    process_values_based_on_type(
+                        {"type": var_type, "values": empty}, variable
+                    )
+                    self.assertEqual(variable, {})
+
+    def test_nominal_with_nan_values_raises_validation_error(self):
+        with self.assertRaises(InvalidDataModelError) as context:
+            process_values_based_on_type(
+                {"code": "sex", "type": "nominal", "values": float("nan")}, {}
+            )
+        self.assertIn("should not be empty for variable sex", str(context.exception))
+
     def test_process_nominal_enumerations(self):
         row = {"type": "nominal", "values": '{"code1", "label1"}, {"code2", "label2"}'}
         variable = {}
