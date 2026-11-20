@@ -1,4 +1,4 @@
-import {Component, EventEmitter, OnInit, Output} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, OnInit, Output} from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import {ActivatedRoute, Router} from '@angular/router';
 
@@ -7,6 +7,9 @@ import {PathologyService} from "../../../services/pathology.service";
 @Component({
   selector: 'app-pathology-form',
   standalone: true,
+  // Angular 22 defaults to OnPush; errorMessage is set from HTTP/FileReader callbacks, which
+  // do not mark the view dirty, so the error was never rendered.
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [ReactiveFormsModule],
   templateUrl: './pathology-form.component.html',
   styleUrls: ['./pathology-form.component.css'],
