@@ -54,4 +54,16 @@ class DataModelServiceTest {
         verify(dataModelRepository).findAll();
         verify(dataModelRepository, never()).findByReleased(anyBoolean());
     }
+
+    @Test
+    void creatingDuplicateCodeAndVersionIsRejected() {
+        DataModelDTO dto = org.mockito.Mockito.mock(DataModelDTO.class);
+        when(dto.code()).thenReturn("heart");
+        when(dto.version()).thenReturn("1.0");
+        when(dataModelRepository.findByCodeAndVersion("heart", "1.0")).thenReturn(java.util.Optional.of(new DataModelDAO()));
+
+        org.junit.jupiter.api.Assertions.assertThrows(
+                org.springframework.dao.DataIntegrityViolationException.class,
+                () -> dataModelService.createDataModel(dto, logger));
+    }
 }
