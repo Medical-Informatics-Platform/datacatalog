@@ -6,7 +6,10 @@ export interface Federation {
   url: string;
   description: string;
   dataModelIds: string[];
-  pathologies: Pathology[];
-  institutions: string;
-  records: string;
+  institutions: number;
+  records: number;
+  /** Resolved client-side from dataModelIds; not part of the API payload. */
+  pathologies?: Pathology[];
 }
+
+export type FederationInput = Omit<Federation, 'pathologies'>;
