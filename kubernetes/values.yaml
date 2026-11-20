@@ -23,7 +23,7 @@ dqt:
   maxUploadSizeMb: 20
 
 datacatalogDb:
-  image: postgres:18.7
+  image: postgres:19.0
   db: datacatalog
   storage: 5Gi
 
