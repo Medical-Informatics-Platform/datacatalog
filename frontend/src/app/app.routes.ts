@@ -1,16 +1,17 @@
-import { Component } from '@angular/core';
 import { Routes } from '@angular/router';
+import { AccountComponent } from './account/account.component';
 import { AuthCallbackComponent } from './callback/authcallback.component';
-
-@Component({
-  selector: 'app-placeholder',
-  standalone: true,
-  template: '<main><h1>MIP Data Catalog</h1><p>UI scaffold ready for rebuild.</p></main>',
-})
-export class PlaceholderComponent {}
+import { AuthGuard } from './guards/auth.guard';
+import { OverviewComponent } from './overview/overview.component';
 
 export const appRoutes: Routes = [
-  { path: '', component: PlaceholderComponent },
+  { path: '', component: OverviewComponent, title: 'MIP Data Catalog' },
+  {
+    path: 'pathology',
+    title: 'Pathology Explorer · MIP Data Catalog',
+    loadComponent: () => import('./pathology/pathology.component').then((m) => m.PathologyComponent),
+  },
+  { path: 'account', component: AccountComponent, canActivate: [AuthGuard], title: 'Account · MIP Data Catalog' },
   { path: 'auth-callback', component: AuthCallbackComponent },
   { path: '**', redirectTo: '' },
 ];
