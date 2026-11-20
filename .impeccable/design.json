@@ -1,0 +1,262 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-20T10:38:31.922999+00:00",
+  "title": "Design System: MIP Data Catalog",
+  "extensions": {
+    "colorMeta": {
+      "mip-blue": {
+        "role": "primary",
+        "displayName": "MIP Blue",
+        "canonical": "#2b33e9",
+        "tonalRamp": [
+          "oklch(15% 0.083 275)",
+          "oklch(28% 0.138 275)",
+          "oklch(40% 0.188 275)",
+          "oklch(52% 0.237 275)",
+          "oklch(64% 0.212 275)",
+          "oklch(76% 0.163 275)",
+          "oklch(86% 0.121 275)",
+          "oklch(95% 0.083 275)"
+        ]
+      },
+      "signal-orange": {
+        "role": "secondary",
+        "displayName": "Signal Orange",
+        "canonical": "#ffba08",
+        "tonalRamp": [
+          "oklch(15% 0.057 85)",
+          "oklch(28% 0.094 85)",
+          "oklch(40% 0.128 85)",
+          "oklch(52% 0.162 85)",
+          "oklch(64% 0.145 85)",
+          "oklch(76% 0.111 85)",
+          "oklch(86% 0.082 85)",
+          "oklch(95% 0.057 85)"
+        ]
+      },
+      "sage-well": {
+        "role": "secondary",
+        "displayName": "Sage Well",
+        "canonical": "#dfefe4",
+        "tonalRamp": [
+          "oklch(15% 0.02 155)",
+          "oklch(28% 0.033 155)",
+          "oklch(40% 0.045 155)",
+          "oklch(52% 0.057 155)",
+          "oklch(64% 0.051 155)",
+          "oklch(76% 0.039 155)",
+          "oklch(86% 0.029 155)",
+          "oklch(95% 0.02 155)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#12143a",
+        "tonalRamp": [
+          "oklch(15% 0.017 275)",
+          "oklch(28% 0.028 275)",
+          "oklch(40% 0.038 275)",
+          "oklch(52% 0.048 275)",
+          "oklch(64% 0.043 275)",
+          "oklch(76% 0.033 275)",
+          "oklch(86% 0.024 275)",
+          "oklch(95% 0.017 275)"
+        ]
+      },
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Canvas",
+        "canonical": "#f6f7fb",
+        "tonalRamp": [
+          "oklch(15% 0.005 275)",
+          "oklch(28% 0.008 275)",
+          "oklch(40% 0.011 275)",
+          "oklch(52% 0.014 275)",
+          "oklch(64% 0.013 275)",
+          "oklch(76% 0.01 275)",
+          "oklch(86% 0.007 275)",
+          "oklch(95% 0.005 275)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Single h1 per page."
+      },
+      "code": {
+        "displayName": "Code",
+        "purpose": "Every identifier, version and variable code."
+      }
+    },
+    "shadows": [
+      {
+        "name": "overlay",
+        "value": "0 12px 32px -8px rgb(18 20 58 / 0.28), 0 2px 6px rgb(18 20 58 / 0.12)",
+        "purpose": "Dialogs, drawers, menus and slide-overs only."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease",
+        "value": "cubic-bezier(0.2, 0.8, 0.2, 1)",
+        "purpose": "All state and slide transitions."
+      },
+      {
+        "name": "dur",
+        "value": "200ms",
+        "purpose": "Hover and colour transitions; 0ms under reduced motion."
+      },
+      {
+        "name": "dur-3",
+        "value": "320ms",
+        "purpose": "Drawer slide, route-strip line growth."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "inspector-overlay",
+        "value": "1199px"
+      },
+      {
+        "name": "stack",
+        "value": "959px"
+      },
+      {
+        "name": "nav-burger",
+        "value": "860px"
+      },
+      {
+        "name": "single-column",
+        "value": "767px"
+      },
+      {
+        "name": "hide-map",
+        "value": "600px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Default white button with strong hairline.",
+      "html": "<button class=\"ds-btn\">Export</button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 16px;border-radius:6px;border:1px solid #b5bad6;background:#fff;color:#12143a;font:500 15px system-ui;transition:background 200ms,border-color 200ms}.ds-btn:hover{background:#f1f3fb;border-color:#62667f}.ds-btn:focus-visible{outline:2px solid #2b33e9;outline-offset:2px}"
+    },
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one filled action per view.",
+      "html": "<button class=\"ds-btnp\">Explore data models</button>",
+      "css": ".ds-btnp{min-height:40px;padding:0 16px;border-radius:6px;border:1px solid #2b33e9;background:#2b33e9;color:#fff;font:500 15px system-ui;transition:background 200ms}.ds-btnp:hover{background:#1f26b8;border-color:#1f26b8}.ds-btnp:focus-visible{outline:2px solid #2b33e9;outline-offset:2px}"
+    },
+    {
+      "name": "Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Text field with label above.",
+      "html": "<label class=\"ds-f\"><span>Search variables</span><input class=\"ds-in\" value=\"hippocampus\"></label>",
+      "css": ".ds-f{display:grid;gap:6px;font:500 14px system-ui;color:#12143a}.ds-in{min-height:40px;padding:8px 12px;border:1px solid #b5bad6;border-radius:6px;background:#fff;font:inherit}.ds-in:hover{border-color:#62667f}.ds-in:focus-visible{outline:2px solid #2b33e9;outline-offset:2px}"
+    },
+    {
+      "name": "State Badges",
+      "kind": "chip",
+      "refersTo": "badge-released",
+      "description": "Released is solid green; Draft is amber with dashed edge.",
+      "html": "<span class=\"ds-b ds-r\">Released</span> <span class=\"ds-b ds-d\">Draft</span>",
+      "css": ".ds-b{display:inline-flex;padding:1px 8px;border-radius:999px;font:600 12px/1.5 system-ui}.ds-r{background:#dfefe4;color:#1e6b45}.ds-d{background:#fff1c7;color:#7a5200;border:1px dashed #c77700}"
+    },
+    {
+      "name": "Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Pill link for facts and filters.",
+      "html": "<a class=\"ds-chip\" href=\"#\"><i class=\"ds-dot\"></i>EBRAINS</a>",
+      "css": ".ds-chip{display:inline-flex;align-items:center;gap:8px;min-height:28px;padding:0 10px;border:1px solid #d9dceb;border-radius:999px;background:#fff;color:#12143a;font:14px system-ui;text-decoration:none}.ds-chip:hover{background:#f1f3fb;border-color:#b5bad6}.ds-dot{width:10px;height:10px;border-radius:50%;border:3px solid #2b33e9;background:#fff}"
+    },
+    {
+      "name": "Header Nav",
+      "kind": "nav",
+      "refersTo": "header-well",
+      "description": "Sage brand well, then nav with a 4px active underline.",
+      "html": "<div class=\"ds-bar\"><span class=\"ds-well\">MIP</span><a class=\"ds-on\" href=\"#\">Overview</a><a href=\"#\">Explorer</a></div>",
+      "css": ".ds-bar{display:flex;align-items:stretch;height:64px;background:#fff;border-bottom:1px solid #c5dccb;font:500 15px system-ui}.ds-well{display:flex;align-items:center;padding:0 24px;background:#dfefe4;border-right:1px solid #c5dccb;color:#1f26b8;font-weight:600}.ds-bar a{display:flex;align-items:center;padding:0 14px;color:#12143a;text-decoration:none;position:relative}.ds-bar a:hover{color:#2b33e9;background:#f1f3fb}.ds-bar a.ds-on{color:#2b33e9}.ds-bar a.ds-on::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:4px;background:#2b33e9}"
+    },
+    {
+      "name": "Route Strip",
+      "kind": "custom",
+      "description": "Signature: line segments between hollow stations; the last stop is the orange you-are-here marker.",
+      "html": "<ol class=\"ds-rt\"><li><i class=\"ds-s\"></i>Dementia</li><li><i class=\"ds-s\"></i>Brain Anatomy</li><li class=\"ds-h\"><i class=\"ds-s\"></i>Hippocampus</li></ol>",
+      "css": ".ds-rt{display:flex;align-items:center;list-style:none;margin:0;padding:6px 0;font:500 13px system-ui;color:#12143a}.ds-rt li{display:flex;align-items:center;gap:8px;padding:4px 6px}.ds-rt li+li::before{content:'';width:28px;height:4px;border-radius:2px;background:#2b33e9;margin-right:6px}.ds-s{width:10px;height:10px;border-radius:50%;border:3px solid #2b33e9;background:#fff}.ds-h{font-weight:600}.ds-h .ds-s{width:14px;height:14px;border-color:#ffba08;box-shadow:0 0 0 2px #12143a}"
+    },
+    {
+      "name": "Column Row",
+      "kind": "custom",
+      "description": "Miller-column row; selected takes a 4px inset edge in the federation line colour.",
+      "html": "<div class=\"ds-c\"><button class=\"ds-row\"><i class=\"ds-q\"></i>Demographics</button><button class=\"ds-row ds-sel\"><i class=\"ds-q\"></i>Brain Anatomy</button></div>",
+      "css": ".ds-c{width:272px;background:#fff;border:1px solid #d9dceb}.ds-row{display:flex;align-items:center;gap:10px;width:100%;min-height:40px;padding:6px 12px 7px 14px;border:0;border-bottom:1px solid #e8eaf3;background:transparent;text-align:left;color:#12143a;font:14px system-ui}.ds-row:hover{background:#f1f3fb}.ds-sel{background:#e7eafe;box-shadow:inset 4px 0 0 #2b33e9}.ds-q{width:10px;height:10px;border-radius:50%;border:2px solid #2b33e9;background:#fff}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Transit Map",
+    "overview": "Federations are lines, data models are stations, and every variable sits at the end of a route you can see. The system is a light, hairline-ruled reference tool for researchers who need to find one variable among hundreds. Structure comes from rows, rules and coloured lines; surfaces are white on a faintly blue-tinted canvas, and depth is almost absent.\n\nColour carries meaning. MIP blue is both the action colour and the default line colour. Each federation gets its own line colour, which follows it from the overview map into the explorer. Orange appears only as the \"you are here\" marker.",
+    "keyCharacteristics": [
+      "Rows and hairlines, not cards. Panels are bordered, never shadowed.",
+      "Ink neutrals tinted toward brand blue; no pure grey, no pure black.",
+      "Federation line colour is the one data-driven colour system.",
+      "Codes, versions and variable names are always monospace.",
+      "Sage-green brand well flush left in the header holds the blue MIP logo."
+    ],
+    "rules": [
+      {
+        "name": "The One Marker Rule",
+        "body": "Orange marks the current position and nothing else. If orange appears on a button, badge or decoration, it is wrong.",
+        "section": "colors"
+      },
+      {
+        "name": "The Line Colour Rule",
+        "body": "A federation's colour is assigned once and follows it everywhere (map, directory row edge, column row edge, route strip). Never reuse a line colour for status.",
+        "section": "colors"
+      },
+      {
+        "name": "The Draft Is Dashed Rule",
+        "body": "Draft state is amber with a dashed edge, Released is green and solid; state is never colour alone.",
+        "section": "colors"
+      },
+      {
+        "name": "The Mono For Codes Rule",
+        "body": "Anything that is an identifier (federation code, pathology code, version, variable code) is set in Atkinson Mono.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Numbers Rule",
+        "body": "Counts and metrics use tabular-nums.",
+        "section": "typography"
+      },
+      {
+        "name": "The Shadows Only On Overlays Rule",
+        "body": "If something is in the page flow, it has a border, not a shadow.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use rows and hairlines (1px #e8eaf3 / #d9dceb) to separate content.",
+      "Do colour a federation consistently with its assigned line colour everywhere it appears.",
+      "Do set every code, version and variable name in the mono face.",
+      "Do keep Released solid green and Draft dashed amber, with the word on the badge.",
+      "Do use `.on-dark` so focus rings turn orange on the footer.",
+      "Do honour reduced motion (durations go to 0)."
+    ],
+    "donts": [
+      "Don't use orange for anything other than the current-position marker.",
+      "Don't put shadows on in-flow surfaces; shadows are for overlays only.",
+      "Don't use hero-metric cards, gradients or glass; metrics are a ruled strip.",
+      "Don't redraw, recolour or place the logo on any ground other than sage (#dfefe4) or the footer ground (#2d2d2b).",
+      "Don't use `window.alert` or `window.confirm`; use dialogs, drawers and toasts."
+    ]
+  }
+}
