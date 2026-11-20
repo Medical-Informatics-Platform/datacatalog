@@ -186,7 +186,7 @@ convertToD3Hierarchy(data: any): any {
       switchMap(() => this.reloadPathologies()), // Reload pathologies after creation
       tap(() => console.log('Pathology created successfully from Excel.')),
       catchError((error: HttpErrorResponse) => {
-        console.error('Sanitized error response:', error.error.replace(/<EOL>/g, '\n'));
+        console.error('Error creating Excel pathology:', error);
         const errorMessage = this.extractErrorMessage(error, 'creating Excel pathology');
         return throwError(() => errorMessage);
         }
@@ -195,9 +195,6 @@ convertToD3Hierarchy(data: any): any {
   }
 
   private extractErrorMessage(error: HttpErrorResponse, action: string): string {
-    if (error.status === 409 && typeof error.error === 'string') {
-      return error.error; // conflict message from the backend is already user-readable
-    }
     if (error.error instanceof ErrorEvent) {
       // Client-side error
       return `An error occurred while ${action}: ${error.error.message}`;
