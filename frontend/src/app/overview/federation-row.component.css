@@ -16,3 +16,5 @@ article::before { content: ''; position: absolute; left: 0; top: 22px; bottom: 2
   .facts { grid-template-columns: auto auto; justify-content: start; text-align: left; gap: 24px; order: 2; }
   .acts { order: 3; }
 }
+article { scroll-margin-top: 80px; outline: none; }
+article:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }

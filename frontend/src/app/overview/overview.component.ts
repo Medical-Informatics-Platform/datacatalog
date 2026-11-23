@@ -3,13 +3,13 @@ import { RouterLink } from '@angular/router';
 import { CatalogStore } from '../services/catalog.store';
 import { formatCount } from '../services/pathology-tree';
 import { FederationDirectoryComponent } from './federation-directory.component';
-import { LineMapComponent } from './line-map.component';
+import { EuropeMapComponent } from './europe-map.component';
 import { PlatformPreviewComponent } from './platform-preview.component';
 
 @Component({
   selector: 'mip-overview',
   standalone: true,
-  imports: [RouterLink, LineMapComponent, PlatformPreviewComponent, FederationDirectoryComponent],
+  imports: [RouterLink, EuropeMapComponent, PlatformPreviewComponent, FederationDirectoryComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="wrap hero">
@@ -27,11 +27,11 @@ import { PlatformPreviewComponent } from './platform-preview.component';
       </div>
       <div class="map" aria-live="polite">
         @if (store.state() === 'ready') {
-          <mip-line-map [federations]="store.federationsWithModels()" />
+          <mip-europe-map [federations]="store.federations()" />
         } @else if (store.state() === 'error') {
           <p class="muted">The network map didn't load.</p>
         } @else {
-          <div class="skel" style="height:300px"></div>
+          <div class="skel" style="height:360px"></div>
         }
       </div>
     </section>

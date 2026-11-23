@@ -15,7 +15,7 @@ type Fed = Federation & { pathologies: Pathology[] };
   imports: [RouterLink, IconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <article [style.--line]="color()">
+    <article [id]="'fed-' + fed().code" tabindex="-1" [style.--line]="color()">
       <div class="main">
         <div class="ttl"><h3>{{ fed().title }}</h3><code class="muted">{{ fed().code }}</code></div>
         <p #desc class="desc" [class.clamp]="!open()" [id]="'d-' + fed().code">{{ fed().description }}</p>
