@@ -18,6 +18,12 @@
 
 	<properties>
 		<java.version>21</java.version>
+		<!-- Spring Boot 4.2.0's BOM pins Tomcat 11.0.27. Override to 11.0.29, which fixes
+		     the November 2026 advisories (CVE-2026-95517, CVE-2026-106012, CVE-2026-116561,
+		     CVE-2026-116600, CVE-2026-116830, CVE-2026-117517, CVE-2026-118028,
+		     CVE-2026-118233, CVE-2026-118436, CVE-2026-121649). Remove once a Spring Boot
+		     release ships Tomcat 11.0.30+ (fix for CVE-2026-133325; not yet released). -->
+		<tomcat.version>11.0.29</tomcat.version>
 		<springdoc.version>3.2.0</springdoc.version>
 		<jsonpath.version>3.0.0</jsonpath.version>
 		<gson.version>2.15.0</gson.version>
