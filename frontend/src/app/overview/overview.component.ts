@@ -26,7 +26,7 @@ import { EuropeMapComponent } from './europe-map.component';
       </div>
       <div class="map" aria-live="polite">
         @if (store.state() === 'ready') {
-          <mip-europe-map [federations]="store.federations()" />
+          <mip-europe-map [federations]="store.federations()" [lineColors]="store.lineColors()" />
         } @else if (store.state() === 'error') {
           <p class="muted">The network map didn't load.</p>
         } @else {
