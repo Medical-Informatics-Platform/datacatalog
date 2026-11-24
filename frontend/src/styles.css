@@ -9,7 +9,7 @@
   --ink: #12143a; --ink-2: #474b6b; --ink-3: #62667f;
   --surface: #fff; --canvas: #f6f7fb; --sunken: #eef0f7;
   --border: #d9dceb; --border-strong: #b5bad6; --hairline: #e8eaf3;
-  --header-border: #c5dccb; --footer-bg: #2d2d2b; --footer-ink: #e9e9e6; --footer-ink-2: #b4b4ae;
+  --header-border: #c5dccb;
   --hover: #f1f3fb; --selected: #e7eafe; --mark: #ffe08a;
   /* states */
   --released-fg: #1e6b45; --released-bg: #dfefe4;
