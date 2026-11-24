@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CatalogStore } from '../services/catalog.store';
 import { PathologyService } from '../services/pathology.service';
 import {
-  KindFilter, ROOT_ID, buildIndex, modelSize, modelsFor, resolvePathology, searchNodes,
+  KindFilter, ROOT_ID, buildIndex, modelsFor, resolvePathology, searchNodes,
 } from '../services/pathology-tree';
 import { SessionService } from '../services/session.service';
 import { LayoutService } from '../shell/layout.service';
@@ -18,6 +18,7 @@ import { ContextBarComponent, ModelAction } from './context-bar.component';
 import { IndexTableComponent } from './index-table.component';
 import { InspectorComponent } from './inspector.component';
 import { ModelDrawerComponent } from './model-drawer.component';
+import { ModelPickerComponent } from './model-picker.component';
 import { ResultListComponent } from './result-list.component';
 import { RouteStripComponent } from './route-strip.component';
 import { TreeViewComponent } from './tree-view.component';
@@ -33,16 +34,16 @@ const CAP = 200;
   standalone: true,
   imports: [
     ContextBarComponent, ColumnBrowserComponent, RouteStripComponent, InspectorComponent, ResultListComponent, TreeViewComponent,
-    IndexTableComponent, IconComponent,
+    IndexTableComponent, IconComponent, ModelPickerComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:keydown)': 'keys($event)', '[class.focus]': 'layout.focus()' },
   template: `
     <mip-context-bar
       [federations]="store.federations()" [federation]="fed()" [models]="models()" [model]="model()"
-      [expert]="session.isExpert()" [focus]="layout.focus()" [stats]="stats()"
-      (federationChange)="setFederation($event)" (modelChange)="setModel($event)" (exportAs)="exportModel($event)"
-      (action)="act($event)" (toggleFocus)="layout.focus.set(!layout.focus())" />
+      [expert]="session.isExpert()" [stats]="stats()"
+      (federationChange)="setFederation($event)" (modelChange)="setModel($event)" (clearModel)="clearModel()" (exportAs)="exportModel($event)"
+      (action)="act($event)" />
 
     @switch (true) {
       @case (store.state() === 'error') {
@@ -56,34 +57,7 @@ const CAP = 200;
       }
       @case (!model()) {
         <div class="state">
-          @if (scopeMiss(); as miss) {
-            <div class="banner" role="status"><span><code>{{ miss }}</code> is not part of {{ fed()?.title }}.</span><button class="btn btn-sm" type="button" (click)="setFederation('')">Show all federations</button></div>
-          }
-          <h2>Choose a data model</h2>
-          <p class="muted">
-            @if (fed()) { {{ fed()!.title }} has {{ models().length }} released data model{{ models().length === 1 ? '' : 's' }}. } @else { {{ models().length }} data models across all federations. }
-            Pick one to browse its variables.
-          </p>
-          @for (g of pickGroups(); track g.title) {
-            <section class="pg">
-              <h3>{{ g.title }}</h3>
-              <table class="tbl">
-                <thead><tr><th>Data model</th><th>Code · version</th><th class="num">Variables</th><th class="num">Groups</th></tr></thead>
-                <tbody>
-                  @for (m of g.rows; track m.m.uuid) {
-                    <tr>
-                      <td><button class="lnk" type="button" (click)="setModel(m.m.uuid)">{{ m.m.label }}</button>@if (session.isExpert() && !m.m.released) { <span class="badge badge-draft">Draft</span> }</td>
-                      <td class="mono muted">{{ m.m.code }} · {{ m.m.version }}</td>
-                      <td class="num">{{ m.size.variables }}</td>
-                      <td class="num">{{ m.size.groups }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </section>
-          } @empty {
-            <p class="muted">This federation has no released data models yet.</p>
-          }
+          <mip-model-picker [models]="models()" [federation]="fed()" [expert]="session.isExpert()" [miss]="scopeMiss()" (showAll)="setFederation('')" />
         </div>
       }
       @default {
@@ -91,25 +65,35 @@ const CAP = 200;
         <div class="tools">
           <div class="search">
             <mip-icon name="search" />
-            <input #q class="input" type="search" [attr.aria-label]="'Search ' + ix.nodes.size + ' variables and groups'" [placeholder]="'Search ' + (ix.nodes.size - 1) + ' variables and groups   ( / )'"
+            <input #q class="input" type="search" [attr.aria-label]="'Search ' + (ix.nodes.size - 1) + ' variables and groups'" placeholder="Search variables and groups"
               [value]="text()" (input)="text.set($any($event.target).value); matchIdx.set(-1)" (keydown.escape)="clearSearch()"
               (keydown.enter)="step($event, 1)" (keydown.shift.enter)="step($event, -1)" />
+            @if (text()) {
+              <button class="x" type="button" aria-label="Clear search" (click)="text.set(''); matchIdx.set(-1); q.focus()"><mip-icon name="x" [size]="14" /></button>
+            } @else {
+              <kbd aria-hidden="true">/</kbd>
+            }
           </div>
+          <span class="rule" aria-hidden="true"></span>
           <div class="seg" role="group" aria-label="Show">
-            @for (k of kinds; track k.v) { <button type="button" [attr.aria-pressed]="kind() === k.v" (click)="kind.set(k.v)">{{ k.l }}</button> }
+            @for (k of kinds; track k.v) { <button type="button" [attr.aria-pressed]="kind() === k.v" (click)="setKind(k.v)">{{ k.l }}</button> }
           </div>
-          <label class="ty"><span class="sr-only">Data type</span>
-            <select class="input" [value]="type()" (change)="type.set($any($event.target).value)">
-              <option value="">Any type</option>
-              @for (t of ix.variableTypes; track t) { <option [value]="t">{{ t }}</option> }
-            </select>
-          </label>
+          <div class="seg types" role="group" aria-label="Data type" [style.visibility]="kind() === 'group' ? 'hidden' : null" [attr.inert]="kind() === 'group' ? '' : null">
+            @for (t of ix.variableTypes; track t) {
+              <button type="button" [attr.aria-pressed]="type() === t" [attr.aria-label]="t + ', ' + (typeCounts().get(t) ?? 0)" (click)="setType(t)">
+                <span class="tglyph" [class]="'tglyph t-' + t">{{ t[0].toUpperCase() }}</span><span class="tl">{{ t }}</span><span class="cnt num">{{ typeCounts().get(t) ?? 0 }}</span>
+              </button>
+            }
+          </div>
+          @if (active()) {
+            <button class="btn btn-ghost btn-sm" type="button" (click)="clearFilters(q)">Clear</button>
+            <p class="hits muted num" aria-live="polite">{{ matchIdx() >= 0 ? matchIdx() + 1 + ' of ' : '' }}{{ results().length }}{{ capped() ? '+' : '' }} match{{ results().length === 1 ? '' : 'es' }}</p>
+          }
           <div class="seg view" role="group" aria-label="View">
             <button type="button" [attr.aria-pressed]="view() === 'browse'" (click)="setView('browse')"><mip-icon name="columns" [size]="15" /> <span>Browse</span></button>
             <button type="button" [attr.aria-pressed]="view() === 'index'" (click)="setView('index')"><mip-icon name="table" [size]="15" /> <span>Index</span></button>
             <button type="button" [attr.aria-pressed]="view() === 'tree'" (click)="setView('tree')"><mip-icon name="tree" [size]="15" /> <span>Tree</span></button>
           </div>
-          <p class="hits muted" aria-live="polite">@if (active()) { {{ matchIdx() >= 0 ? matchIdx() + 1 + ' of ' : '' }}{{ results().length }}{{ capped() ? '+' : '' }} match{{ results().length === 1 ? '' : 'es' }} }</p>
         </div>
         <div class="route" [class.hide]="view() === 'index' || (view() === 'browse' && active())" [class.notree]="view() === 'tree'" [class.rootonly]="!node()">
           <mip-route-strip [crumbs]="node()?.path ?? ix.nodes.get(ix.rootId)!.path" [color]="color()" (go)="select($event)" />
@@ -171,15 +155,6 @@ export class PathologyComponent implements OnInit, OnDestroy {
   protected model = computed(() =>
     resolvePathology(this.models(), this.qp().get('pathologyCode'), this.qp().get('latest') === 'true', this.qp().get('version')) ?? null,
   );
-  protected pickGroups = computed(() => {
-    const rows = this.models()
-      .map((m) => ({ m, size: modelSize(m) }))
-      .sort((a, b) => a.m.label.localeCompare(b.m.label) || (a.m.version ?? '').localeCompare(b.m.version ?? ''));
-    return [
-      { title: 'Cross-sectional', rows: rows.filter((r) => !r.m.longitudinal) },
-      { title: 'Longitudinal', rows: rows.filter((r) => r.m.longitudinal) },
-    ].filter((g) => g.rows.length);
-  });
   /** pathologyCode names a model that exists, but not inside the selected federation. */
   protected scopeMiss = computed(() => {
     const code = this.qp().get('pathologyCode');
@@ -243,9 +218,37 @@ export class PathologyComponent implements OnInit, OnDestroy {
     this.clearSearch();
   }
 
+  protected clearModel(): void {
+    this.nav({ pathologyCode: null, version: null, latest: null, node: null });
+    this.clearSearch();
+  }
+
   protected select(id: string | null): void {
     this.flash.set(null);
     this.nav({ node: id && id !== ROOT_ID ? id.slice(ROOT_ID.length + 1) : null }, true);
+  }
+
+  /** Groups have no data type, so Groups clears the type and picking a type implies Variables. */
+  protected setKind(k: KindFilter): void {
+    this.kind.set(k);
+    if (k === 'group') this.type.set('');
+  }
+
+  protected setType(t: string): void {
+    this.type.set(this.type() === t ? '' : t);
+    if (this.type()) this.kind.set('variable');
+  }
+
+  protected typeCounts = computed(() => {
+    const out = new Map<string, number>();
+    for (const n of this.index()?.nodes.values() ?? []) if (n.kind === 'variable') out.set(n.type, (out.get(n.type) ?? 0) + 1);
+    return out;
+  });
+
+  protected clearFilters(q: HTMLInputElement): void {
+    this.clearSearch();
+    this.matchIdx.set(-1);
+    q.focus();
   }
 
   protected setView(v: 'browse' | 'index' | 'tree'): void {
@@ -327,7 +330,7 @@ export class PathologyComponent implements OnInit, OnDestroy {
   protected keys(e: KeyboardEvent): void {
     const t = e.target as HTMLElement;
     if (e.key === '/' && !/INPUT|TEXTAREA|SELECT/.test(t.tagName)) {
-      const i = document.querySelector<HTMLInputElement>('.tools input[type=search]');
+      const i = document.querySelector<HTMLInputElement>('mip-pathology input[type=search]');
       if (i) {
         e.preventDefault();
         i.focus();

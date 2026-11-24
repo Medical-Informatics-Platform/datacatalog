@@ -11,7 +11,6 @@
 .cell { display: flex; flex-direction: column; }
 .cell dt { color: var(--ink-3); font-size: 0.875rem; }
 .bar { display: block; width: 90px; height: 28px; }
-.note { font-size: 0.75rem; text-align: right; padding-bottom: 10px; }
 .strip .banner { margin-block: 14px; }
 .about { padding-block: 56px 8px; }
 .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 20px; }

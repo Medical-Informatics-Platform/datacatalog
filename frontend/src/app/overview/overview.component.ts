@@ -54,7 +54,6 @@ import { PlatformPreviewComponent } from './platform-preview.component';
               </div>
             }
           </dl>
-          <p class="note muted">Figures as reported by each federation.</p>
         }
       </div>
     </section>

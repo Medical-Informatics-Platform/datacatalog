@@ -1,11 +1,22 @@
 :host { display: block; background: var(--surface); border-bottom: 1px solid var(--border); }
-.bar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; padding: 8px var(--gutter); min-height: 56px; }
-.f { display: flex; align-items: center; gap: 8px; font-size: 0.875rem; }
-.f .input { width: auto; min-width: 11rem; max-width: 22rem; min-height: 36px; padding-block: 4px; }
-.stats { font-size: 0.8125rem; }
+.bar { display: flex; align-items: center; gap: 8px 12px; padding: 0 var(--gutter); min-height: 48px; }
+ol { display: flex; align-items: center; gap: 4px; margin: 0; padding: 0; list-style: none; min-width: 0; }
+li { display: flex; align-items: center; min-width: 0; }
+.sep { color: var(--border-strong); font-size: 0.875rem; padding-inline: 2px; }
+.crumb { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 8px; border: 0; border-radius: var(--r-sm); background: none; font-size: 0.9375rem; font-weight: 500; color: var(--ink-2); min-width: 0; }
+.crumb:hover { background: var(--hover); color: var(--ink); }
+.crumb mip-icon { color: var(--ink-3); flex: none; }
+.crumb .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crumb.cur { color: var(--ink); font-size: 1rem; font-weight: 650; }
+.ver { padding: 1px 6px; border-radius: var(--r-sm); background: var(--selected); color: var(--blue-d); font-size: 0.8125rem; font-weight: 500; }
+.here { padding: 0 8px; font-size: 0.9375rem; font-weight: 600; color: var(--ink); }
 .sp { flex: 1; }
+.stats { font-size: 0.8125rem; white-space: nowrap; }
+.rule { width: 1px; height: 20px; background: var(--border); }
 .menu { min-width: 240px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-md); box-shadow: var(--shadow-overlay); padding: 4px; margin-top: 6px; }
 .mi { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 12px; border: 0; background: transparent; border-radius: var(--r-sm); text-align: left; font-size: 0.9375rem; }
 .mi:hover, .mi:focus-visible { background: var(--hover); }
 .mi.danger { color: var(--error-fg); }
-@media (max-width: 767px) { .bar { display: grid; grid-template-columns: 1fr 1fr; } .f { display: block; min-width: 0; } .f > span { display: none; } .f .input { width: 100%; max-width: none; min-width: 0; } .stats, .sp { display: none; } .bar > .btn, .bar > .badge { justify-self: start; } .bar > button[aria-label*='screen'] { display: none; } }
+.mi.all { border-top: 1px solid var(--hairline); border-radius: 0 0 var(--r-sm) var(--r-sm); margin-top: 4px; color: var(--ink-2); }
+.ck { margin-left: auto; color: var(--blue); }
+@media (max-width: 767px) { .stats, .rule { display: none; } .bar { flex-wrap: wrap; padding-block: 6px; } .crumb .t { max-width: 38vw; } }

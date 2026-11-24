@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Pathology } from '../interfaces/pathology.interface';
 import { buildIndex } from '../services/pathology-tree';
+import { MOTION_MS } from './tree-layout';
 import { TreeViewComponent } from './tree-view.component';
 
 const model: Pathology = {
@@ -33,8 +34,12 @@ describe('TreeViewComponent', () => {
     expect(item('root/g0').textContent).toContain('Alpha');
   });
 
-  it('emits the group id when a group card is clicked and the variable id for a row', () => {
-    item('root/g1').click();
+  it('toggles a group when its card is clicked anywhere, selecting it on open, and picks a variable row', () => {
+    item('root/g1').click(); // open card: folds, no selection
+    fixture.detectChanges();
+    expect(item('root/g1').getAttribute('aria-expanded')).toBe('false');
+    expect(picked).toEqual([]);
+    item('root/g1').click(); // closed card: opens and selects
     item('root/g0/v1').click();
     expect(picked).toEqual(['root/g1', 'root/g0/v1']);
   });
@@ -45,6 +50,34 @@ describe('TreeViewComponent', () => {
     expect(picked).toEqual([]);
     expect(item('root/g0').getAttribute('aria-expanded')).toBe('false');
     expect(el().querySelector('[data-id="root/g0/v0"]')).toBeNull();
+  });
+
+  it('keeps a folding list drawn, inert and unaddressable until it has faded out, and brings it back if reopened', async () => {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) pending('reduced motion: folds are instant');
+    const sheet = () => el().querySelectorAll<HTMLElement>('[data-n="root/g0#vars"]');
+    const leaving = sheet()[0];
+    (item('root/g0').querySelector('.chev') as HTMLElement).click();
+    fixture.detectChanges();
+    expect(sheet().length).toBe(1);
+    expect(leaving.hasAttribute('inert')).toBeTrue();
+    expect(leaving.getAttribute('aria-hidden')).toBe('true');
+    expect(leaving.querySelector('[data-id]')).toBeNull(); // rows of a leaving list are not reachable by id/keyboard
+
+    (item('root/g0').querySelector('.chev') as HTMLElement).click(); // reopen mid-fade: the same element turns around
+    fixture.detectChanges();
+    expect(sheet().length).toBe(1);
+    expect(sheet()[0]).toBe(leaving);
+    expect(leaving.hasAttribute('inert')).toBeFalse();
+    expect(item('root/g0/v0').textContent).toContain('Age');
+
+    (item('root/g0').querySelector('.chev') as HTMLElement).click();
+    fixture.detectChanges();
+    await new Promise((r) => setTimeout(r, MOTION_MS + 150));
+    fixture.detectChanges();
+    expect(sheet().length).toBe(0);
+    const links = el().querySelectorAll('.links path');
+    expect(links.length).toBe(2); // fading link paths are gone too
+    expect(el().querySelector('[style*="--o"]')).toBeNull();
   });
 
   it('marks the selected variable and expands the path to it', () => {

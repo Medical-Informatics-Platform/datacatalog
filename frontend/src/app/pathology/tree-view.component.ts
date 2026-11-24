@@ -1,10 +1,12 @@
 import {
-  ChangeDetectionStrategy, Component, ElementRef, afterNextRender, afterRenderEffect, computed, effect, inject, input, linkedSignal,
-  output, signal, untracked,
+  ChangeDetectionStrategy, Component, DestroyRef, ElementRef, NgZone, afterNextRender, afterRenderEffect, computed, effect, inject, input,
+  linkedSignal, output, signal, untracked, viewChild,
 } from '@angular/core';
 import { ROOT_ID, TreeIndex, TreeNode } from '../services/pathology-tree';
+import { IconComponent } from '../ui/icon.component';
 import {
-  BLayout, BNode, GROUPS_PAGE, Measure, ROWS_STEP, anchorShift, defaultExpanded, expandPath, fitTransform, layoutTree, zoomAt,
+  BLayout, BNode, GROUPS_PAGE, MOTION_MS, Measure, Pose, ROWS_STEP, Shown, Track, anchorShift, defaultExpanded, expandPath, fillFold,
+  fitTransform, layoutTree, linkPath, planMotion, poseAt, poseOf, reframe, zoomAt,
 } from './tree-layout';
 
 const TYPES = ['integer', 'real', 'nominal', 'text'];
@@ -13,6 +15,10 @@ const FACE: Record<string, string> = { root: '600 15px', group: '500 14px', comp
 const FAMILY = '"Atkinson Hyperlegible Next Variable", system-ui, sans-serif';
 
 interface Item { id: string; kind: 'group' | 'row'; depth: number; y: number; parent: string | null; node: TreeNode; bn: BNode }
+/** The layout plus the nodes it just dropped, still drawn (inert, hidden from assistive tech) while they fade out. */
+interface Scene { layout: BLayout; ix: TreeIndex; gone: BNode[] }
+/** A drawn node, its link colour and, while it moves, its track. */
+interface Live { n: BNode; el: HTMLElement | undefined; route: boolean; track?: Track }
 
 const sameSet = (a: ReadonlySet<string>, b: ReadonlySet<string>) => a.size === b.size && [...a].every((x) => b.has(x));
 
@@ -24,6 +30,7 @@ const sameSet = (a: ReadonlySet<string>, b: ReadonlySet<string>) => a.size === b
 @Component({
   selector: 'mip-tree-view',
   standalone: true,
+  imports: [IconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[style.--line]': 'color()' },
   template: `
@@ -33,23 +40,24 @@ const sameSet = (a: ReadonlySet<string>, b: ReadonlySet<string>) => a.size === b
     </div>
     <div class="vp" #vp (pointerdown)="down($event)" (pointermove)="move($event)" (pointerup)="up()" (pointercancel)="up()" [class.drag]="dragging()">
       @if (searching() && !matchIds().length) { <p class="none">No variables or groups match. Clear the search or filters.</p> }
-      <div class="stage" role="tree" aria-label="Variable hierarchy" [class.anim]="anim()" [class.lod1]="tf().k < 0.7" [class.lod2]="tf().k < 0.5"
+      <div #stage class="stage" role="tree" aria-label="Variable hierarchy" [class.anim]="anim()" [class.lod1]="tf().k < 0.7" [class.lod2]="tf().k < 0.5"
         [style.transform]="'translate(' + tf().x + 'px,' + tf().y + 'px) scale(' + tf().k + ')'" (keydown)="onKey($event)">
         <svg class="links" aria-hidden="true" [attr.width]="layout().width" [attr.height]="layout().height">
-          <path class="lk" [attr.d]="plain()" /><path class="lk r" [attr.d]="routed()" />
+          <path #lp class="lk" [attr.d]="plain()" /><path #lr class="lk r" [attr.d]="routed()" />
         </svg>
-        @for (n of layout().nodes; track n.id) {
+        @for (n of drawn(); track n.id) {
           @switch (n.kind) {
             @case ('sheet') {
-              <div class="n sheet" role="group" [attr.aria-label]="'Variables of ' + groupLabel(n)" [class.dim]="dim(n)" [class.rt]="isRoute(n.id)"
+              <div class="n sheet" role="group" [attr.data-n]="n.id" [attr.inert]="gone(n) ? '' : null" [attr.aria-hidden]="gone(n) || null"
+                [attr.aria-label]="'Variables of ' + groupLabel(n)" [class.dim]="dim(n)" [class.rt]="isRoute(n.id)"
                 [style.transform]="pos(n)" [style.width.px]="n.w" [style.height.px]="n.h">
                 @if (n.total! > 1) {
                   <div class="sh"><span class="num">{{ n.total }} variables</span><span class="ts">@for (s of mix(n.groupId); track s.t) {<i [style.flex-grow]="s.n" [style.--tc]="'var(--t-' + s.t + ')'"></i>}</span></div>
                 }
                 @for (r of n.rows!; track r.node.id) {
-                  <div class="row" role="treeitem" [attr.data-id]="r.node.id" [attr.aria-level]="n.depth + 1" [attr.aria-selected]="r.node.id === selectedId()"
+                  <div class="row" role="treeitem" [attr.data-id]="gone(n) ? null : r.node.id" [attr.aria-level]="n.depth + 1" [attr.aria-selected]="r.node.id === selectedId()"
                     [class.on]="r.node.id === selectedId()" [class.hit]="matchSet().has(r.node.id)" [class.xt]="r.extra" [style.height.px]="r.h"
-                    [tabindex]="r.node.id === rover() ? 0 : -1" (click)="pickVar(r.node)">
+                    [tabindex]="r.node.id === rover() ? 0 : -1" (click)="pickVar(r.node, n)">
                     <span class="tglyph" [class]="'tglyph t-' + r.node.type">{{ letter(r.node.type) }}</span>
                     <span class="lb2"><span class="rl">{{ r.node.label }}</span>@if (r.node.id === selectedId()) {<code class="cd muted">{{ r.node.code }}</code>}</span>
                   </div>
@@ -64,20 +72,22 @@ const sameSet = (a: ReadonlySet<string>, b: ReadonlySet<string>) => a.size === b
               </div>
             }
             @case ('more') {
-              <button type="button" class="n more" [style.transform]="pos(n)" [style.width.px]="n.w" [style.height.px]="n.h" (click)="showGroups(n)">
+              <button type="button" class="n more" [attr.data-n]="n.id" [attr.inert]="gone(n) ? '' : null" [attr.aria-hidden]="gone(n) || null"
+                [style.transform]="pos(n)" [style.width.px]="n.w" [style.height.px]="n.h" (click)="showGroups(n)">
                 Show {{ n.left! < pageSize ? n.left : pageSize }} more groups <span class="muted num">({{ n.left }} left)</span>
               </button>
             }
             @default {
-              <div class="n g" role="treeitem" [attr.data-id]="n.id" [attr.aria-level]="n.depth + 1" [attr.aria-expanded]="n.openable ? n.expanded : null"
+              <div class="n g" role="treeitem" [attr.data-n]="n.id" [attr.data-id]="gone(n) ? null : n.id" [attr.inert]="gone(n) ? '' : null"
+                [attr.aria-hidden]="gone(n) || null" [attr.aria-level]="n.depth + 1" [attr.aria-expanded]="n.openable ? n.expanded : null"
                 [attr.aria-selected]="n.id === selId(n)" [class.root]="n.kind === 'root'" [class.cp]="n.compact" [class.ex]="n.expanded" [class.on]="n.id === selId(n)"
                 [class.hit]="matchSet().has(n.id)" [class.dim]="dim(n)" [class.rt]="isRoute(n.id)" [tabindex]="n.id === rover() ? 0 : -1"
                 [style.transform]="pos(n)" [style.width.px]="n.w" [style.height.px]="n.h" [style.--lc]="n.lines" (click)="pickGroup(n)">
                 <span class="lb">{{ n.node!.label }}</span>
-                @if (n.kind === 'root') { <code class="cd muted">{{ n.node!.code }} · {{ version() }}</code> }
+                @if (n.kind === 'root') { <code class="cd muted" [attr.title]="n.node!.code + ' · ' + version()">{{ n.node!.code }} · {{ version() }}</code> }
                 @if (!n.compact) { <span class="meta num muted">{{ meta(n.node!) }}</span> } @else { <span class="ct num muted">{{ n.node!.totalVariables }}</span> }
                 @if (n.openable && n.kind !== 'root') {
-                  <button class="chev" type="button" tabindex="-1" [attr.aria-label]="(n.expanded ? 'Collapse ' : 'Expand ') + n.node!.label" (click)="toggle(n, $event)">›</button>
+                  <button class="chev" type="button" tabindex="-1" [attr.aria-label]="(n.expanded ? 'Collapse ' : 'Expand ') + n.node!.label" (click)="toggle(n, $event)"><mip-icon name="down" [size]="16" /></button>
                 }
                 @if (!n.expanded && hitCount(n); as c) { <span class="hb">{{ c }}</span> }
                 <span class="barw" aria-hidden="true"><span class="bar" [style.width.px]="barW(n)">@for (s of mix(n.id); track s.t) {<i [style.flex-grow]="s.n" [style.--tc]="'var(--t-' + s.t + ')'"></i>}</span></span>
@@ -110,6 +120,10 @@ export class TreeViewComponent {
   readonly select = output<string | null>();
 
   private host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private zone = inject(NgZone);
+  private stage = viewChild.required<ElementRef<HTMLElement>>('stage');
+  private lp = viewChild.required<ElementRef<SVGPathElement>>('lp');
+  private lr = viewChild.required<ElementRef<SVGPathElement>>('lr');
   protected pageSize = GROUPS_PAGE;
   protected vp = signal({ w: 960, h: 560 });
   protected tf = signal({ x: 24, y: 24, k: 1 });
@@ -125,6 +139,15 @@ export class TreeViewComponent {
   private drag: { x: number; y: number; tx: number; ty: number; moved: boolean; id: number } | null = null;
   private justDragged = false;
   private ctx = typeof document !== 'undefined' ? document.createElement('canvas').getContext('2d') : null;
+  /** Set by user intent (clicks, keys, selection, Collapse); layout changes without it (search, fonts, resize) snap. */
+  private motion = false;
+  private calm = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
+  private live = new Map<string, Live>();
+  private synced: BLayout | null = null;
+  private syncedIx: TreeIndex | null = null;
+  private raf = 0;
+  /** Links of fading nodes, one cloned path per fade cohort so each can carry its own opacity. */
+  private fx = new Map<string, SVGPathElement>();
 
   protected model = computed(() => this.index().nodes.get(this.index().rootId));
   protected compact = computed(() => this.vp().w < 768);
@@ -165,6 +188,31 @@ export class TreeViewComponent {
       this.measure,
     ),
   );
+
+  protected scene = linkedSignal<BLayout, Scene>({
+    source: this.layout,
+    computation: (layout, prev) => {
+      const ix = untracked(this.index);
+      const gone: BNode[] = [];
+      if (prev && prev.value.ix === ix && this.motion && !this.calm?.matches) {
+        const seen = new Set(layout.nodes.map((n) => n.id));
+        for (const n of [...prev.value.layout.nodes, ...prev.value.gone]) {
+          if (!seen.has(n.id)) {
+            seen.add(n.id);
+            gone.push(n);
+          }
+        }
+      }
+      return { layout, ix, gone };
+    },
+  });
+  /** Leaving nodes first, so they fade out beneath the cards gliding into their place. */
+  protected drawn = computed(() => {
+    const s = this.scene();
+    return s.gone.length ? [...s.gone, ...s.layout.nodes] : s.layout.nodes;
+  });
+  private goneIds = computed(() => new Set(this.scene().gone.map((n) => n.id)));
+  protected gone = (n: BNode) => this.goneIds().has(n.id);
 
   protected plain = computed(() => this.layout().links.filter((l) => !l.route).map((l) => l.d).join(''));
   protected routed = computed(() => this.layout().links.filter((l) => l.route).map((l) => l.d).join(''));
@@ -240,6 +288,7 @@ export class TreeViewComponent {
       const sel = this.selectedId();
       const ix = this.index();
       const acc = untracked(this.accordion);
+      this.motion = true;
       untracked(() =>
         this.expanded.update((e) => {
           const next = expandPath(ix, sel, e, acc);
@@ -265,8 +314,14 @@ export class TreeViewComponent {
       const l = this.layout();
       const vp = this.vp();
       const sel = this.selectedId();
-      untracked(() => this.camera(l, vp, sel));
+      untracked(() => {
+        const before = this.tf();
+        this.camera(l, vp, sel);
+        this.sync(before);
+        this.motion = false;
+      });
     });
+    inject(DestroyRef).onDestroy(() => cancelAnimationFrame(this.raf));
     afterRenderEffect(() => {
       const id = this.pendingFocus();
       const nonce = this.focusNonce();
@@ -301,7 +356,6 @@ export class TreeViewComponent {
     if (this.anchor) {
       const a = this.anchor;
       this.anchor = null;
-      this.lastReveal = sel;
       const node = l.nodes.find((n) => n.id === a.id);
       if (!node) return;
       let next = anchorShift(t, { x: a.sx, y: a.sy }, node);
@@ -309,13 +363,21 @@ export class TreeViewComponent {
       if (kids.length) {
         const top = Math.min(...kids.map((n) => n.y)) * next.k + next.y;
         const bottom = Math.max(...kids.map((n) => n.y + n.h)) * next.k + next.y;
+        const left = Math.min(...kids.map((n) => n.x)) * next.k + next.x;
         const right = Math.max(...kids.map((n) => n.x + n.w)) * next.k + next.x;
-        let dx = right > vp.w - 48 ? vp.w - 48 - right : 0;
-        let dy = bottom > vp.h - 48 ? vp.h - 48 - bottom : top < 48 ? 48 - top : 0;
-        const anchorX = node.x * next.k + next.x + dx;
-        if (anchorX < 24) dx += 24 - anchorX;
-        if (dy < 0 && node.y * next.k + next.y + dy < 24) dy = 24 - (node.y * next.k + next.y);
-        next = { ...next, x: next.x + dx, y: next.y + dy };
+        // the card stays put; the camera only steps in when every opened child would land off-screen
+        if (left > vp.w - 48 || top > vp.h - 48 || bottom < 48) {
+          let dx = right > vp.w - 48 ? vp.w - 48 - right : 0;
+          let dy = bottom > vp.h - 48 ? vp.h - 48 - bottom : top < 48 ? 48 - top : 0;
+          const anchorX = node.x * next.k + next.x + dx;
+          if (anchorX < 24) dx += 24 - anchorX;
+          if (dy < 0 && node.y * next.k + next.y + dy < 24) dy = 24 - (node.y * next.k + next.y);
+          next = { ...next, x: next.x + dx, y: next.y + dy };
+        }
+      } else {
+        // a fold shrinks the tree: the card stays put unless that would leave most of the viewport blank (vertical only)
+        const h0 = this.synced?.height ?? l.height;
+        next = { ...next, y: next.y + fillFold(vp.h, { top: t.y, bottom: t.y + h0 * t.k }, { top: next.y, bottom: next.y + l.height * next.k }) };
       }
       this.tf.set(next);
       return;
@@ -361,9 +423,140 @@ export class TreeViewComponent {
     setTimeout(() => this.anim.set(false), 280);
   }
 
+  /** Remember where the clicked node is on screen now (mid-glide too), so the camera can pin it there. */
   private setAnchor(n: BNode): void {
+    this.motion = true;
+    if (this.anim()) {
+      // a zoom/fit glide is running: stop the camera where it is, or the card would jump to the glide's end
+      const m = new DOMMatrixReadOnly(getComputedStyle(this.stage().nativeElement).transform);
+      this.anim.set(false);
+      this.tf.set({ x: m.e, y: m.f, k: m.a });
+    }
     const t = this.tf();
-    this.anchor = { id: n.id, sx: n.x * t.k + t.x, sy: n.y * t.k + t.y };
+    const tr = this.live.get(n.id)?.track;
+    const p = tr ? poseAt(tr, performance.now()) : n;
+    this.anchor = { id: n.id, sx: p.x * t.k + t.x, sy: p.y * t.k + t.y };
+  }
+
+  // ---- motion: one rAF loop outside Angular writes node transforms and link paths straight to the DOM ----
+
+  /** After a layout change: plan tracks from what is on screen now to the new layout (or snap) and run them. */
+  private sync(before: { x: number; y: number; k: number }): void {
+    const s = this.scene();
+    if (s.layout === this.synced) return;
+    const animate = this.motion && this.syncedIx === s.ix && !this.calm?.matches;
+    this.synced = s.layout;
+    this.syncedIx = s.ix;
+    const now = performance.now();
+    const shown = new Map<string, Shown>();
+    if (animate) for (const [id, e] of this.live) shown.set(id, { node: e.n, pose: e.track ? poseAt(e.track, now) : poseOf(e.n), track: e.track });
+    // a camera glide (CSS) starts from where the stage is now, so poses stay in stage space; a camera jump is undone per node (FLIP)
+    const shift = this.anim() ? (p: Pose) => p : reframe(before, this.tf());
+    const tracks = animate ? planMotion(shown, s.layout.nodes, s.gone, shift, now) : new Map<string, Track>();
+    const els = new Map<string, HTMLElement>();
+    for (const el of this.stage().nativeElement.querySelectorAll<HTMLElement>(':scope > [data-n]')) els.set(el.dataset['n']!, el);
+    const route = new Map(s.layout.links.map((k) => [k.id, k.route]));
+    const old = this.live;
+    this.live = new Map();
+    for (const n of [...s.layout.nodes, ...s.gone]) {
+      this.live.set(n.id, { n, el: els.get(n.id), route: route.get(n.id) ?? old.get(n.id)?.route ?? false, track: tracks.get(n.id) });
+    }
+    // nodes that were moving and now rest: Angular only rewrites a binding whose value changed, so put the bound values back
+    for (const [id, e] of old) {
+      const cur = this.live.get(id);
+      if (e.track && cur?.el && !cur.track) this.rest(cur);
+    }
+    if (!tracks.size) return this.finish();
+    this.frame(now);
+    if (!this.raf) this.zone.runOutsideAngular(() => (this.raf = requestAnimationFrame(this.tick)));
+  }
+
+  private tick = () => {
+    this.raf = 0;
+    if (this.frame(performance.now())) this.raf = requestAnimationFrame(this.tick);
+    else this.finish();
+  };
+
+  /** Draw one frame; returns whether anything is still moving. */
+  private frame(now: number): boolean {
+    let busy = false;
+    const poses = new Map<string, { x: number; y: number; h: number; o?: number }>();
+    for (const [id, e] of this.live) {
+      const tr = e.track;
+      if (!tr) {
+        poses.set(id, e.n);
+        continue;
+      }
+      const p = poseAt(tr, now);
+      poses.set(id, p);
+      busy ||= now < tr.t0 + MOTION_MS;
+      if (!e.el) continue;
+      e.el.style.transform = `translate(${p.x}px,${p.y}px)`;
+      if (tr.from.h !== tr.to.h) e.el.style.height = `${p.h}px`;
+      if (tr.from.o !== tr.to.o) e.el.style.setProperty('--o', `${p.o}`);
+    }
+    // links follow the live boxes, so they stay on the cards; links of fading nodes fade with them
+    let plain = '', routed = '';
+    const fading = new Map<string, { d: string; o: number; route: boolean }>();
+    for (const [id, e] of this.live) {
+      const parent = e.n.parentId ? this.live.get(e.n.parentId) : undefined;
+      if (!parent) continue;
+      const c = poses.get(id)!;
+      const d = linkPath({ ...poses.get(parent.n.id)!, w: parent.n.w }, c);
+      const tr = e.track;
+      if (tr && (tr.from.o !== 1 || tr.to.o !== 1)) {
+        const key = `${e.route}|${tr.t0}|${tr.from.o}|${tr.to.o}`;
+        const f = fading.get(key);
+        if (f) f.d += d;
+        else fading.set(key, { d, o: c.o ?? 1, route: e.route });
+      } else if (e.route) routed += d;
+      else plain += d;
+    }
+    this.lp().nativeElement.setAttribute('d', plain);
+    this.lr().nativeElement.setAttribute('d', routed);
+    for (const [key, el] of this.fx) {
+      if (!fading.has(key)) {
+        el.remove();
+        this.fx.delete(key);
+      }
+    }
+    for (const [key, f] of fading) {
+      let el = this.fx.get(key);
+      if (!el) {
+        // a clone keeps the component's style scope
+        el = (f.route ? this.lr() : this.lp()).nativeElement.cloneNode() as SVGPathElement;
+        this.lp().nativeElement.parentNode!.appendChild(el);
+        this.fx.set(key, el);
+      }
+      el.setAttribute('d', f.d);
+      el.style.opacity = `${f.o}`;
+    }
+    return busy;
+  }
+
+  /** End every track: bound values back on the DOM, fading links and nodes removed. */
+  private finish(): void {
+    cancelAnimationFrame(this.raf);
+    this.raf = 0;
+    for (const e of this.live.values()) {
+      if (e.track && e.el) this.rest(e);
+      e.track = undefined;
+    }
+    for (const el of this.fx.values()) el.remove();
+    this.fx.clear();
+    this.lp().nativeElement.setAttribute('d', this.plain());
+    this.lr().nativeElement.setAttribute('d', this.routed());
+    const s = this.scene();
+    if (s.gone.length) {
+      for (const g of s.gone) this.live.delete(g.id);
+      this.zone.run(() => this.scene.set({ ...s, gone: [] }));
+    }
+  }
+
+  private rest(e: Live): void {
+    e.el!.style.transform = this.pos(e.n);
+    e.el!.style.height = `${e.n.h}px`;
+    e.el!.style.removeProperty('--o');
   }
 
   protected fit(): void {
@@ -430,15 +623,25 @@ export class TreeViewComponent {
     this.expanded.set(s);
   }
 
+  /** A click anywhere on an open group card folds it; on a closed one it opens and selects it. */
   protected pickGroup(n: BNode): void {
+    if (n.kind === 'group' && n.openable && n.expanded) return this.toggle(n);
+    if (n.kind === 'root' && this.selectedId() === null) return; // nothing changes, so no anchor may linger
     this.setAnchor(n);
     if (n.kind === 'group' && n.openable && !n.expanded) {
       this.expanded.set(expandPath(this.index(), n.id, this.expanded(), this.accordion()));
     }
-    this.select.emit(n.kind === 'root' ? null : n.id);
+    // the clicked card is on screen already: the selection it causes must not pan the camera
+    this.lastReveal = n.kind === 'root' ? null : n.id;
+    this.select.emit(this.lastReveal);
   }
 
-  protected pickVar(v: TreeNode): void {
+  /** Selecting a row grows it (its code line shows): pin its list so the row stays under the pointer. */
+  protected pickVar(v: TreeNode, sheet: BNode): void {
+    if (v.id !== this.selectedId()) {
+      this.setAnchor(sheet);
+      this.lastReveal = v.id;
+    }
     this.select.emit(v.id);
   }
 
@@ -455,6 +658,8 @@ export class TreeViewComponent {
   }
 
   protected reset(): void {
+    this.motion = true;
+    this.ease();
     this.rowsShown.set(new Map());
     this.groupsShown.set(new Map());
     this.expanded.set(expandPath(this.index(), this.selectedId(), defaultExpanded(this.index()), this.accordion()));
@@ -489,11 +694,11 @@ export class TreeViewComponent {
         else go(items.find((x) => x.id === it.parent));
         break;
       case 'Enter':
-        if (it.kind === 'row') this.pickVar(it.node);
+        if (it.kind === 'row') this.pickVar(it.node, it.bn);
         else this.pickGroup(it.bn);
         break;
       case ' ':
-        if (it.kind === 'row') this.pickVar(it.node);
+        if (it.kind === 'row') this.pickVar(it.node, it.bn);
         else if (it.bn.openable && it.id !== ROOT_ID) this.toggle(it.bn);
         break;
       case '+': case '=': this.zoomBy(1.2); break;
