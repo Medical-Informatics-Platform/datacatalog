@@ -1,0 +1,15 @@
+:host { display: block; padding-block: 56px 8px; }
+:host section { scroll-margin-top: 80px; }
+.head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.head-copy { display: grid; gap: 4px; }
+.intro { color: var(--ink-2); font-size: 0.9375rem; }
+.tools { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--border-strong); }
+.search { position: relative; width: min(340px, 100%); }
+.search mip-icon { position: absolute; left: 12px; top: 11px; color: var(--ink-3); pointer-events: none; }
+.search .input { padding-left: 38px; }
+.sel { display: flex; align-items: center; gap: 8px; font-size: 0.9375rem; }
+.sel .input { width: auto; min-width: 12rem; }
+.count { margin-left: auto; font-size: 0.875rem; }
+.empty { padding: 40px 0; display: grid; justify-items: start; gap: 12px; }
+.sk { padding: 22px 0 22px 20px; border-bottom: 1px solid var(--border); }
+@media (max-width: 600px) { .count { margin-left: 0; width: 100%; } }
