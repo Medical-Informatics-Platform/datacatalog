@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, forkJoin, of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
-import { Federation } from '../interfaces/federations.interface';
+import { Federation, FederationInput } from '../interfaces/federations.interface';
 import { PathologyService } from './pathology.service';
 import {Pathology} from "../interfaces/pathology.interface";
 
@@ -64,7 +64,7 @@ export class FederationService {
   }
 
   // Create a new federation
-  createFederation(federation: Federation): Observable<Federation> {
+  createFederation(federation: FederationInput): Observable<Federation> {
     return this.http.post<Federation>(this.apiUrl, federation).pipe(
       catchError((error) => {
         console.error('Error creating federation:', error);
@@ -73,7 +73,7 @@ export class FederationService {
     );
   }
 
-  updateFederation(code: string, federation: Federation): Observable<Federation> {
+  updateFederation(code: string, federation: FederationInput): Observable<Federation> {
     const url = `${this.apiUrl}/${code}`; // Construct the URL with the federation code
     return this.http.put<Federation>(url, federation).pipe(
       catchError((error) => {
