@@ -54,13 +54,23 @@ only when valid Keycloak settings are available.
 
 If port `80` is already in use on your machine, set `FRONTEND_PORT=8080` and update `PUBLIC_HOST=http://localhost:8080`.
 
+If `.stored_data/datacatalogdb` was initialized by an older PostgreSQL major version, set
+`POSTGRES_IMAGE` in `.env` to the matching tag (for example `postgres:18.7`); PostgreSQL refuses to
+open a data directory from a different major version.
+
 ### Start The Stack
 
 ```bash
 docker compose up --build
 ```
 
-The frontend is available at `http://localhost` (or your configured `FRONTEND_PORT`), the backend at `http://localhost:8090/services`, and the data quality tool at `http://localhost:8000`. PostgreSQL data is persisted under `.stored_data/datacatalogdb`.
+This starts PostgreSQL, the backend, and the data quality tool. The `frontend` service is behind the
+`frontend` Compose profile and is **not** started by default: run the Angular app on the host with
+`npm start` (see [Local Service Development](#local-service-development)) and
+`PUBLIC_HOST=http://localhost:4200` in `.env`. To use the Nginx-served frontend container instead,
+run `docker compose --profile frontend up --build` and set `PUBLIC_HOST` to its origin.
+
+The Angular app is available at `http://localhost:4200`, the backend at `http://localhost:8090/services`, and the data quality tool at `http://localhost:8000`. PostgreSQL data is persisted under `.stored_data/datacatalogdb`.
 
 Useful endpoints once the stack is up:
 
