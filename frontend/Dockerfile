@@ -8,7 +8,7 @@ COPY . .
 RUN npm run build -- --configuration production
 
 # Step 2: Use Nginx to serve the Angular app
-FROM nginx:1.31.9-alpine@sha256:fb4658584bd9a916ffb6f6e365f97c25cfdb2923801f551ea08356e695f14ff7
+FROM nginx:1.31.10-alpine@sha256:7fc0fb4af7bf006aeb31aea88069976060f8f0a0a86b667126742cc17f4e31ae
 COPY --chown=nginx:nginx docker-entrypoint.d/00-public-hostname.envsh /docker-entrypoint.d/00-public-hostname.envsh
 COPY --chown=nginx:nginx nginx.conf /etc/nginx/templates/default.conf.template
 COPY --from=build --chown=nginx:nginx /app/dist/datacatalog-frontend /usr/share/nginx/html
