@@ -1,8 +1,7 @@
 :host { display: block; }
-.hero { display: grid; grid-template-columns: 5fr 7fr; gap: 40px; align-items: center; padding-block: 56px 40px; }
+.hero { padding-block: 56px 40px; }
 .lead { margin-top: 20px; font-size: 1.125rem; color: var(--ink-2); max-width: 54ch; }
 .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
-.map { min-width: 0; }
 .strip { background: var(--surface); border-block: 1px solid var(--border); padding-block: 4px; }
 .cells { display: grid; grid-template-columns: repeat(4, 1fr); }
 .cell { padding: 20px 24px; border-left: 1px solid var(--hairline); }
@@ -20,8 +19,8 @@
 .hn ul { margin-top: 6px; display: grid; gap: 4px; font-size: 0.9375rem; }
 .ok { color: var(--released-fg); } .no { color: var(--error-fg); }
 @media (max-width: 959px) {
-  .hero, .cols { grid-template-columns: 1fr; }
+  .cols { grid-template-columns: 1fr; }
   .cells { grid-template-columns: 1fr 1fr; }
   .cell:nth-child(3) { border-left: 0; padding-left: 0; }
 }
-@media (max-width: 600px) { .map { display: none; } .hero { padding-block: 32px 24px; } }
+@media (max-width: 600px) { .hero { padding-block: 32px 24px; } }

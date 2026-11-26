@@ -16,7 +16,6 @@ import { FederationRowComponent } from './federation-row.component';
   standalone: true,
   imports: [FederationRowComponent, IconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '(document:keydown)': 'slash($event)' },
   template: `
     <section class="wrap" id="federations" aria-labelledby="fd-h">
       <div class="head">
@@ -31,7 +30,7 @@ import { FederationRowComponent } from './federation-row.component';
       <div class="tools">
         <div class="search">
           <mip-icon name="search" />
-          <input #q class="input" type="search" aria-label="Search federations" placeholder="Search federations   ( / )" [value]="text()" (input)="text.set($any($event.target).value)" />
+          <input #q class="input" type="search" aria-label="Filter federations" placeholder="Filter federations" [value]="text()" (input)="text.set($any($event.target).value)" />
         </div>
         <label class="sel">
           <span class="muted">Has data model</span>
@@ -100,16 +99,6 @@ export class FederationDirectoryComponent {
         (!m || f.pathologies.some((p) => (p.code ?? p.label) === m)),
     );
   });
-
-  protected slash(e: KeyboardEvent): void {
-    const el = e.target as HTMLElement;
-    if (e.key !== '/' || /INPUT|TEXTAREA|SELECT/.test(el.tagName) || el.isContentEditable) return;
-    const input = document.querySelector<HTMLInputElement>('#federations input[type=search]');
-    if (input) {
-      e.preventDefault();
-      input.focus();
-    }
-  }
 
   protected clear(): void {
     this.text.set('');

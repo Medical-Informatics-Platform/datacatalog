@@ -3,12 +3,11 @@ import { RouterLink } from '@angular/router';
 import { CatalogStore } from '../services/catalog.store';
 import { formatCount } from '../services/pathology-tree';
 import { FederationDirectoryComponent } from './federation-directory.component';
-import { EuropeMapComponent } from './europe-map.component';
 
 @Component({
   selector: 'mip-overview',
   standalone: true,
-  imports: [RouterLink, EuropeMapComponent, FederationDirectoryComponent],
+  imports: [RouterLink, FederationDirectoryComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="wrap hero">
@@ -23,15 +22,6 @@ import { EuropeMapComponent } from './europe-map.component';
           <a class="btn btn-primary" routerLink="/pathology">Explore data models</a>
           <a class="btn" routerLink="/" fragment="federations">Browse federations</a>
         </div>
-      </div>
-      <div class="map" aria-live="polite">
-        @if (store.state() === 'ready') {
-          <mip-europe-map [federations]="store.federations()" [lineColors]="store.lineColors()" />
-        } @else if (store.state() === 'error') {
-          <p class="muted">The network map didn't load.</p>
-        } @else {
-          <div class="skel" style="height:360px"></div>
-        }
       </div>
     </section>
 
