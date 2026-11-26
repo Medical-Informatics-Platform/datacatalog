@@ -115,6 +115,13 @@ export function expandPath(index: TreeIndex, id: string | null, expanded: Readon
   return next;
 }
 
+/** Groups to open so `levels` levels of groups show below the root; one past the deepest level also opens every variable list. */
+export function expandToDepth(index: TreeIndex, levels: number): Set<string> {
+  const out = new Set<string>();
+  for (const n of index.nodes.values()) if (n.kind === 'group' && n.id !== ROOT_ID && n.depth < levels) out.add(n.id);
+  return out;
+}
+
 /** Path nodes (groups + the sheet of the selected variable) that carry the route line. */
 export function routeIds(index: TreeIndex, selectedId: string | null): Set<string> {
   const out = new Set<string>([ROOT_ID]);

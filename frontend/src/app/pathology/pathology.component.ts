@@ -194,6 +194,11 @@ export class PathologyComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.store.ensureLoaded();
+    const initialQuery = this.route.snapshot.queryParamMap.get('q')?.trim();
+    if (initialQuery) {
+      this.text.set(initialQuery);
+      this.nav({ q: null }, true);
+    }
   }
 
   ngOnDestroy(): void {

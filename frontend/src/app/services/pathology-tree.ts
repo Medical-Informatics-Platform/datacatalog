@@ -114,9 +114,39 @@ export interface SearchQuery {
 
 const norm = (s: string) => s.toLowerCase();
 
+/** Find the first index of `query` at a word start (start, after non-alphanumeric, or camelCase). */
+export function findWordStart(text: string, query: string, fromIndex = 0): number {
+  const q = norm(query.trim());
+  if (!q) return -1;
+  const low = norm(text);
+  if (!/[a-z0-9]/.test(q[0])) return low.indexOf(q, fromIndex);
+  for (let i = low.indexOf(q, fromIndex); i !== -1; i = low.indexOf(q, i + 1)) {
+    if (i === 0 || !/[a-z0-9]/.test(low[i - 1]) || (/[a-z]/.test(text[i - 1]) && /[A-Z]/.test(text[i]))) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+/** Rank a node against a query: exact code (100) > prefix (80) > word-start (60) > description (30). */
+export function scoreNode(
+  node: Pick<TreeNode, 'label' | 'code' | 'description'>,
+  query: string,
+): number {
+  const text = norm(query.trim());
+  if (!text) return 0;
+  const label = norm(node.label);
+  const code = norm(node.code);
+  if (code === text) return 100;
+  if (label.startsWith(text) || code.startsWith(text)) return 80;
+  if (findWordStart(node.label, text) >= 0 || findWordStart(node.code, text) >= 0) return 60;
+  if (findWordStart(node.description, text) >= 0) return 30;
+  return -1;
+}
+
 /** Ranked search: label/code hits before description hits; exact code first. */
 export function searchNodes(index: TreeIndex, q: SearchQuery, limit = 200): TreeNode[] {
-  const text = norm(q.text.trim());
+  const text = q.text.trim();
   const out: { node: TreeNode; score: number }[] = [];
   for (const node of index.nodes.values()) {
     if (node.id === index.rootId) continue;
@@ -126,13 +156,7 @@ export function searchNodes(index: TreeIndex, q: SearchQuery, limit = 200): Tree
       out.push({ node, score: 0 });
       continue;
     }
-    const label = norm(node.label);
-    const code = norm(node.code);
-    let score = -1;
-    if (code === text) score = 100;
-    else if (label.startsWith(text) || code.startsWith(text)) score = 80;
-    else if (label.includes(text) || code.includes(text)) score = 60;
-    else if (norm(node.description).includes(text)) score = 30;
+    const score = scoreNode(node, text);
     if (score >= 0) out.push({ node, score });
   }
   out.sort((a, b) => b.score - a.score || a.node.label.localeCompare(b.node.label));
@@ -196,20 +220,35 @@ export function formatCount(n: number | string | null | undefined): string {
   return Number.isFinite(v) ? v.toLocaleString('en-US') : '–';
 }
 
-/** Split text into plain/highlighted parts for a case-insensitive query. */
+/** Split text into plain/highlighted parts for a case-insensitive word-start query. */
 export function highlightParts(text: string, query: string): { t: string; hit: boolean }[] {
-  const q = query.trim().toLowerCase();
+  const q = query.trim();
   if (!q) return [{ t: text, hit: false }];
   const out: { t: string; hit: boolean }[] = [];
-  const low = text.toLowerCase();
   let i = 0;
-  for (let j = low.indexOf(q, i); j !== -1; j = low.indexOf(q, i)) {
+  for (let j = findWordStart(text, q, i); j !== -1; j = findWordStart(text, q, i)) {
     if (j > i) out.push({ t: text.slice(i, j), hit: false });
     out.push({ t: text.slice(j, j + q.length), hit: true });
     i = j + q.length;
   }
   if (i < text.length) out.push({ t: text.slice(i), hit: false });
   return out;
+}
+
+/** Bounded excerpt around a description-only match (empty if label or code matched). */
+export function descriptionSnippet(
+  node: Pick<TreeNode, 'label' | 'code' | 'description'>,
+  query: string,
+): string {
+  const q = query.trim();
+  if (!q || !node.description || findWordStart(node.label, q) >= 0 || findWordStart(node.code, q) >= 0) {
+    return '';
+  }
+  const i = findWordStart(node.description, q);
+  if (i < 0) return '';
+  const a = Math.max(0, i - 40);
+  const b = Math.min(node.description.length, i + q.length + 60);
+  return (a > 0 ? '…' : '') + node.description.slice(a, b) + (b < node.description.length ? '…' : '');
 }
 
 /** Cheap size summary for pickers (no index build). */

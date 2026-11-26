@@ -1,7 +1,7 @@
 import { Group, Pathology, Variable } from '../interfaces/pathology.interface';
 import { ROOT_ID, buildIndex } from '../services/pathology-tree';
 import {
-  BNode, BState, GROUPS_PAGE, INITIAL_ROWS, MOTION_MS, Measure, Pose, Shown, anchorShift, cubicBezier, defaultExpanded, ease, expandPath, fillFold,
+  BNode, BState, GROUPS_PAGE, INITIAL_ROWS, MOTION_MS, Measure, Pose, Shown, anchorShift, cubicBezier, defaultExpanded, ease, expandPath, expandToDepth, fillFold,
   fitTransform, layoutTree, linkPath, planMotion, poseAt, poseOf, reframe, zoomAt,
 } from './tree-layout';
 
@@ -90,6 +90,14 @@ describe('tree-layout', () => {
     expect([...expandPath(ix, 'root/g0/g0/v0', start, false)].sort()).toEqual(['root/g0', 'root/g0/g0', 'root/g1']);
     expect([...expandPath(ix, 'root/g0/g0/v0', start, true)].sort()).toEqual(['root/g0', 'root/g0/g0']);
     expect(expandPath(ix, null, start, true)).toEqual(start);
+  });
+
+  it('expands groups to a chosen depth', () => {
+    const ix = buildIndex(model([group('A', 1, [group('A1', 2, [group('A11', 1)])]), group('B', 1)]));
+    expect(expandToDepth(ix, 1).size).toBe(0);
+    expect([...expandToDepth(ix, 2)].sort()).toEqual(['root/g0', 'root/g1']);
+    expect([...expandToDepth(ix, 3)].sort()).toEqual(['root/g0', 'root/g0/g0', 'root/g1']);
+    expect([...expandToDepth(ix, 4)].sort()).toEqual(['root/g0', 'root/g0/g0', 'root/g0/g0/g0', 'root/g1']);
   });
 
   it('draws the route links only along the selection path', () => {

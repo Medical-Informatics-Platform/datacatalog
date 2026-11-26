@@ -53,5 +53,6 @@
 .lod2 .lb2, .lod2 .sh { visibility: hidden; }
 .hud { position: absolute; right: 12px; bottom: 12px; z-index: 3; display: flex; align-items: center; gap: 6px; padding: 6px; background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--r-md); box-shadow: var(--shadow-overlay); }
 .hud .btn[aria-pressed='true'] { background: var(--selected); border-color: var(--blue); color: var(--blue-d); }
+.hud .depth { width: auto; min-height: 32px; padding: 0 var(--s-2); font-size: 0.875rem; }
 .pct { min-width: 3.2em; text-align: center; font-size: 0.8125rem; }
 @media (max-width: 767px) { .hd span:first-child { display: none; } .hud { left: 12px; flex-wrap: wrap; justify-content: center; } }

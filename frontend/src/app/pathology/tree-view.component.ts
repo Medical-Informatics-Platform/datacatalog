@@ -5,7 +5,7 @@ import {
 import { ROOT_ID, TreeIndex, TreeNode } from '../services/pathology-tree';
 import { IconComponent } from '../ui/icon.component';
 import {
-  BLayout, BNode, GROUPS_PAGE, MOTION_MS, Measure, Pose, ROWS_STEP, Shown, Track, anchorShift, defaultExpanded, expandPath, fillFold,
+  BLayout, BNode, GROUPS_PAGE, MOTION_MS, Measure, Pose, ROWS_STEP, Shown, Track, anchorShift, defaultExpanded, expandPath, expandToDepth, fillFold,
   fitTransform, layoutTree, linkPath, planMotion, poseAt, poseOf, reframe, zoomAt,
 } from './tree-layout';
 
@@ -103,6 +103,10 @@ const sameSet = (a: ReadonlySet<string>, b: ReadonlySet<string>) => a.size === b
         <button class="btn btn-sm" type="button" (click)="fit()">Fit</button>
         <button class="btn btn-sm" type="button" [disabled]="!selectedId()" (click)="focusSelection()">Selection</button>
         <button class="btn btn-sm" type="button" [attr.aria-pressed]="accordion()" (click)="accordion.set(!accordion())">Accordion</button>
+        <select class="input depth" aria-label="Depth to expand" [value]="depth()" (change)="depth.set(+$any($event.target).value)">
+          @for (d of depths(); track d) { <option [value]="d">{{ d > maxDepth() ? 'All levels' : 'Depth ' + d }}</option> }
+        </select>
+        <button class="btn btn-sm" type="button" (click)="expandDepth()">Expand</button>
         <button class="btn btn-sm" type="button" (click)="reset()">Collapse</button>
       </div>
     </div>
@@ -158,6 +162,14 @@ export class TreeViewComponent {
     source: this.index,
     computation: (ix) => expandPath(ix, untracked(this.selectedId), defaultExpanded(ix), false),
   });
+  /** Deepest group level; picking one past it opens every variable list too. */
+  protected maxDepth = computed(() => {
+    let m = 1;
+    for (const n of this.index().nodes.values()) if (n.kind === 'group' && n.depth > m) m = n.depth;
+    return m;
+  });
+  protected depths = computed(() => Array.from({ length: this.maxDepth() + 1 }, (_, i) => i + 1));
+  protected depth = linkedSignal(() => Math.min(2, this.maxDepth() + 1));
   protected rowsShown = linkedSignal<TreeIndex, Map<string, number>>({ source: this.index, computation: () => new Map() });
   protected groupsShown = linkedSignal<TreeIndex, Map<string, number>>({ source: this.index, computation: () => new Map() });
 
@@ -663,6 +675,14 @@ export class TreeViewComponent {
     this.rowsShown.set(new Map());
     this.groupsShown.set(new Map());
     this.expanded.set(expandPath(this.index(), this.selectedId(), defaultExpanded(this.index()), this.accordion()));
+    this.needFit = true;
+  }
+
+  /** Open every group above the picked depth (and nothing below it), keeping the selection's path open. */
+  protected expandDepth(): void {
+    this.motion = true;
+    this.ease();
+    this.expanded.set(expandPath(this.index(), this.selectedId(), expandToDepth(this.index(), this.depth()), false));
     this.needFit = true;
   }
 

@@ -44,6 +44,23 @@ describe('TreeViewComponent', () => {
     expect(picked).toEqual(['root/g1', 'root/g0/v1']);
   });
 
+  it('expands to the depth picked in the view controls', () => {
+    const btn = (t: string) => [...el().querySelectorAll<HTMLButtonElement>('.hud button')].find((b) => b.textContent!.trim() === t)!;
+    const pick = (v: string) => {
+      const s = el().querySelector<HTMLSelectElement>('.hud select')!;
+      s.value = v;
+      s.dispatchEvent(new Event('change'));
+      btn('Expand').click();
+      fixture.detectChanges();
+    };
+    pick('1');
+    expect(item('root/g0').getAttribute('aria-expanded')).toBe('false');
+    expect(item('root/g1').getAttribute('aria-expanded')).toBe('false');
+    pick('2');
+    expect(item('root/g0').getAttribute('aria-expanded')).toBe('true');
+    expect(item('root/g1/v0').textContent).toContain('Bee');
+  });
+
   it('collapses with the chevron without selecting', () => {
     (item('root/g0').querySelector('.chev') as HTMLElement).click();
     fixture.detectChanges();

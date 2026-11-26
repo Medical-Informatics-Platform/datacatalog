@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, ElementRef, afterRenderEffect, inject, input, output } from '@angular/core';
-import { TreeNode, highlightParts } from '../services/pathology-tree';
+import { TreeNode, descriptionSnippet, highlightParts } from '../services/pathology-tree';
 
 /** Ranked search hits that replace the columns while a query is active. */
 @Component({
@@ -51,15 +51,7 @@ export class ResultListComponent {
 
   protected parts = (t: string) => highlightParts(t, this.query());
   protected pathOf = (n: TreeNode) => n.path.slice(0, -1).map((c) => c.label).join(' › ');
-
-  protected snippet(n: TreeNode): string {
-    const q = this.query().trim().toLowerCase();
-    if (!q || !n.description || `${n.label} ${n.code}`.toLowerCase().includes(q)) return '';
-    const i = n.description.toLowerCase().indexOf(q);
-    if (i < 0) return '';
-    const a = Math.max(0, i - 40);
-    return (a ? '…' : '') + n.description.slice(a, i + q.length + 60) + '…';
-  }
+  protected snippet = (n: TreeNode) => descriptionSnippet(n, this.query());
 
   constructor() {
     afterRenderEffect(() => {

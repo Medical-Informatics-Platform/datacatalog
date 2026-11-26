@@ -4,11 +4,14 @@ import {
   ROOT_ID,
   buildIndex,
   compareVersions,
+  descriptionSnippet,
+  findWordStart,
   formatCount,
   highlightParts,
   modelsFor,
   pickLatest,
   resolvePathology,
+  scoreNode,
   searchNodes,
 } from './pathology-tree';
 
@@ -91,9 +94,59 @@ describe('pathology-tree', () => {
     expect(formatCount(undefined)).toBe('–');
   });
 
-  it('splits highlight parts case-insensitively', () => {
+  it('splits highlight parts case-insensitively at word starts', () => {
     expect(highlightParts('Subject Age', 'age')).toEqual([{ t: 'Subject ', hit: false }, { t: 'Age', hit: true }]);
+    expect(highlightParts('Positive TIV', 'tiv')).toEqual([{ t: 'Positive ', hit: false }, { t: 'TIV', hit: true }]);
     expect(highlightParts('abc', '')).toEqual([{ t: 'abc', hit: false }]);
     expect(highlightParts('abc', 'x')).toEqual([{ t: 'abc', hit: false }]);
+  });
+
+  it('matches word starts across delimiters and camelCase while rejecting mid-word hits', () => {
+    expect(findWordStart('Positive', 'tiv')).toBe(-1);
+    expect(findWordStart('relative', 'tiv')).toBe(-1);
+    expect(findWordStart('AVPU_GCS_first', 'gcs')).toBe(5);
+    expect(findWordStart('AVPU/GCS (1st)', 'gcs')).toBe(5);
+    expect(findWordStart('arrivalModeCode', 'mode')).toBe(7);
+
+    const m: Pathology = {
+      uuid: 'u-ws',
+      label: 'Test',
+      code: 'test',
+      version: 'v1',
+      released: true,
+      variables: [
+        { label: 'Positive result', code: 'pos_res', type: 'nominal', description: 'Relative measure' },
+        { label: 'AVPU/GCS (1st)', code: 'AVPU_GCS_first', type: 'integer' },
+        { label: 'Mode of arrival', code: 'arrivalModeCode', type: 'nominal' },
+        { label: 'Glasgow', code: 'gcs', type: 'integer' },
+        { label: 'GCS total', code: 'gcs_total', type: 'integer' },
+        { label: 'Other', code: 'other', type: 'text', description: 'Includes gcs score' },
+      ],
+    };
+    const idx = buildIndex(m);
+    expect(searchNodes(idx, { text: 'tiv', kind: 'all', type: '' })).toEqual([]);
+    expect(searchNodes(idx, { text: 'mode', kind: 'all', type: '' }).map((n) => n.code)).toEqual(['arrivalModeCode']);
+    expect(searchNodes(idx, { text: 'gcs', kind: 'all', type: '' }).map((n) => n.code)).toEqual([
+      'gcs',
+      'gcs_total',
+      'AVPU_GCS_first',
+      'other',
+    ]);
+    expect(scoreNode({ label: 'Glasgow', code: 'gcs', description: '' }, 'gcs')).toBe(100);
+    expect(scoreNode({ label: 'GCS total', code: 'gcs_total', description: '' }, 'gcs')).toBe(80);
+    expect(scoreNode({ label: 'AVPU/GCS (1st)', code: 'AVPU_GCS_first', description: '' }, 'gcs')).toBe(60);
+    expect(scoreNode({ label: 'Other', code: 'other', description: 'Includes gcs score' }, 'gcs')).toBe(30);
+  });
+
+  it('builds a bounded snippet only when matched in description', () => {
+    expect(descriptionSnippet({ label: 'GCS total', code: 'gcs_total', description: 'Score gcs' }, 'gcs')).toBe('');
+    expect(
+      descriptionSnippet({ label: 'Other', code: 'other', description: 'Recorded gcs value on arrival' }, 'gcs'),
+    ).toBe('Recorded gcs value on arrival');
+    const longDesc = `${'a'.repeat(50)} gcs ${'b'.repeat(80)}`;
+    const snip = descriptionSnippet({ label: 'Other', code: 'other', description: longDesc }, 'gcs');
+    expect(snip.startsWith('…')).toBe(true);
+    expect(snip.endsWith('…')).toBe(true);
+    expect(snip).toContain('gcs');
   });
 });

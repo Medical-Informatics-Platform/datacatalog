@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, afterRenderEffect, inject, input, output } from '@angular/core';
 import { Crumb } from '../services/pathology-tree';
 import { IconComponent } from '../ui/icon.component';
 
@@ -19,9 +19,9 @@ import { IconComponent } from '../ui/icon.component';
         @for (c of crumbs(); track c.id; let last = $last) {
           <li [class.here]="last">
             @if (last) {
-              <span class="st" aria-current="location"><i class="dot"></i>{{ c.label }}</span>
+              <span class="st" aria-current="location" [title]="c.label"><i class="dot"></i><span class="lbl">{{ c.label }}</span></span>
             } @else {
-              <button class="st" type="button" (click)="go.emit(c.id)"><i class="dot"></i>{{ c.label }}</button>
+              <button class="st" type="button" [title]="c.label" (click)="go.emit(c.id)"><i class="dot"></i><span class="lbl">{{ c.label }}</span></button>
             }
           </li>
         }
@@ -34,11 +34,12 @@ import { IconComponent } from '../ui/icon.component';
       nav { flex: 1; min-width: 0; overflow-x: auto; }
       ol { display: flex; align-items: center; width: max-content; padding: 6px 0; }
       li { display: flex; align-items: center; }
-      li + li::before { content: ''; width: 28px; height: 4px; background: var(--line); border-radius: 2px; animation: grow var(--dur-3) var(--ease); transform-origin: left; }
-      .st { display: inline-flex; align-items: center; gap: 8px; padding: 4px 6px; border: 0; background: none; font-size: 0.8125rem; font-weight: 500; color: var(--ink); max-width: 22ch; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-radius: var(--r-sm); }
+      li + li::before { content: ''; flex: none; width: 28px; height: 4px; margin-inline: 2px; background: var(--line); border-radius: 2px; animation: grow var(--dur-3) var(--ease); transform-origin: left; }
+      .st { display: inline-flex; align-items: center; gap: 8px; padding: 4px 6px; border: 0; background: none; font-size: 0.8125rem; font-weight: 500; color: var(--ink); max-width: 24ch; min-width: 0; border-radius: var(--r-sm); }
+      .lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
       button.st:hover { background: var(--hover); color: var(--blue); }
       .dot { width: 10px; height: 10px; border-radius: 50%; border: 3px solid var(--line); background: #fff; flex: none; }
-      .here .st { font-weight: 600; }
+      .here .st { font-weight: 600; max-width: 32ch; }
       .here .dot { width: 14px; height: 14px; border: 3px solid var(--orange); background: #fff; box-shadow: 0 0 0 2px var(--ink); }
       .back { display: none; }
       @keyframes grow { from { transform: scaleX(0); } }
@@ -50,4 +51,21 @@ export class RouteStripComponent {
   readonly crumbs = input.required<Crumb[]>();
   readonly color = input('var(--blue)');
   readonly go = output<string>();
+
+  private host = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  constructor() {
+    let initialized = false;
+    afterRenderEffect(() => {
+      this.crumbs();
+      const nav = this.host.nativeElement.querySelector<HTMLElement>('nav');
+      if (!nav) return;
+      const target = Math.max(0, nav.scrollWidth - nav.clientWidth);
+      const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+      const instant = !initialized || reduced;
+      initialized = true;
+      if (instant) nav.scrollLeft = target;
+      else nav.scrollTo({ left: target, behavior: 'smooth' });
+    });
+  }
 }

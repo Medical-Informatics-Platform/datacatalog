@@ -90,14 +90,35 @@ export class ColumnBrowserComponent {
   });
 
   constructor() {
+    let initialized = false;
     afterRenderEffect(() => {
+      this.columns();
       const id = this.selectedId();
       const nonce = this.focusNonce();
       const el = this.host.nativeElement;
+
+      // Scroll each column vertically in isolation; Element.scrollIntoView() would cancel .cols horizontal scroll.
+      for (const selected of el.querySelectorAll<HTMLElement>('.col [aria-selected="true"]')) {
+        const col = selected.closest<HTMLElement>('.col');
+        if (!col) continue;
+        const hd = col.querySelector<HTMLElement>('.hd')?.getBoundingClientRect().height ?? 0;
+        const cr = col.getBoundingClientRect();
+        const rr = selected.getBoundingClientRect();
+        if (rr.top < cr.top + hd) col.scrollTop += rr.top - (cr.top + hd);
+        else if (rr.bottom > cr.bottom) col.scrollTop += rr.bottom - cr.bottom;
+      }
+
       const sc = el.querySelector<HTMLElement>('.cols');
-      sc?.scrollTo({ left: sc.scrollWidth, behavior: 'smooth' });
+      if (sc) {
+        const target = Math.max(0, sc.scrollWidth - sc.clientWidth);
+        const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+        const instant = !initialized || reduced;
+        initialized = true;
+        if (instant) sc.scrollLeft = target;
+        else sc.scrollTo({ left: target, behavior: 'smooth' });
+      }
+
       const row = id ? el.querySelector<HTMLElement>(`[data-id="${CSS.escape(id)}"]`) : null;
-      row?.scrollIntoView({ block: 'nearest' });
       if (row && (nonce > 0 || el.contains(document.activeElement))) row.focus({ preventScroll: true });
     });
   }
