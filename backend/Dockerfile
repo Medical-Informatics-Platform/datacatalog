@@ -2,7 +2,7 @@
 # Build the Spring Boot application with Maven
 #######################################################
 # Base images are pinned by digest; Dependabot bumps the digest when the tag is rebuilt.
-FROM maven:3.10-eclipse-temurin-26@sha256:69a6c37f0a91fca2c9d0cdd684c9c0ea7b1bc00d4196749c24440b2e02ad163d AS build-env
+FROM maven:3-eclipse-temurin-27@sha256:3d8de45e72f62c97735db13bbae86445966001d5c05c2c8a137d062c5e8379b2 AS build-env
 LABEL maintainer="Kostas Filippopolitis <kfilippopolitis@athenarc.gr>"
 
 # Define build environment variables
